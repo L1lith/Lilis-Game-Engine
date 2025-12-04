@@ -1,0 +1,42 @@
+{
+  "name": "lilis-game-engine",
+  "version": "1.0.0",
+  "main": "./dist/foo.cjs",
+  "source": "src/index.js",
+  "exports": {
+    "require": "./dist/LilisGameEngine.cjs",
+    "default": "./dist/LilisGameEngine.modern.js"
+  },
+  "module": "./dist/foo.module.js",
+  "unpkg": "./dist/foo.umd.js",
+  "scripts": {
+    "dev": "microbundle watch",
+    "build": "microbundle",
+    "build-production": "cross-env NODE_ENV=production microbundle",
+    "build-docs": "cd docs-source && cross-env NODE_ENV=production npm run deploy",
+    "test": "mocha \"tests/**/*.js\"",
+    "prepublishOnly": "npm run build-production&&npm run test",
+    "publish-alias": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/L1lith/Lilis-Game-Engine.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ESMIT",
+  "bugs": {
+    "url": "https://github.com/L1lith/Lilis-Game-Engine/issues"
+  },
+  "homepage": "https://github.com/L1lith/Lilis-Game-Engine#readme",
+  "description": "",
+  "devDependencies": {
+    "microbundle": "^0.15.1"
+  },
+  "dependencies": {
+    "@astrojs/solid-js": "^5.1.3",
+    "@pixi/devtools": "^2.0.1",
+    "pixi.js": "^8.14.3",
+    "solid-js": "^1.9.10"
+  }
+}
