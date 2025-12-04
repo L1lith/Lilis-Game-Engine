@@ -1,24 +1,40 @@
-import { Store, Signal } from "jabr";
+import { Store, Signal, isStore } from "jabr";
 import createPixiRenderer from "./createPixiRenderer";
+import createGameCore from "./createGameCore";
+import createGameLoop from "./createGameLoop";
+import createEntity from "./createEntity";
+import createEntityList from "./createEntityList";
+import createRenderSettings from "./createRenderSettings";
+import { details } from "sandhands";
 
-export default function runGame(canvas) {
-  const entities = new Signal([
-    new Store({ x: 0, y: 0, width: 100, height: 100, image: "skull.png" }),
+export default async function runGame(canvas) {
+  const entity = createEntity({
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    imageURL: "skull.png",
+  });
+  const entities = createEntityList([
+    createEntity({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      imageURL: "skull.png",
+    }),
   ]);
-  const PixiRenderer = createPixiRenderer(canvas, entities);
-  let shouldStop = false;
-  const gameLoop = (timestamp) => {
-    if (shouldStop) return;
+  window.entities = entities;
+  const renderSettings = createRenderSettings({
+    canvas,
+  });
+  const gameCore = createGameCore({
+    plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
+  });
+  gameCore.events.on("tick", () => {
     const entity = entities.get()[0];
     if (entity) entity.x = (entity.x + 1) % 100;
-    if (Math.random() < 0.001) entities.set([]);
-    //entities[0].x = entities[0].x + 1;
-    if (!shouldStop) requestAnimationFrame(gameLoop);
-  };
-
-  requestAnimationFrame(gameLoop);
-
-  return () => {
-    shouldStop = true;
-  }; // Stop Function
+  });
+  await gameCore.mount();
+  return gameCore.unmount;
 }

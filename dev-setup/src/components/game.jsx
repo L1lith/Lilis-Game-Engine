@@ -6,10 +6,10 @@ export default function Game() {
     let canvas = null
     let stopGame = null
 
-    onMount(()=>{
+    onMount(async ()=>{
         const isClient = typeof window !== 'undefined'
         if (!isClient) return
-        stopGame = runGame(canvas)
+        stopGame = await runGame(canvas)
     })
     onCleanup(()=>{
         const isClient = typeof window !== 'undefined'
