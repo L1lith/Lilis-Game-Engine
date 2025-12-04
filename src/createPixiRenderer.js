@@ -152,7 +152,6 @@ export default function createPixiRenderer(entities, renderSettings) {
 
   const render = async () => {
     if (!isMounted) throw new Error("Cannot render while unmounted");
-    console.log("rendering");
     renderer.render(stage);
   };
   const checkMounted = () => {
