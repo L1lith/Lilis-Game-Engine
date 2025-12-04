@@ -16,7 +16,7 @@ export default function createGameCore(initialData = null) {
     {
       format: {
         _: {
-          plugins: Array,
+          plugins: { _: [Object], minLength: 0 },
           mounted: Boolean,
         },
         strict: false,
