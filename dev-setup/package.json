@@ -12,6 +12,8 @@
     "@astrojs/solid-js": "^5.1.3",
     "astro": "^5.16.3",
     "jabr": "^0.4.2",
+    "matter-js": "^0.20.0",
+    "pixi-tiledmap": "^1.10.1",
     "sass": "^1.94.2",
     "solid-js": "^1.9.10",
     "tiny-emitter": "^2.1.0"

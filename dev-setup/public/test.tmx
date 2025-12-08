@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" source="Ningriptzu.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="8" height="8">
+  <data encoding="csv">
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2,
+2,2,2,2,2,2,2,2
+</data>
+ </layer>
+ <layer id="2" name="Tile Layer 2" width="8" height="8">
+  <data encoding="csv">
+7,7,7,7,7,7,7,7,
+7,5,5,5,5,5,5,7,
+7,0,0,0,0,0,0,7,
+7,0,1,1,1,1,0,7,
+7,0,1,1,1,1,0,7,
+7,0,0,0,0,0,0,7,
+7,6,6,6,6,6,6,7,
+7,7,7,7,7,7,7,7
+</data>
+ </layer>
+</map>
