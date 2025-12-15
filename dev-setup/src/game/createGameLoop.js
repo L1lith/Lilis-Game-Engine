@@ -6,7 +6,7 @@ export default function defaultGameLoop() {
   let gameCore = null;
   const mainLoop = async () => {
     if (shouldStop) return;
-    await Promise.all(tickers); // Run all plugins with tick handlers
+    await Promise.all(tickers.map((t) => t.tick())); // Run all plugins with tick handlers
     gameCore.events.emit("tick"); // Emit the tick event
     await Promise.all(
       // Run all the renderers

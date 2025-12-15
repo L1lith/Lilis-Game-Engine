@@ -1,5 +1,5 @@
 import { Store, Signal, isStore } from "jabr";
-import createP5Renderer from "./createP5Renderer";
+import createPixiRenderer from "./createPixiRenderer";
 import createGameCore from "./createGameCore";
 import createGameLoop from "./createGameLoop";
 import createEntity from "./createEntity";
@@ -7,20 +7,29 @@ import createEntityList from "./createEntityList";
 import createRenderSettings from "./createRenderSettings";
 import { details } from "sandhands";
 
-export default async function runGame(container) {
-  const entity = createEntity({});
-  const entities = createEntityList([entity]);
+export default async function runGame(canvas) {
+  const entity = createEntity({
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+    imageURL: "skull.png",
+  });
+  const entities = createEntityList([
+    createEntity({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      imageURL: "skull.png",
+    }),
+  ]);
   window.entities = entities;
   const renderSettings = createRenderSettings({
-    container,
-    setup: (p) => {
-      console.log(p);
-      p.createCanvas(100, 100);
-      p.background(200);
-    },
+    canvas,
   });
   const gameCore = createGameCore({
-    plugins: [createGameLoop(), createP5Renderer(entities, renderSettings)],
+    plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
   });
   gameCore.events.on("tick", () => {
     const entity = entities.get()[0];
