@@ -1,5 +1,5 @@
 import { Signal } from "jabr";
-import p5 from "p5/global";
+import p5 from "p5";
 import EntityListFormat from "./formats/EntityList";
 import { valid } from "sandhands";
 import RenderSettingsFormat from "./formats/RenderSettings";
@@ -15,6 +15,18 @@ const standardShapes = [
   "quad",
   "point",
 ];
+
+const smartProperties = [
+  "stroke",
+  "fill",
+  "strokeWeight",
+  "erase",
+  "noStroke",
+  "noFill",
+  "noErase",
+  "colorMode",
+];
+const prioritySmartProperties = ["colorMode"];
 
 export default function createP5Renderer(entities = null, renderSettings) {
   if (entities !== null && !valid(entities, EntityListFormat))
@@ -47,6 +59,33 @@ export default function createP5Renderer(entities = null, renderSettings) {
               i++
             ) {
               const entity = fetchedEntities[i];
+              smartProperties // Sort so we can call the priority properties first
+                .filter((property) =>
+                  prioritySmartProperties.includes(property)
+                )
+                .concat(
+                  smartProperties.filter(
+                    (property) => !prioritySmartProperties.includes(property)
+                  )
+                )
+                .forEach((smartProperty) => {
+                  // Allow us to set things like stroke and fill via assigned entity properties
+                  if (entity.hasOwnProperty(smartProperty)) {
+                    let value = entity[smartProperty];
+                    if (smartProperty === "colorMode") {
+                      if (value === "RGB") {
+                        value = p.RGB;
+                      } else if (value === "HSB") {
+                        value = p.HSB;
+                      }
+                    }
+                    if (Array.isArray(value)) {
+                      p[smartProperty](...value);
+                    } else {
+                      p[smartProperty](value);
+                    }
+                  }
+                });
               if ("prerender" in entity) {
                 // Allow us to add behavior before the automatic shape drawing
                 if (!(typeof entity.prerender == "function")) {
