@@ -1,5 +1,5 @@
 import { Signal } from "jabr";
-import p5 from "p5";
+import p5 from "p5/global";
 import EntityListFormat from "./formats/EntityList";
 import { valid } from "sandhands";
 import RenderSettingsFormat from "./formats/RenderSettings";
