@@ -55,7 +55,7 @@ export default function createGameCore(initialData = null) {
     getPlugins(type = null) {
       if (typeof type == "string") {
         return gameStore.plugins.filter((plugin) =>
-          plugin.types.includes(type)
+          plugin?.types?.includes(type)
         );
       }
       return gameStore.plugins;

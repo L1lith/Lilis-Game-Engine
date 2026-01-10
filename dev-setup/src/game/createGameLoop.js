@@ -1,20 +1,31 @@
+import { Signal } from "jabr";
+
 export default function defaultGameLoop() {
   let shouldStop = false;
   let animationRequestID = null;
   let renderers;
   let tickers;
   let gameCore = null;
+  let frameNumber = -1;
+  const { get: getFrameData, set: setFrameData } = Signal({
+    number: frameNumber,
+  });
   const mainLoop = async () => {
     if (shouldStop) return;
-    await Promise.all(tickers.map((t) => t.tick())); // Run all plugins with tick handlers
-    gameCore.events.emit("tick"); // Emit the tick event
+    frameNumber++;
+    const currentFrameData = { number: frameNumber };
+    setFrameData(currentFrameData);
+    await Promise.all(tickers.map((t) => t.tick(currentFrameData))); // Run all plugins with tick handlers
+    gameCore.events.emit("tick", currentFrameData); // Emit the tick event
+    gameCore.events.emit("renderStart", currentFrameData);
     await Promise.all(
       // Run all the renderers
       renderers.map(async (renderer) => {
         if (!renderer.checkMounted || renderer.checkMounted())
-          await renderer.render();
+          await renderer.render(currentFrameData);
       })
     );
+    gameCore.events.emit("renderEnd", currentFrameData);
     if (!shouldStop) animationRequestID = requestAnimationFrame(mainLoop);
   };
   const mountListener = (mounted) => {
@@ -38,5 +49,5 @@ export default function defaultGameLoop() {
     gameCore.off("mounted", mountListener);
     shouldStop = true;
   };
-  return { mount, unmount, types: ["gameLoop"] };
+  return { mount, unmount, types: ["gameLoop"], getFrameData };
 }

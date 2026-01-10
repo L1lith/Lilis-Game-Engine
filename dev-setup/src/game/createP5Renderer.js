@@ -3,6 +3,7 @@ import p5 from "p5";
 import EntityListFormat from "./formats/EntityList";
 import { valid } from "sandhands";
 import RenderSettingsFormat from "./formats/RenderSettings";
+import createPixelProxy from "./createPixelProxy";
 
 const standardShapes = [
   "square",
@@ -35,11 +36,14 @@ export default function createP5Renderer(entities = null, renderSettings) {
     throw new Error("Please supply valid RenderSettings");
   const p5Instance = new Signal(null);
   const [getInstance, setInstance] = p5Instance;
+  let drawDoneHandle = null;
   const mount = async () => {
     if (!renderSettings.container instanceof HTMLElement)
       throw new Error("Cannot mount, missing container");
     await new Promise((res) => {
       new p5((p) => {
+        if (typeof renderSettings.windowResized == "function")
+          p.windowResized = renderSettings.windowResized;
         p.setup = async () => {
           p.noLoop();
           if (typeof renderSettings.setup == "function") {
@@ -52,9 +56,16 @@ export default function createP5Renderer(entities = null, renderSettings) {
         };
 
         p.draw = async () => {
+          if (typeof renderSettings.preDraw == "function") {
+            try {
+              await renderSettings.preDraw(p);
+            } catch (e) {
+              console.error(e);
+            }
+          }
           if (entities) {
             for (
-              let i = 0, fetchedEntities = entities.get;
+              let i = 0, fetchedEntities = entities.get();
               i < fetchedEntities.length;
               i++
             ) {
@@ -104,7 +115,14 @@ export default function createP5Renderer(entities = null, renderSettings) {
                   console.error(new Error("Invalid Shape Provided"));
                   continue;
                 }
+                if (!Array.isArray(entity.shapeArgs)) {
+                  console.error(
+                    new Error("Please supply a valid .shapeArgs array property")
+                  );
+                  continue;
+                }
                 // Render the specified shape
+                p[entity.shape](...entity.shapeArgs);
               }
               if ("render" in entity) {
                 // Standard rendering behavior happens after the shape drawing
@@ -127,6 +145,7 @@ export default function createP5Renderer(entities = null, renderSettings) {
               console.error(e);
             }
           }
+          if (typeof drawDoneHandle == "function") drawDoneHandle();
         };
         setInstance(p);
         res();
@@ -138,7 +157,26 @@ export default function createP5Renderer(entities = null, renderSettings) {
     setInstance(null);
   };
   const render = async () => {
-    instance.redraw();
+    const p = getInstance();
+    p.loop();
+    await new Promise((res) => setTimeout(res, 0));
+    p.noLoop();
   };
-  return { mount, unmount, p5Instance, render };
+  const getPixels = () => {
+    const p = getInstance();
+    p.loadPixels();
+    return createPixelProxy(p);
+  };
+  const savePixels = () => {
+    p.updatePixels();
+  };
+  return {
+    mount,
+    unmount,
+    p5Instance,
+    getPixels,
+    savePixels,
+    render,
+    types: ["renderer"],
+  };
 }
