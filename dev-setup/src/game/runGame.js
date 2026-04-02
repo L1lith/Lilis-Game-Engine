@@ -8,14 +8,14 @@ import createRenderSettings from "./createRenderSettings";
 import { details } from "sandhands";
 
 export default async function runGame(container) {
-  const entity = createEntity({});
+  const entity = createEntity();
   const entities = createEntityList([entity]);
   window.entities = entities;
   const renderSettings = createRenderSettings({
     container,
     setup: (p) => {
       console.log(p);
-      p.createCanvas(100, 100);
+      p.createCanvas(1000, 1000);
       p.background(200);
     },
   });
@@ -23,8 +23,7 @@ export default async function runGame(container) {
     plugins: [createGameLoop(), createP5Renderer(entities, renderSettings)],
   });
   gameCore.events.on("tick", () => {
-    const entity = entities.get()[0];
-    if (entity) entity.x = (entity.x + 1) % 100;
+    entity.x = (entity.x + 1) % 100;
   });
   await gameCore.mount();
   return gameCore.unmount;

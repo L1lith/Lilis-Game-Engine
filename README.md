@@ -61,8 +61,7 @@ export default async function runGame(container) {
     plugins: [createGameLoop(), createP5Renderer(entities, renderSettings)],
   });
   gameCore.events.on("tick", () => {
-    const entity = entities.get()[0];
-    if (entity) entity.x = (entity.x + 1) % 100;
+    entity.x = (entity.x + 1) % 100;
   });
   await gameCore.mount();
   return gameCore.unmount;
