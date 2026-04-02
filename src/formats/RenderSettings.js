@@ -1,5 +1,5 @@
 import { isStore } from "jabr";
-import InnerRenderSettingsFormat from "./InnerRenderSettings";
+import InnerRenderSettingsFormat from "./InnerRenderSettings.js";
 import { valid } from "sandhands";
 
 export default {

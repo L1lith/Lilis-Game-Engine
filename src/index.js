@@ -1,10 +1,10 @@
 import { convertFunctionToConstructor } from "jabr";
-import createPixiRenderer from "./createPixiRenderer";
-import createGameCore from "./createGameCore";
-import createGameLoop from "./createGameLoop";
-import createEntityList from "./createEntityList";
-import createRenderSettings from "./createRenderSettings";
-import createEntity from "./createEntity";
+import createPixiRenderer from "./createPixiRenderer.js";
+import createGameCore from "./createGameCore.js";
+import createGameLoop from "./createGameLoop.js";
+import createEntityList from "./createEntityList.js";
+import createRenderSettings from "./createRenderSettings.js";
+import createEntity from "./createEntity.js";
 
 export const PixiRenderer = convertFunctionToConstructor(createPixiRenderer);
 export const GameLoop = convertFunctionToConstructor(createGameLoop);

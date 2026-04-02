@@ -1,5 +1,5 @@
 import { Store } from "Jabr";
-import Entity from "./formats/Entity";
+import Entity from "./formats/Entity.js";
 
 export default function createEntity(state) {
   return new Store(state || {}, {

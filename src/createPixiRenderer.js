@@ -6,9 +6,9 @@ import {
   Container,
   autoDetectRenderer,
 } from "pixi.js";
-import EntityListFormat from "./formats/EntityList";
+import EntityListFormat from "./formats/EntityList.js";
 import { valid } from "sandhands";
-import RenderSettingsFormat from "./formats/RenderSettings";
+import RenderSettingsFormat from "./formats/RenderSettings.js";
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
 export default function createPixiRenderer(entities, renderSettings) {
@@ -83,7 +83,7 @@ export default function createPixiRenderer(entities, renderSettings) {
   const entityListener = (newEntities, oldEntities) => {
     newEntities.forEach(initializeEntity);
     const destroyedEntities = oldEntities.filter(
-      (entity) => !newEntities.includes(entity)
+      (entity) => !newEntities.includes(entity),
     );
     destroyedEntities.forEach(destroyEntity);
   };
@@ -106,7 +106,7 @@ export default function createPixiRenderer(entities, renderSettings) {
     const canvas = renderSettings.canvas;
     if (!canvas || !renderer)
       return console.warn(
-        "Could not find the canvas or the render, resizing failed"
+        "Could not find the canvas or the render, resizing failed",
       );
 
     // Pixi renderer width/height reflect its internal buffer size

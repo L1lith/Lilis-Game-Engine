@@ -1,4 +1,4 @@
-import Entity from "./Entity";
+import Entity from "./Entity.js";
 import { isSignal } from "jabr";
 
 export default {

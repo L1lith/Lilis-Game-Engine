@@ -1,6 +1,6 @@
-import Entity from "./Entity";
+import Entity from "./Entity.js";
 import { isSignal } from "jabr";
-import InnerEntityList from "./InnerEntityList";
+import InnerEntityList from "./InnerEntityList.js";
 import { valid } from "sandhands";
 
 export default {

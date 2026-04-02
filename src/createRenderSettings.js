@@ -1,4 +1,4 @@
-import InnerRenderSettingsFormat from "./formats/InnerRenderSettings";
+import InnerRenderSettingsFormat from "./formats/InnerRenderSettings.js";
 import { valid } from "sandhands";
 import { Store } from "jabr";
 
