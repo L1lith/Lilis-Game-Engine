@@ -1,5 +1,5 @@
 {
-  "name": "lilis-game-engine",
+  "name": "lilis",
   "version": "1.0.0",
   "type": "module",
   "source": "src/index.js",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "mocha \"tests/**/*.js\"",
-    "prepublishOnly": "npm run build-production&&npm run test"
+    "prepublishOnly": "npm run test"
   },
   "repository": {
     "type": "git",
