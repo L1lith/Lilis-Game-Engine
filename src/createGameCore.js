@@ -1,3 +1,4 @@
+import { convertFunctionToConstructor } from "jabr";
 import { Store } from "jabr";
 import Emitter from "tiny-emitter";
 
@@ -5,7 +6,7 @@ const defaultData = {
   plugins: [],
 };
 
-export default function createGameCore(initialData = null) {
+function createGameCore(initialData = null) {
   if (initialData !== null && typeof initialData != "object")
     throw new Error("Invalid Initial Data");
   let gameCore;
@@ -21,22 +22,24 @@ export default function createGameCore(initialData = null) {
         },
         strict: false,
       },
-    }
+    },
   );
   const emitter = new Emitter();
   const gameMethods = {
     mount: async () => {
       try {
         await Promise.all(
-          gameStore.plugins.map(async (plugin) => await plugin?.mount(gameCore))
+          gameStore.plugins.map(
+            async (plugin) => await plugin?.mount(gameCore),
+          ),
         );
       } catch (error) {
         try {
           // Unmount all the plugins if any of them fail
           await Promise.all(
             gameStore.plugins.map(
-              async (plugin) => await plugin?.unmount(gameCore)
-            )
+              async (plugin) => await plugin?.unmount(gameCore),
+            ),
           );
         } catch (e) {
           console.warn("Failed to unmount after failed mount");
@@ -48,14 +51,16 @@ export default function createGameCore(initialData = null) {
     },
     unmount: async () => {
       await Promise.all(
-        gameStore.plugins.map(async (plugin) => await plugin?.unmount(gameCore))
+        gameStore.plugins.map(
+          async (plugin) => await plugin?.unmount(gameCore),
+        ),
       );
       return true;
     },
     getPlugins(type = null) {
       if (typeof type == "string") {
         return gameStore.plugins.filter((plugin) =>
-          plugin.types.includes(type)
+          plugin.types.includes(type),
         );
       }
       return gameStore.plugins;
@@ -69,3 +74,5 @@ export default function createGameCore(initialData = null) {
     },
   }));
 }
+
+export default convertFunctionToConstructor(createGameCore);

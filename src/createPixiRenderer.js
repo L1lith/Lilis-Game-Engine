@@ -1,3 +1,4 @@
+import { convertFunctionToConstructor } from "jabr";
 import {
   Application,
   Assets,
@@ -11,7 +12,7 @@ import { valid } from "sandhands";
 import RenderSettingsFormat from "./formats/RenderSettings.js";
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
-export default function createPixiRenderer(entities, renderSettings) {
+function createPixiRenderer(entities, renderSettings) {
   if (!valid(entities, EntityListFormat))
     throw new Error("Please supply a valid EntityList");
   if (!valid(renderSettings, RenderSettingsFormat))
@@ -160,3 +161,5 @@ export default function createPixiRenderer(entities, renderSettings) {
 
   return { mount, unmount, render, handleCanvasResize, types: ["renderer"] };
 }
+
+export default convertFunctionToConstructor(createPixiRenderer);

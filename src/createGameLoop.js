@@ -1,4 +1,6 @@
-export default function defaultGameLoop() {
+import { convertFunctionToConstructor } from "jabr";
+
+function defaultGameLoop() {
   let shouldStop = false;
   let animationRequestID = null;
   let renderers;
@@ -10,7 +12,7 @@ export default function defaultGameLoop() {
       renderers.map(async (renderer) => {
         if (!renderer.checkMounted || renderer.checkMounted())
           await renderer.render();
-      })
+      }),
     );
     if (!shouldStop) animationRequestID = requestAnimationFrame(mainLoop);
   };
@@ -34,3 +36,5 @@ export default function defaultGameLoop() {
   };
   return { mount, unmount, types: ["gameLoop"] };
 }
+
+export default convertFunctionToConstructor(defaultGameLoop);

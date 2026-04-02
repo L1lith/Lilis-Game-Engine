@@ -1,15 +1,15 @@
-import { convertFunctionToConstructor } from "jabr";
-import createPixiRenderer from "./createPixiRenderer.js";
-import createGameCore from "./createGameCore.js";
-import createGameLoop from "./createGameLoop.js";
-import createEntityList from "./createEntityList.js";
-import createRenderSettings from "./createRenderSettings.js";
-import createEntity from "./createEntity.js";
+// Class style exports
+export { default as PixiRenderer } from "./createPixiRenderer.js";
+export { default as GameLoop } from "./createGameLoop.js";
+export { default as Entity } from "./createEntity.js";
+export { default as EntityList } from "./createEntityList.js";
+export { default as GameCore } from "./createGameCore.js";
+export { default as RenderSettings } from "./createRenderSettings.js";
 
-export const PixiRenderer = convertFunctionToConstructor(createPixiRenderer);
-export const GameLoop = convertFunctionToConstructor(createGameLoop);
-export const GameCore = convertFunctionToConstructor(createGameCore);
-export const Entity = convertFunctionToConstructor(createEntity);
-export const EntityList = convertFunctionToConstructor(createEntityList);
-export const RenderSettings =
-  convertFunctionToConstructor(createRenderSettings);
+// Functional Style Exports
+export { default as createPixiRenderer } from "./createPixiRenderer.js";
+export { default as createGameLoop } from "./createGameLoop.js";
+export { default as createEntity } from "./createEntity.js";
+export { default as createEntityList } from "./createEntityList.js";
+export { default as createGameCore } from "./createGameCore.js";
+export { default as createRenderSettings } from "./createRenderSettings.js";
