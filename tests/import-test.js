@@ -8,7 +8,7 @@ describe("Package Import Tests", () => {
 
   it("should have expected core exports", () => {
     // Add properties you expect to export
-    const expectedExports = [
+    const expectedConstructors = [
       "PixiRenderer",
       "GameLoop",
       "GameCore",
@@ -16,8 +16,10 @@ describe("Package Import Tests", () => {
       "EntityList",
       "RenderSettings",
     ];
-    for (let i = 0; i < expectedExports.length; i++) {
-      expect(LGE).to.respondTo(expectedExports[i]);
+    for (let i = 0; i < expectedConstructors.length; i++) {
+      expect(LGE).to.respondTo(expectedConstructors[i]); // default class style import
+      expect(LGE).to.respondTo("create" + expectedConstructors[i]); // supports functional style import
     }
+    expect(LGE).to.not.respondTo("QOIEW1512JEFOSJsfsef"); // Doesn't respond to non-sense imports, meaning the above tests are meaningful
   });
 });
