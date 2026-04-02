@@ -1,9 +1,8 @@
-import { convertFunctionToConstructor } from "jabr";
-import { Signal } from "jabr";
+import { Signal, convertFunctionToConstructor } from "jabr";
 import p5 from "p5/global";
-import EntityListFormat from "./formats/EntityList";
+import EntityListFormat from "./formats/EntityList.js";
 import { valid } from "sandhands";
-import RenderSettingsFormat from "./formats/RenderSettings";
+import RenderSettingsFormat from "./formats/RenderSettings.js";
 
 const standardShapes = [
   "square",
