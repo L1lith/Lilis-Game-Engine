@@ -26,11 +26,14 @@
   "homepage": "https://github.com/L1lith/Lilis-Game-Engine#readme",
   "description": "",
   "dependencies": {
-    "jabr": "^0.4.2",
-    "pixi.js": "^8.14.3"
+    "jabr": "^0.4.2"
   },
   "devDependencies": {
     "chai": "^6.2.2",
     "mocha": "^11.7.5"
+  },
+  "optionalDependencies": {
+    "p5": "^2.2.3",
+    "pixi.js": "^8.17.1"
   }
 }

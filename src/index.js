@@ -5,6 +5,7 @@ export { default as Entity } from "./createEntity.js";
 export { default as EntityList } from "./createEntityList.js";
 export { default as GameCore } from "./createGameCore.js";
 export { default as RenderSettings } from "./createRenderSettings.js";
+export { default as P5Renderer } from "./createP5Renderer.js";
 
 // Functional Style Exports
 export { default as createPixiRenderer } from "./createPixiRenderer.js";
@@ -13,3 +14,4 @@ export { default as createEntity } from "./createEntity.js";
 export { default as createEntityList } from "./createEntityList.js";
 export { default as createGameCore } from "./createGameCore.js";
 export { default as createRenderSettings } from "./createRenderSettings.js";
+export { default as createP5Renderer } from "./createP5Renderer.js";
