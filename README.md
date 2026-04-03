@@ -45,7 +45,7 @@ By passing this player signal to our physics engine we no longer need to manuall
 Enough technical breakdown of why I love this game engine, let's dive into an example of how it looks in practice. Below is some example code, notice how each component of the game engine is manually initialized. While that does increase the number of lines of code by a small amount, it leaves room for you to swap these plugins out with your own choice of plugins. Yes, even the default core behaviors of the game engine are themselves plugins with easily inspectable source code. Without further adieu:
 
 ```js
-import {createP5Renderer, createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings }from 'lilis-engine'
+import { createP5Renderer, createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings } from 'lilis-engine'
 
 export default async function runGame(container) {
   const entity = createEntity();
