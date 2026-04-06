@@ -25,8 +25,8 @@ import {Signal} from 'jabr'
 const [getPlayerPos, setPlayerPos, addPlayerPosListener, removePlayerPosListener] = new Signal({x: 0, y: 10})
  
 const playerPositionListener = (newValue, oldValue) => {
-console.log('New Player Position: ' + newValue)
-console.log('Old Player Position: ' + oldValue)
+  console.log('New Player Position: ' + newValue)
+  console.log('Old Player Position: ' + oldValue)
 }
  
 addPlayerPosListener(playerPositionListener)
