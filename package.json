@@ -5,8 +5,8 @@
   "source": "src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "pixi": "./src/plugins/createPixiRenderer.js",
-    "p5": "./src/plugins/createP5Renderer.js"
+    "pixi": "./src/plugins/pixi.js",
+    "p5": "./src/plugins/p5.js"
   },
   "files": [
     "src"
@@ -35,7 +35,7 @@
     "mocha": "^11.7.5"
   },
   "optionalDependencies": {
-    "p5": "^2.2.3",
+    "p5": "https://pkg.pr.new/p5@c071281",
     "pixi.js": "^8.17.1"
   }
 }
