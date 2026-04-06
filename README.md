@@ -45,7 +45,8 @@ By passing this player signal to our physics engine we no longer need to manuall
 Enough technical breakdown of why I love this game engine, let's dive into an example of how it looks in practice. Below is some example code, notice how each component of the game engine is manually initialized. While that does increase the number of lines of code by a small amount, it leaves room for you to swap these plugins out with your own choice of plugins. Yes, even the default core behaviors of the game engine are themselves plugins with easily inspectable source code. Without further adieu:
 
 ```js
-import { createP5Renderer, createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings } from 'lilis-engine'
+import {createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings } from 'lilis-engine'
+import createP5Renderer from 'lilis-engine/p5'
 
 export default async function runGame(container) {
   const entity = createEntity();
@@ -71,3 +72,5 @@ export default async function runGame(container) {
 ```
 
 Here we setup our plugins, tell the p5.js renderer how to initialize the canvas, and create an on-screen entity that automatically moves left-to-right across the screen in about 30 lines of code. While a full functional game would take more than this, this example highlights all of the most basic functionality that you need to make a game with the engine! While that is a neat feat, I am confident that this simplicity scales to even flushed out games because I battle tested it in my first published game [Drawlf](https://l1lith.github.io/Drawlf-Host/)!
+
+## Plugins

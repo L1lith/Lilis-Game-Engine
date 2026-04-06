@@ -4,7 +4,9 @@
   "type": "module",
   "source": "src/index.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "pixi": "./src/plugins/createPixiRenderer.js",
+    "p5": "./src/plugins/createP5Renderer.js"
   },
   "files": [
     "src"

@@ -7,9 +7,9 @@ import {
   Container,
   autoDetectRenderer,
 } from "pixi.js";
-import EntityListFormat from "./formats/EntityList.js";
+import EntityListFormat from "../formats/EntityList.js";
 import { valid } from "sandhands";
-import RenderSettingsFormat from "./formats/RenderSettings.js";
+import RenderSettingsFormat from "../formats/RenderSettings.js";
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
 function createPixiRenderer(entities, renderSettings) {
