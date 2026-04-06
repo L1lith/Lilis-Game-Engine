@@ -78,6 +78,7 @@ Here we setup our plugins, tell the p5.js renderer how to initialize the canvas,
 |--|--|--|
 | p5 | Renderer | Adds support for the [p5.js rendering library](https://beta.p5js.org/) |
 | pixi | Renderer | Adds support for the [pixi.js rendering library](https://pixijs.com/) |
+
 Plugins are optional imports that add support for external libraries. This game engine is designed to be as modular as possible, making using external libraries as easy as possible. In the future I would love to have plugins for as many libraries as possible, if you'd like to add a plugin to this project please make a pull request. Plugins must be imported separately from the core engine, for example if you'd like pixijs you'd use this (using the plugin name from the above table):
 
 ```js
