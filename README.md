@@ -9,7 +9,7 @@ npm install lilis-engine
  
 ## About this engine
  
-This game engine takes inspiration from web frameworks like [Astro.build](https://astro.build/) which emphasize clean code and interoperability as a fundamental design principle, rather than an afterthought. Many coding projects incur massive technical debt under a "ship now, fix later" mindset, which inevitably leads to large amounts wasted time which could have been prevented with more forethought. I spent multiple years designing this game engine, even rebuilding it from scratch so that it will stand the tests of time and save developers time and headaches. I did this by inventing cleaner and more effective design patterns that serve as the foundation of your game, primarily two things serve as the bedrock of the game engine:
+This game engine takes inspiration from web frameworks like [Astro.build](https://astro.build/) which emphasize clean code and interoperability as a fundamental design principle, rather than an afterthought. Many coding projects incur massive technical debt under a "ship now, fix later" mindset, which inevitably leads to large amounts wasted time which could have been prevented with more forethought. I spent multiple years designing this game engine, even rebuilding it from scratch so that it will stand the tests of time and save developers time and headaches. I did this by introducing cleaner and more effective design patterns (inspired by state of the art web development) that serve as the foundation of your game, primarily two things serve as the bedrock of the game engine:
  
 1. Functional Programming
 2. Signals
