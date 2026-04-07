@@ -21,7 +21,6 @@ export default function Game() {
         });
         gameCore.events.on("tick", () => {
             entity.x = (entity.x + 1) % 100;
-            console.log("tick", entity.x)
         });
         await gameCore.mount();
         unmountGameEngine = gameCore.unmount;
