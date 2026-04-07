@@ -61,12 +61,17 @@ function createPixiRenderer(entities, renderSettings) {
   };
   const initializeEntity = async (entity) => {
     if (pixiSprites.has(entity)) return;
-    let texture =
-      entity.texture ||
-      (typeof entity.imageURL == "string"
-        ? await Assets.load(entity.imageURL)
-        : await Assets.load("https://pixijs.com/assets/bunny.png"));
-    const pixiSprite = new Sprite(texture);
+    let pixiSprite;
+    if (typeof entity?.sprite == "object" && entity?.sprite !== null) {
+      pixiSprite = entity.sprite;
+    } else {
+      let texture =
+        entity.texture ||
+        (typeof entity.imageURL == "string"
+          ? await Assets.load(entity.imageURL)
+          : await Assets.load("https://pixijs.com/assets/bunny.png"));
+      pixiSprite = new Sprite(texture);
+    }
     pixiSprites.set(entity, pixiSprite);
     const adjustSize = () => adjustEntitySize(entity);
     const adjustPosition = () => adjustEntityPosition(entity);
