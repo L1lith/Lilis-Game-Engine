@@ -37,6 +37,7 @@
   },
   "optionalDependencies": {
     "p5": "https://pkg.pr.new/p5@c071281",
+    "pixi-tiledmap": "^2.0.0",
     "pixi.js": "^8.17.1"
   }
 }
