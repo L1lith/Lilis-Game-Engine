@@ -1,28 +1,27 @@
 import { onCleanup, onMount } from 'solid-js'
 import {createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings } from '../../../'
-import createP5Renderer from '../../../src/plugins/p5.js'
+import createPixiRenderer from '../../../src/plugins/pixi.js'
 
 export default function Game() {
     let unmountGameEngine
-    let container
+    let canvas
     onMount(async ()=>{
         if (typeof window === 'undefined') return // Browser Only
-        const entity = createEntity();
+        const entity = createEntity({
+            imageURL: '/human-skull.png',
+            x: 0
+        });
         const entities = createEntityList([entity]);
         window.entities = entities;
         const renderSettings = createRenderSettings({
-            container,
-            setup: (p) => {
-            console.log(p);
-            p.createCanvas(1000, 1000);
-            p.background(200);
-            },
+            canvas,
         });
         const gameCore = createGameCore({
-            plugins: [createGameLoop(), createP5Renderer(entities, renderSettings)],
+            plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
         });
         gameCore.events.on("tick", () => {
             entity.x = (entity.x + 1) % 100;
+            console.log("tick", entity.x)
         });
         await gameCore.mount();
         unmountGameEngine = gameCore.unmount;
@@ -31,5 +30,5 @@ export default function Game() {
         if (typeof window === 'undefined') return // Browser Only
         await unmountGameEngine()
     })
-    return <div ref={container}/>
+    return <canvas ref={canvas}/>
 }
