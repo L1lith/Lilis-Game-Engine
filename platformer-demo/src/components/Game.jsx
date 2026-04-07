@@ -12,7 +12,7 @@ export default function Game() {
         //     imageURL: '/human-skull.png',
         //     x: 0
         // });
-        const map = await createPixiTiledmap()
+        const map = await createPixiTiledmap("/gameart2d-desert.tmx", {x: 0, y: 0, width: 100, height: 100})
         const entities = createEntityList([map]);
         window.entities = entities;
         const renderSettings = createRenderSettings({
