@@ -59,8 +59,10 @@ function createGameCore(initialData = null) {
     },
     getPlugins(type = null) {
       if (typeof type == "string") {
-        return gameStore.plugins.filter((plugin) =>
-          plugin.types.includes(type),
+        return gameStore.plugins.filter(
+          (plugin) =>
+            (Array.isArray(plugin?.types) && plugin.types.includes(type)) ||
+            plugin?.type === type,
         );
       }
       return gameStore.plugins;
