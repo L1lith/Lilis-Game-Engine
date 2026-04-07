@@ -3,6 +3,8 @@ import InnerRenderSettingsFormat from "./formats/InnerRenderSettings.js";
 import { valid } from "sandhands";
 import { Store } from "jabr";
 
+const defaultSettings = {};
+
 function createRenderSettings(initialSettings = {}) {
   const settings = { ...defaultSettings, ...initialSettings };
   if (!valid(settings, InnerRenderSettingsFormat))
