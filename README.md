@@ -73,13 +73,14 @@ export default async function runGame(container) {
 
 Here we setup our plugins, tell the p5.js renderer how to initialize the canvas, and create an on-screen entity that automatically moves left-to-right across the screen in about 30 lines of code. While a full functional game would take more than this, this example highlights all of the most basic functionality that you need to make a game with the engine! While that is a neat feat, I am confident that this simplicity scales to even flushed out games because I battle tested it in my first published game [Drawlf](https://l1lith.github.io/Drawlf-Host/)!
 
-## Plugins
-|Plugin Name | Plugin Type | Description |
+## Plugins & Utilities
+| Name | Type | Description |
 |--|--|--|
-| p5 | Renderer | Adds support for the [p5.js rendering library](https://beta.p5js.org/) |
-| pixi | Renderer | Adds support for the [pixi.js rendering library](https://pixijs.com/) |
+| p5 | Renderer Plugin | Adds support for the [p5.js rendering library](https://beta.p5js.org/) |
+| pixi | Renderer Plugin | Adds support for the [pixi.js rendering library](https://pixijs.com/) |
+| pixi-tiled | Tilemap Utility | Integration for using Pixi with the Tiled map editor. Returns a function that creates an entity which can be rendered by the pixi plugin by including it in the entity list. |
 
-Plugins are optional imports that add support for external libraries. This game engine is designed to be as modular as possible, making using external libraries as easy as possible. In the future I would love to have plugins for as many libraries as possible, if you'd like to add a plugin to this project please make a pull request. Plugins must be imported separately from the core engine, for example if you'd like pixijs you'd use this (using the plugin name from the above table):
+Plugins & utilities are optional imports that add support for external libraries. This game engine is designed to be as modular as possible, making using external libraries as easy as possible. When using a plugin usually you call a function which returns an object, then you pass that object to the game core to enable the integration for that library. Utilities are generally functions that operate independently of the game core. In the future I would love to have integrations for as many libraries as possible, if you'd like to add to this project please make a pull request. Plugins must be imported separately from the core engine, for example if you'd like pixijs you'd use this (using the plugin name from the above table):
 
 ```js
 import createPixiRenderer from 'lilis-engine/pixi'
