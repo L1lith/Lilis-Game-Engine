@@ -78,7 +78,7 @@ Here we setup our plugins, tell the p5.js renderer how to initialize the canvas,
 |--|--|--|
 | p5 | Renderer Plugin | Adds support for the [p5.js rendering library](https://beta.p5js.org/) |
 | pixi | Renderer Plugin | Adds support for the [pixi.js rendering library](https://pixijs.com/) |
-| pixi-tiled | Tilemap Utility | Integration for using Pixi with the Tiled map editor. Returns a function that creates an entity which can be rendered by the pixi plugin. |
+| pixi-tiled | Tilemap Utility | Integration for using Pixi with the Tiled map editor. Returns a function that creates an entity which can be rendered by the pixi plugin by including it in the entity list. |
 
 Plugins & utilities are optional imports that add support for external libraries. This game engine is designed to be as modular as possible, making using external libraries as easy as possible. When using a plugin usually you call a function which returns an object, then you pass that object to the game core to enable the integration for that library. Utilities are generally functions that operate independently of the game core. In the future I would love to have integrations for as many libraries as possible, if you'd like to add to this project please make a pull request. Plugins must be imported separately from the core engine, for example if you'd like pixijs you'd use this (using the plugin name from the above table):
 
