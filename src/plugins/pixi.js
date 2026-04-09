@@ -192,12 +192,30 @@ function createPixiRenderer(entities, renderSettings) {
     entityListeners = new WeakMap();
 
     // Set up camera listener if camera property exists
+    const unmountCamera = (oldCamera) => {
+      oldCamera.off("x", handleCameraChange);
+      oldCamera.off("y", handleCameraChange);
+      oldCamera.off("width", handleCameraChange);
+      camera.off("height", handleCameraChange);
+    };
     cameraListener = () => {
       if (
         typeof renderSettings.camera == "object" &&
         renderSettings.camera !== null
       ) {
+        const oldCamera = currentCamera;
+        if (
+          typeof oldCamera == "object" &&
+          oldCamera !== null &&
+          oldCamera !== defaultCamera
+        ) {
+          unmountCamera(oldCamera);
+        }
         currentCamera = renderSettings.camera;
+        currentCamera.on("x", handleCameraChange);
+        currentCamera.on("y", handleCameraChange);
+        currentCamera.on("width", handleCameraChange);
+        currentCamera.on("height", handleCameraChange);
       } else {
         currentCamera = defaultCamera;
       }
@@ -206,11 +224,8 @@ function createPixiRenderer(entities, renderSettings) {
 
     // Listen for camera property changes
     renderSettings.on("camera", cameraListener);
-
     // Set initial camera state
-    if (renderSettings.camera) {
-      currentCamera = renderSettings.camera;
-    }
+    cameraListener();
 
     await Promise.all(entities.get().map(initializeEntity));
     entities.addListener(entityListener);
@@ -226,6 +241,13 @@ function createPixiRenderer(entities, renderSettings) {
 
     // Remove camera listeners
     renderSettings.off("camera", cameraListener);
+    // Unmount Camera
+    if (
+      typeof renderSettings.camera == "camera" &&
+      renderSettings.camera !== null
+    ) {
+      unmountCamera(renderSettings.camera);
+    }
 
     entityListeners = null;
     cameraListener = null;
