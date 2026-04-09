@@ -17,15 +17,15 @@ function createPixiRenderer(entities, renderSettings) {
     throw new Error("Please supply a valid EntityList");
   if (!valid(renderSettings, RenderSettingsFormat))
     throw new Error("Please supply valid RenderSettings");
-  
+
   // Default camera values
   const defaultCamera = {
     x: 0,
     y: 0,
     width: 100,
-    height: 100
+    height: 100,
   };
-  
+
   const pixiSprites = new WeakMap();
   let renderer = null;
   let stage = null;
@@ -34,12 +34,17 @@ function createPixiRenderer(entities, renderSettings) {
   let context = null;
   let isMounted = false;
   let currentCamera = defaultCamera;
-  
+
   // Apply camera transformation to entity coordinates
-  const applyCameraTransform = (entityValue, canvasSize, cameraPos, cameraSize) => {
+  const applyCameraTransform = (
+    entityValue,
+    canvasSize,
+    cameraPos,
+    cameraSize,
+  ) => {
     // Convert percentage to pixels based on canvas size
     const pixelPos = (entityValue / 100) * canvasSize;
-    
+
     // Apply camera transformation (pan and zoom)
     const zoomFactor = 100 / cameraSize;
     return (pixelPos - (cameraPos / 100) * canvasSize) * zoomFactor;
@@ -53,19 +58,19 @@ function createPixiRenderer(entities, renderSettings) {
     });
     context = renderSettings.canvas.getContext("2d");
   };
-  
+
   const adjustEntitySize = (entity) => {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
     const cam = currentCamera;
     const pixiSprite = pixiSprites.get(entity);
-    
+
     if (isFinite(entity.width)) {
       const zoomFactor = 100 / cam.width;
       pixiSprite.width = (entity.width / 100) * canvasWidth * zoomFactor;
     } else {
       pixiSprite.width = canvasWidth;
     }
-    
+
     if (isFinite(entity.height)) {
       const zoomFactor = 100 / cam.height;
       pixiSprite.height = (entity.height / 100) * canvasHeight * zoomFactor;
@@ -78,15 +83,25 @@ function createPixiRenderer(entities, renderSettings) {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
     const cam = currentCamera;
     const pixiSprite = pixiSprites.get(entity);
-    
+
     if (isFinite(entity.x)) {
-      pixiSprite.x = applyCameraTransform(entity.x, canvasWidth, cam.x, cam.width);
+      pixiSprite.x = applyCameraTransform(
+        entity.x,
+        canvasWidth,
+        cam.x,
+        cam.width,
+      );
     } else {
       pixiSprite.x = applyCameraTransform(0, canvasWidth, cam.x, cam.width);
     }
-    
+
     if (isFinite(entity.y)) {
-      pixiSprite.y = applyCameraTransform(entity.y, canvasHeight, cam.y, cam.height);
+      pixiSprite.y = applyCameraTransform(
+        entity.y,
+        canvasHeight,
+        cam.y,
+        cam.height,
+      );
     } else {
       pixiSprite.y = applyCameraTransform(0, canvasHeight, cam.y, cam.height);
     }
@@ -133,13 +148,6 @@ function createPixiRenderer(entities, renderSettings) {
       stage.removeChild(pixiSprites.get(entity));
       pixiSprites.delete(entity);
     }
-    if (indef(renderSettings.camera) {
-      currentCamera = renderSettings.camera;
-      handleCameraChange();
-    } else {
-      currentCamera = defaultCamera;
-      handleCameraChange();
-    }
   };
 
   const handleCameraChange = () => {
@@ -182,25 +190,28 @@ function createPixiRenderer(entities, renderSettings) {
     stage = new Container();
     window.stage = stage;
     entityListeners = new WeakMap();
-    
+
     // Set up camera listener if camera property exists
     cameraListener = () => {
-      if (renderSettings.camera) {
+      if (
+        typeof renderSettings.camera == "object" &&
+        renderSettings.camera !== null
+      ) {
         currentCamera = renderSettings.camera;
       } else {
         currentCamera = defaultCamera;
       }
       handleCameraChange();
     };
-    
+
     // Listen for camera property changes
-    renderSettings.on('camera', cameraListener);
-    
+    renderSettings.on("camera", cameraListener);
+
     // Set initial camera state
     if (renderSettings.camera) {
       currentCamera = renderSettings.camera;
     }
-    
+
     await Promise.all(entities.get().map(initializeEntity));
     entities.addListener(entityListener);
     renderSettings.on("canvas", canvasListener);
@@ -212,10 +223,10 @@ function createPixiRenderer(entities, renderSettings) {
     renderer = null;
     entities.get().forEach(destroyEntity);
     entities.removeListener(entityListener);
-    
+
     // Remove camera listeners
-    renderSettings.off('camera', cameraListener);
-    
+    renderSettings.off("camera", cameraListener);
+
     entityListeners = null;
     cameraListener = null;
     stage = null;
