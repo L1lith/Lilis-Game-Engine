@@ -81,7 +81,7 @@ function createPixiRenderer(entities, renderSettings) {
 
   const adjustEntityPosition = (entity) => {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
-    const cam = currentCamera;
+    const cam = entity.ignoreCamera ? defaultCamera : currentCamera;
     const pixiSprite = pixiSprites.get(entity);
 
     if (isFinite(entity.x)) {
