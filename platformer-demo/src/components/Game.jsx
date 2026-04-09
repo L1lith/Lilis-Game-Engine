@@ -16,12 +16,13 @@ export default function Game() {
         const map = await createPixiTiledmap("/gameart2d-desert.tmx", {x: 0, y: 0, width: 100, height: 100})
         const entities = createEntityList([map]);
         window.entities = entities;
-        const camera = new Store({x: 0, y: 0, width: 100, height: 100})
+        const camera = new Store({x: 0, y: 0, width: 100, height: 20})
         const renderSettings = createRenderSettings({
             canvas,
+            camera
         });
         const gameCore = createGameCore({
-            plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings, camera)],
+            plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
         });
         // gameCore.events.on("tick", () => {
         //     entity.x = (entity.x + 1) % 100;
