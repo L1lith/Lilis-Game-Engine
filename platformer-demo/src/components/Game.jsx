@@ -13,13 +13,13 @@ export default function Game() {
         //     imageURL: '/human-skull.png',
         //     x: 0
         // });
-        const map = await createPixiTiledmap("/gameart2d-desert.tmx", {x: 0, y: 0, width: 100, height: 100})
+        const map = await createPixiTiledmap("/gameart2d-desert.tmx")
         const entities = createEntityList([map]);
         window.entities = entities;
-        const camera = new Store({x: 0, y: 0, width: 100, height: 20})
+        const camera = new Store({x: 0, y: 0, width: 100, height: 105})
         const renderSettings = createRenderSettings({
             canvas,
-            camera
+            //camera
         });
         const gameCore = createGameCore({
             plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
@@ -29,8 +29,10 @@ export default function Game() {
         // });
         gameCore.events.on('tick', ()=>{
             // console.log(map.width)
-            camera.x = (camera.x + 1) % map.width
+            camera.x = (camera.x + 0.1) % (map.width - 100)
         })
+        window.map = map
+
         await gameCore.mount();
         unmountGameEngine = gameCore.unmount;
     })
