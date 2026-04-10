@@ -63,48 +63,43 @@ function createPixiRenderer(entities, renderSettings) {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
     const cam = currentCamera;
     const pixiSprite = pixiSprites.get(entity);
+    let width, height;
 
     if (isFinite(entity.width)) {
       const zoomFactor = 100 / cam.width;
-      pixiSprite.width = (entity.width / 100) * canvasWidth * zoomFactor;
+      width = (entity.width / 100) * canvasWidth * zoomFactor;
     } else {
-      pixiSprite.width = canvasWidth;
+      width = canvasWidth;
     }
 
     if (isFinite(entity.height)) {
       const zoomFactor = 100 / cam.height;
-      pixiSprite.height = (entity.height / 100) * canvasHeight * zoomFactor;
+      height = (entity.height / 100) * canvasHeight * zoomFactor;
     } else {
-      pixiSprite.height = canvasHeight;
+      height = canvasHeight;
     }
+    pixiSprite.width = width;
+    pixiSprite.height = height;
   };
 
   const adjustEntityPosition = (entity) => {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
     const cam = entity.ignoreCamera ? defaultCamera : currentCamera;
     const pixiSprite = pixiSprites.get(entity);
+    let x, y;
 
     if (isFinite(entity.x)) {
-      pixiSprite.x = applyCameraTransform(
-        entity.x,
-        canvasWidth,
-        cam.x,
-        cam.width,
-      );
+      x = applyCameraTransform(entity.x, canvasWidth, cam.x, cam.width);
     } else {
-      pixiSprite.x = applyCameraTransform(0, canvasWidth, cam.x, cam.width);
+      x = applyCameraTransform(0, canvasWidth, cam.x, cam.width);
     }
 
     if (isFinite(entity.y)) {
-      pixiSprite.y = applyCameraTransform(
-        entity.y,
-        canvasHeight,
-        cam.y,
-        cam.height,
-      );
+      y = applyCameraTransform(entity.y, canvasHeight, cam.y, cam.height);
     } else {
-      pixiSprite.y = applyCameraTransform(0, canvasHeight, cam.y, cam.height);
+      y = applyCameraTransform(0, canvasHeight, cam.y, cam.height);
     }
+    pixiSprite.position.set(x, y);
   };
 
   const initializeEntity = async (entity) => {
