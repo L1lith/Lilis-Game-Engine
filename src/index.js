@@ -11,3 +11,4 @@ export { default as createEntity } from "./createEntity.js";
 export { default as createEntityList } from "./createEntityList.js";
 export { default as createGameCore } from "./createGameCore.js";
 export { default as createRenderSettings } from "./createRenderSettings.js";
+export { default as createCamera } from "./createCamera";
