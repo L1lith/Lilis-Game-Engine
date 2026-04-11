@@ -35,21 +35,9 @@ function createPixiRenderer(entities, renderSettings) {
   let isMounted = false;
   let currentCamera = defaultCamera;
 
-  // Apply camera transformation to entity coordinates
-  const applyCameraTransform = (
-    entityValue,
-    canvasSize,
-    cameraPos,
-    cameraSize,
-  ) => {
-    // Convert percentage to pixels based on canvas size
-    const pixelPos = (entityValue / 100) * canvasSize;
-
-    // Apply camera transformation (pan and zoom)
-    const zoomFactor = 100 / cameraSize;
-    return (pixelPos - (cameraPos / 100) * canvasSize) * zoomFactor;
+  const toCanvasPixels = (transformedValue, canvasSize) => {
+    return (transformedValue / 100) * canvasSize;
   };
-
   const regenerateRenderer = async () => {
     if (renderer !== null) renderer.destroy({ removeView: false });
     renderer = await autoDetectRenderer({
@@ -58,48 +46,51 @@ function createPixiRenderer(entities, renderSettings) {
     });
     context = renderSettings.canvas.getContext("2d");
   };
-
   const adjustEntitySize = (entity) => {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
-    const cam = currentCamera;
+    const { camera } = renderSettings;
     const pixiSprite = pixiSprites.get(entity);
-    let width, height;
 
     if (isFinite(entity.width)) {
-      const zoomFactor = 100 / cam.width;
-      width = (entity.width / 100) * canvasWidth * zoomFactor;
+      // Use camera's transformX method if available, otherwise use default
+      const transformedWidth =
+        camera?.transformX?.(entity.width) || entity.width;
+      pixiSprite.width = toCanvasPixels(transformedWidth, canvasWidth);
     } else {
-      width = canvasWidth;
+      const transformedWidth = camera?.transformX?.(100) || 100;
+      pixiSprite.width = toCanvasPixels(transformedWidth, canvasWidth);
     }
 
     if (isFinite(entity.height)) {
-      const zoomFactor = 100 / cam.height;
-      height = (entity.height / 100) * canvasHeight * zoomFactor;
+      const transformedHeight =
+        camera?.transformY?.(entity.height) || entity.height;
+      pixiSprite.height = toCanvasPixels(transformedHeight, canvasHeight);
     } else {
-      height = canvasHeight;
+      const transformedHeight = camera?.transformY?.(100) || 100;
+      pixiSprite.height = toCanvasPixels(transformedHeight, canvasHeight);
     }
-    pixiSprite.width = width;
-    pixiSprite.height = height;
   };
 
   const adjustEntityPosition = (entity) => {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
-    const cam = entity.ignoreCamera ? defaultCamera : currentCamera;
+    const { camera } = renderSettings;
     const pixiSprite = pixiSprites.get(entity);
-    let x, y;
 
     if (isFinite(entity.x)) {
-      x = applyCameraTransform(entity.x, canvasWidth, cam.x, cam.width);
+      const transformedX = camera?.transformX?.(entity.x) || entity.x;
+      pixiSprite.x = toCanvasPixels(transformedX, canvasWidth);
     } else {
-      x = applyCameraTransform(0, canvasWidth, cam.x, cam.width);
+      const transformedX = camera?.transformX?.(0) || 0;
+      pixiSprite.x = toCanvasPixels(transformedX, canvasWidth);
     }
 
     if (isFinite(entity.y)) {
-      y = applyCameraTransform(entity.y, canvasHeight, cam.y, cam.height);
+      const transformedY = camera?.transformY?.(entity.y) || entity.y;
+      pixiSprite.y = toCanvasPixels(transformedY, canvasHeight);
     } else {
-      y = applyCameraTransform(0, canvasHeight, cam.y, cam.height);
+      const transformedY = camera?.transformY?.(0) || 0;
+      pixiSprite.y = toCanvasPixels(transformedY, canvasHeight);
     }
-    pixiSprite.position.set(x, y);
   };
 
   const initializeEntity = async (entity) => {
