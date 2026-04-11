@@ -1,12 +1,10 @@
 import { Store, convertFunctionToConstructor } from "jabr";
 
 export function applyCameraTransform(entityValue, cameraPos, cameraSize) {
-  // Convert percentage to pixels based on canvas size
-  const pixelPos = entityValue / 100;
-
+  // All values are in 0-100 percentage space
   // Apply camera transformation (pan and zoom)
   const zoomFactor = 100 / cameraSize;
-  return (pixelPos - cameraPos / 100) * zoomFactor;
+  return (entityValue - cameraPos) * zoomFactor;
 }
 
 function createCamera(state = {}) {
