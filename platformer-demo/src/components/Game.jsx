@@ -3,6 +3,7 @@ import {createGameCore, createGameLoop, createEntity, createEntityList, createRe
 import createPixiRenderer from '../../../src/plugins/pixi.js'
 import createPixiTiledmap from '../../../src/plugins/pixi-tiledmap.js'
 import {Store} from 'jabr'
+import Camera from '../../../src/createCamera.js'
 
 export default function Game() {
     let unmountGameEngine
@@ -16,10 +17,10 @@ export default function Game() {
         const map = await createPixiTiledmap("/gameart2d-desert.tmx")
         const entities = createEntityList([map]);
         window.entities = entities;
-        const camera = new Store({x: 0, y: 0, width: 100, height: 105})
+        const camera = new Camera({x: 0, y: 0, width: 100, height: 100})
         const renderSettings = createRenderSettings({
             canvas,
-            //camera
+            camera
         });
         const gameCore = createGameCore({
             plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
