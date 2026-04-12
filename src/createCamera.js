@@ -17,6 +17,7 @@ function createCamera(state = {}) {
     transformY: (y) => applyCameraTransform(y, store.y, store.height),
     ...state,
   });
+  return store;
 }
 
 export default convertFunctionToConstructor(createCamera);
