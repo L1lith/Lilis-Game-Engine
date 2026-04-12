@@ -4,14 +4,29 @@ function defaultGameLoop() {
   let shouldStop = false;
   let animationRequestID = null;
   let renderers;
+  let tickers;
   let gameCore = null;
   const mainLoop = async () => {
     if (shouldStop) return;
     gameCore.events.emit("tick");
     await Promise.all(
+      tickers.map(async (ticker) => {
+        try {
+          await ticker.tick();
+        } catch (err) {
+          console.error(err);
+        }
+      }),
+    );
+    await Promise.all(
       renderers.map(async (renderer) => {
-        if (!renderer.checkMounted || renderer.checkMounted())
-          await renderer.render();
+        if (!renderer.checkMounted || renderer.checkMounted()) {
+          try {
+            await renderer.render();
+          } catch (err) {
+            console.error(err);
+          }
+        }
       }),
     );
     if (!shouldStop) animationRequestID = requestAnimationFrame(mainLoop);
@@ -28,6 +43,9 @@ function defaultGameLoop() {
   const mount = async (gameCoreIn) => {
     gameCore = gameCoreIn;
     renderers = gameCore.getPlugins("renderer");
+    tickers = gameCore
+      .getPlugins()
+      .filter((plugin) => typeof plugin?.tick == "function");
     gameCore.on("mounted", mountListener);
   };
   const unmount = (gameCore) => {
