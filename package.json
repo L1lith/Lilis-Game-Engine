@@ -29,7 +29,7 @@
   "homepage": "https://github.com/L1lith/Lilis-Game-Engine#readme",
   "description": "",
   "dependencies": {
-    "jabr": "^0.4.2"
+    "jabr": "^0.4.5"
   },
   "devDependencies": {
     "chai": "^6.2.2",
