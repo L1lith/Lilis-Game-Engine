@@ -48,25 +48,25 @@ function createPixiRenderer(entities, renderSettings) {
   };
   const adjustEntitySize = (entity) => {
     const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
-    const { camera } = renderSettings;
+    const camera = renderSettings.camera;
     const pixiSprite = pixiSprites.get(entity);
 
     if (isFinite(entity.width)) {
-      // Use camera's transformX method if available, otherwise use default
+      // Use camera's transformWidth method for size (no panning)
       const transformedWidth =
-        camera?.transformX?.(entity.width) || entity.width;
+        camera?.transformWidth?.(entity.width) || entity.width;
       pixiSprite.width = toCanvasPixels(transformedWidth, canvasWidth);
     } else {
-      const transformedWidth = camera?.transformX?.(100) || 100;
+      const transformedWidth = camera?.transformWidth?.(100) || 100;
       pixiSprite.width = toCanvasPixels(transformedWidth, canvasWidth);
     }
 
     if (isFinite(entity.height)) {
       const transformedHeight =
-        camera?.transformY?.(entity.height) || entity.height;
+        camera?.transformHeight?.(entity.height) || entity.height;
       pixiSprite.height = toCanvasPixels(transformedHeight, canvasHeight);
     } else {
-      const transformedHeight = camera?.transformY?.(100) || 100;
+      const transformedHeight = camera?.transformHeight?.(100) || 100;
       pixiSprite.height = toCanvasPixels(transformedHeight, canvasHeight);
     }
   };
