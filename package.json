@@ -36,6 +36,7 @@
     "mocha": "^11.7.5"
   },
   "optionalDependencies": {
+    "matter-js": "^0.20.0",
     "p5": "https://pkg.pr.new/p5@c071281",
     "pixi-tiledmap": "^2.1.0",
     "pixi.js": "^8.17.1"
