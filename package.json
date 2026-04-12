@@ -8,7 +8,8 @@
     "./pixi": "./src/plugins/pixi.js",
     "./p5": "./src/plugins/p5.js",
     "./pixi-tiled": "./src/plugins/pixi-tiledmap.js",
-    "./matter": "./src/plugins/matter.js"
+    "./matter": "./src/plugins/matter.js",
+    "./timing": "./src/timing/index.js"
   },
   "files": [
     "src"
