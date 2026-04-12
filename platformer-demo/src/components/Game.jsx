@@ -4,6 +4,7 @@ import createPixiRenderer from '../../../src/plugins/pixi.js'
 import createPixiTiledmap from '../../../src/plugins/pixi-tiledmap.js'
 import {Store} from 'jabr'
 import Camera from '../../../src/createCamera.js'
+import createMatterPhysics from "../../../src/plugins/matter.js"
 
 export default function Game() {
     let unmountGameEngine
@@ -23,7 +24,7 @@ export default function Game() {
             camera
         });
         const gameCore = createGameCore({
-            plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings)],
+            plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings), createMatterPhysics()],
         });
         // gameCore.events.on("tick", () => {
         //     entity.x = (entity.x + 1) % 100;
