@@ -5,8 +5,8 @@ export default function matterPlugin(entities) {
   const mount = () => {
     engine = Engine.create();
   };
-  const tick = () => {
-    Engine.update(engine, 1000 / 60);
+  const tick = ({ delta }) => {
+    Engine.update(engine, delta);
   };
   return { tick, mount };
 }
