@@ -6,13 +6,29 @@ function defaultGameLoop() {
   let renderers;
   let tickers;
   let gameCore = null;
+  let startTime = null;
+  let lastTick = null;
+  let frameCount = null;
   const mainLoop = async () => {
     if (shouldStop) return;
-    gameCore.events.emit("tick");
+    const tickStart = Date.now();
+    if (startTime === null) startTime = tickStart;
+    if (frameCount === null) frameCount = 0;
+    const lifespan = tickStart - startTime;
+    const delta = lastTick - tickStart;
+    const timingData = {
+      lifespan,
+      startTime,
+      frameCount,
+      lastTick,
+      tickStart,
+      delta,
+    };
+    gameCore.events.emit("tick", timingData);
     await Promise.all(
       tickers.map(async (ticker) => {
         try {
-          await ticker.tick();
+          await ticker.tick(timingData);
         } catch (err) {
           console.error(err);
         }
@@ -22,13 +38,15 @@ function defaultGameLoop() {
       renderers.map(async (renderer) => {
         if (!renderer.checkMounted || renderer.checkMounted()) {
           try {
-            await renderer.render();
+            await renderer.render(timingData);
           } catch (err) {
             console.error(err);
           }
         }
       }),
     );
+    lastTick = tickStart;
+    frameCount++;
     if (!shouldStop) animationRequestID = requestAnimationFrame(mainLoop);
   };
   const mountListener = (mounted) => {
@@ -49,6 +67,9 @@ function defaultGameLoop() {
     gameCore.on("mounted", mountListener);
   };
   const unmount = (gameCore) => {
+    startTime = null;
+    frameCount = null;
+    lastTick = null;
     gameCore.off("mounted", mountListener);
     shouldStop = true;
   };
