@@ -1,4 +1,5 @@
-import { Engine } from "matter-js";
+import matter from "matter-js";
+const { Engine } = matter;
 
 export default function matterPlugin(entities) {
   let engine;
