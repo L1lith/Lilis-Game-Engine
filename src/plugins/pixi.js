@@ -34,6 +34,8 @@ function createPixiRenderer(entities, renderSettings) {
   let context = null;
   let isMounted = false;
   let currentCamera = defaultCamera;
+  let dirtyCamera = false;
+  let dirtyEntities = [];
 
   const toCanvasPixels = (transformedValue, canvasSize) => {
     return (transformedValue / 100) * canvasSize;
@@ -107,16 +109,14 @@ function createPixiRenderer(entities, renderSettings) {
       pixiSprite = new Sprite(texture);
     }
     pixiSprites.set(entity, pixiSprite);
-    const adjustSize = () => adjustEntitySize(entity);
-    const adjustPosition = () => adjustEntityPosition(entity);
-
-    adjustSize();
-    adjustPosition();
-    entity.on("x", adjustPosition);
-    entity.on("y", adjustPosition);
-    entity.on("width", adjustSize);
-    entity.on("height", adjustSize);
-    entityListeners.set(entity, { adjustSize, adjustPosition });
+    const markEntityDirty = () => {
+      if (!dirtyEntities.has(entity)) dirtyEntities.push(entity);
+    };
+    entity.on("x", markEntityDirty);
+    entity.on("y", markEntityDirty);
+    entity.on("width", markEntityDirty);
+    entity.on("height", markEntityDirty);
+    entityListeners.set(entity, { markEntityDirty });
     entity.pixiSprite = pixiSprite;
     stage.addChild(pixiSprite);
   };
@@ -134,6 +134,10 @@ function createPixiRenderer(entities, renderSettings) {
       stage.removeChild(pixiSprites.get(entity));
       pixiSprites.delete(entity);
     }
+  };
+
+  const markDirtyCamera = () => {
+    dirtyCamera = true;
   };
 
   const handleCameraChange = () => {
@@ -179,10 +183,10 @@ function createPixiRenderer(entities, renderSettings) {
 
     // Set up camera listener if camera property exists
     const unmountCamera = (oldCamera) => {
-      oldCamera.off("x", handleCameraChange);
-      oldCamera.off("y", handleCameraChange);
-      oldCamera.off("width", handleCameraChange);
-      camera.off("height", handleCameraChange);
+      oldCamera.off("x", markDirtyCamera);
+      oldCamera.off("y", markDirtyCamera);
+      oldCamera.off("width", markDirtyCamera);
+      camera.off("height", markDirtyCamera);
     };
     cameraListener = () => {
       if (
@@ -198,14 +202,14 @@ function createPixiRenderer(entities, renderSettings) {
           unmountCamera(oldCamera);
         }
         currentCamera = renderSettings.camera;
-        currentCamera.on("x", handleCameraChange);
-        currentCamera.on("y", handleCameraChange);
-        currentCamera.on("width", handleCameraChange);
-        currentCamera.on("height", handleCameraChange);
+        currentCamera.on("x", markDirtyCamera);
+        currentCamera.on("y", markDirtyCamera);
+        currentCamera.on("width", markDirtyCamera);
+        currentCamera.on("height", markDirtyCamera);
       } else {
         currentCamera = defaultCamera;
       }
-      handleCameraChange();
+      markDirtyCamera();
     };
 
     // Listen for camera property changes
@@ -245,6 +249,16 @@ function createPixiRenderer(entities, renderSettings) {
 
   const render = async () => {
     if (!isMounted) throw new Error("Cannot render while unmounted");
+    if (dirtyCamera) {
+      handleCameraChange();
+      dirtyCamera = false;
+    } else if (dirtyEntities.length > 0) {
+      dirtyEntities.forEach((entity) => {
+        adjustEntityPosition(entity);
+        adjustEntitySize(entity);
+      });
+    }
+    dirtyEntities = [];
     renderer.render(stage);
   };
 
