@@ -1,6 +1,9 @@
 import Matter from "matter-js";
 const { Engine, Bodies, Composite } = Matter;
 import { Signal } from "jabr";
+import translateToNewOrigin from "../translateToNewOrigin.js";
+
+const minimumUpdateThreshold = 0.0001;
 
 export default function matterPlugin(entities) {
   const engineSignal = Signal(null);
@@ -25,8 +28,8 @@ export default function matterPlugin(entities) {
       if (shape === "rectangle") {
         //        console.log("init", entity.x, entity.y);
         matterBody = Bodies.rectangle(
-          entity.x,
-          entity.y,
+          translateToNewOrigin(entity.x, 0, entity.width / 2),
+          translateToNewOrigin(entity.y, 0, entity.height / 2),
           entity.width,
           entity.height,
         );
@@ -43,12 +46,23 @@ export default function matterPlugin(entities) {
         // console.log(
         //   `Position listener triggered for entity at (${entity.x}, ${entity.y})`,
         // );
+        const translatedX = translateToNewOrigin(entity.x, 0, entity.width / 2);
+        const translatedY = translateToNewOrigin(
+          entity.y,
+          0,
+          entity.height / 2,
+        );
         if (
-          entity.x !== entity.matterBody.position.x ||
-          entity.y !== entity.matterBody.position.y
+          Math.abs(entity.matterBody.position.x - translatedX) >
+            minimumUpdateThreshold ||
+          Math.abs(entity.matterBody.position.y - translatedY) >
+            minimumUpdateThreshold
         ) {
           // Position is mismatched
-          Matter.Body.position(entity.matterBody, { x: entity.x, y: entity.y });
+          Matter.Body.position(entity.matterBody, {
+            x: translatedX,
+            y: translatedY,
+          });
         }
       },
     };
@@ -76,8 +90,15 @@ export default function matterPlugin(entities) {
     Engine.update(engineSignal.get(), Math.min(delta, 50)); // Safety Mechanism
     matterEntities.forEach((entity) => {
       const { x, y } = entity.matterBody.position;
-      if (entity.x !== x) entity.x = x;
-      if (entity.y !== y) entity.y = y;
+      const translatedX = translateToNewOrigin(x, entity.width / 2, 0);
+      const translatedY = translateToNewOrigin(y, entity.height / 2, 0);
+      if (Math.abs(entity.x - translatedX) > minimumUpdateThreshold) {
+        // Position is mismatched
+        entity.x = translatedX;
+      }
+      if (Math.abs(entity.y - translatedY) > minimumUpdateThreshold) {
+        entity.y = translatedY;
+      }
     });
     isDoingPhysicsUpdate = false;
   };
