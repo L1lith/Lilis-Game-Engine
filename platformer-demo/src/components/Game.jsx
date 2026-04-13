@@ -29,6 +29,9 @@ export default function Game() {
         const entities = createEntityList([map, player]);
         window.entities = entities;
         const camera = new Camera({x: 0, y: 0, width: 100, height: 100})
+        player.on('x', x => {
+            camera.x = x - 1 // TODO FIX ISSUE: Matter.js doesn't use top-left based coordinates.
+        })
         const renderSettings = createRenderSettings({
             canvas,
             camera
@@ -40,17 +43,14 @@ export default function Game() {
         // gameCore.events.on("tick", () => {
         //     entity.x = (entity.x + 1) % 100;
         // });
-        gameCore.events.on('tick', timingData=>{
-            // console.log(map.width)
-            //camera.x = (camera.x + 0.1) % (map.width - 100)
-        })
         window.map = map
 
         await gameCore.mount();
         console.log(physicsEngine.engineSignal.get())
         const matterEngine = physicsEngine.engineSignal.get()
         //matterEngine.gravity.y = -0.000000001;
-        //matterEngine.gravity.y =
+        matterEngine.gravity.x = 0.1
+        matterEngine.gravity.y = 0
         unmountGameEngine = gameCore.unmount;
     })
     onCleanup(async ()=>{
