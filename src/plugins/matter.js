@@ -40,9 +40,9 @@ export default function matterPlugin(entities) {
     entity.matterListeners = {
       position: () => {
         if (isDoingPhysicsUpdate) return;
-        console.log(
-          `Position listener triggered for entity at (${entity.x}, ${entity.y})`,
-        );
+        // console.log(
+        //   `Position listener triggered for entity at (${entity.x}, ${entity.y})`,
+        // );
         if (
           entity.x !== entity.matterBody.position.x ||
           entity.y !== entity.matterBody.position.y
