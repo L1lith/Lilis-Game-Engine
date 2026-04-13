@@ -29,16 +29,20 @@ function createGameCore(initialData = null) {
     mount: async () => {
       try {
         await Promise.all(
-          gameStore.plugins.map(
-            async (plugin) => await plugin?.mount(gameCore),
+          gameStore.plugins.map(async (plugin) =>
+            typeof plugin.mount == "function"
+              ? await plugin.mount(gameCore)
+              : null,
           ),
         );
       } catch (error) {
         try {
           // Unmount all the plugins if any of them fail
           await Promise.all(
-            gameStore.plugins.map(
-              async (plugin) => await plugin?.unmount(gameCore),
+            gameStore.plugins.map(async (plugin) =>
+              typeof plugin.unmount == "function"
+                ? await plugin.unmount(gameCore)
+                : null,
             ),
           );
         } catch (e) {
