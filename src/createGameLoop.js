@@ -15,7 +15,7 @@ function defaultGameLoop() {
     if (startTime === null) startTime = tickStart;
     if (frameCount === null) frameCount = 0;
     const lifespan = tickStart - startTime;
-    const delta = lastTick - tickStart;
+    const delta = tickStart - lastTick;
     const timingData = {
       lifespan,
       startTime,
