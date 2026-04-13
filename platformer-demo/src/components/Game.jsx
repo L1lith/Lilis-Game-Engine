@@ -30,7 +30,8 @@ export default function Game() {
         window.entities = entities;
         const camera = new Camera({x: 0, y: 0, width: 100, height: 100})
         player.on('x', x => {
-            camera.x = x - 1 // TODO FIX ISSUE: Matter.js doesn't use top-left based coordinates.
+            console.log(x, player.y)
+            camera.x = x + 0.1 // TODO FIX ISSUE: Matter.js doesn't use top-left based coordinates.
         })
         const renderSettings = createRenderSettings({
             canvas,
