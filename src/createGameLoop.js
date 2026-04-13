@@ -9,6 +9,37 @@ function defaultGameLoop() {
   let startTime = null;
   let lastTick = null;
   let frameCount = null;
+  const groupByPriority = (plugins, priorityProperty) => {
+    const groups = {};
+
+    plugins.forEach((plugin) => {
+      const priority = plugin[priorityProperty] || 0;
+      if (!groups[priority]) {
+        groups[priority] = [];
+      }
+      groups[priority].push(plugin);
+    });
+
+    // Sort priorities from lowest to highest
+    const sortedPriorities = Object.keys(groups)
+      .map(Number)
+      .sort((a, b) => a - b);
+
+    return sortedPriorities.map((priority) => groups[priority]);
+  };
+  const executeByPriorityGroups = async (priorityGroups, method, args) => {
+    for (const priorityGroup of priorityGroups) {
+      await Promise.all(
+        priorityGroup.map(async (plugin) => {
+          try {
+            await plugin[method](...args);
+          } catch (err) {
+            console.error(err);
+          }
+        }),
+      );
+    }
+  };
   const mainLoop = async () => {
     if (shouldStop) return;
     const tickStart = Date.now();
@@ -25,26 +56,10 @@ function defaultGameLoop() {
       delta,
     };
     gameCore.events.emit("tick", timingData);
-    await Promise.all(
-      tickers.map(async (ticker) => {
-        try {
-          await ticker.tick(timingData);
-        } catch (err) {
-          console.error(err);
-        }
-      }),
-    );
-    await Promise.all(
-      renderers.map(async (renderer) => {
-        if (!renderer.checkMounted || renderer.checkMounted()) {
-          try {
-            await renderer.render(timingData);
-          } catch (err) {
-            console.error(err);
-          }
-        }
-      }),
-    );
+    const tickGroups = groupByPriority(tickers, "tickPriority");
+    await executeByPriorityGroups(tickGroups, "tick", [timingData]);
+    const renderGroups = groupByPriority(renderers, "renderPriority");
+    await executeByPriorityGroups(renderGroups, "render", [timingData]);
     lastTick = tickStart;
     frameCount++;
     if (!shouldStop) animationRequestID = requestAnimationFrame(mainLoop);
