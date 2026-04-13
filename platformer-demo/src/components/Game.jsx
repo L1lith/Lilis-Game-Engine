@@ -5,6 +5,7 @@ import createPixiTiledmap from '../../../src/plugins/pixi-tiledmap.js'
 import {Store} from 'jabr'
 import Camera from '../../../src/createCamera.js'
 import createMatterPhysics from "../../../src/plugins/matter.js"
+import createCountdown from '../../../src/timing/createCountdown.js'
 
 export default function Game() {
     let unmountGameEngine
@@ -29,7 +30,8 @@ export default function Game() {
         // gameCore.events.on("tick", () => {
         //     entity.x = (entity.x + 1) % 100;
         // });
-        gameCore.events.on('tick', ()=>{
+        gameCore.events.on('tick', timingData=>{
+            console.log(timingData)
             // console.log(map.width)
             camera.x = (camera.x + 0.1) % (map.width - 100)
         })
