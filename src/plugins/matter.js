@@ -72,7 +72,7 @@ export default function matterPlugin(entities) {
   const tick = ({ delta }) => {
     isDoingPhysicsUpdate = true;
     //console.log(matterEntities[0].matterBody.position);
-    console.log(delta);
+    //console.log(delta);
     Engine.update(engineSignal.get(), Math.min(delta, 50)); // Safety Mechanism
     matterEntities.forEach((entity) => {
       const { x, y } = entity.matterBody.position;
