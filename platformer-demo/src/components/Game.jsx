@@ -27,7 +27,7 @@ export default function Game() {
             matter: {shape: 'rectangle'}
         }) 
         window.player = player
-        const entities = createEntityList([map, player]);
+        const entities = createEntityList([map, player, new Entity({x: -45, y: -45, width: 10, height: 10, ignoreSceneCamera: true})]);
         window.entities = entities;
         const camera = new Camera({x: 0, y: 0, width: 100, height: 100})
         const renderSettings = createRenderSettings({
