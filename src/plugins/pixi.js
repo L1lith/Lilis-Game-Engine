@@ -60,7 +60,8 @@ function createPixiRenderer(entities, renderSettings) {
       camera?.transformWidth?.(entity.width) || entity.width || 100;
     const transformedHeight =
       camera?.transformHeight?.(entity.height) || entity.height || 100;
-    pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
+    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+      pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
     const finalSizes = worldToScreenSize(
       transformedWidth,
       transformedHeight,
