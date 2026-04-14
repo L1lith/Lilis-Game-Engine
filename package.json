@@ -9,7 +9,6 @@
     "./p5": "./src/plugins/p5.js",
     "./pixi-tiled": "./src/plugins/pixi-tiledmap.js",
     "./matter": "./src/plugins/matter.js",
-    "./timing": "./src/timing/index.js",
     "./utility": "./src/utility/index.js"
   },
   "files": [
