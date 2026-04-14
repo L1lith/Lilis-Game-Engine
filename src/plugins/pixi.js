@@ -105,7 +105,7 @@ function createPixiRenderer(entities, renderSettings) {
   };
 
   const initializeEntity = async (entity) => {
-    if (pixiSprites.has(entity)) return;
+    if (pixiSprites.has(entity) || entity.noRender) return;
     let pixiSprite;
     if (typeof entity?.sprite == "object" && entity?.sprite !== null) {
       pixiSprite = entity.sprite;
@@ -274,6 +274,7 @@ function createPixiRenderer(entities, renderSettings) {
       dirtyCamera = false;
     } else if (dirtyEntities.length > 0) {
       dirtyEntities.forEach((entity) => {
+        if (entity.noRender) return;
         adjustEntityPosition(entity);
         adjustEntitySize(entity);
       });
