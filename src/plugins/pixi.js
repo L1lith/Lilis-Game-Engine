@@ -179,7 +179,7 @@ function createPixiRenderer(entities, renderSettings) {
       renderSettings.canvas.getBoundingClientRect();
     await regenerateRenderer();
     stage = new Container();
-    //window.addEventListener("resize", handleCanvasResize); // TODO: FIGURE OUT WHY THIS BREAKS EVERYTHING
+    //window.addEventListener("resize", handleCanvasResize);
     //stage.pivot.set(canvasWidth / 2, canvasHeight / 2);
     window.stage = stage;
     entityListeners = new WeakMap();
