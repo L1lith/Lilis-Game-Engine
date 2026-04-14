@@ -5,7 +5,7 @@ import createPixiTiledmap from '../../../src/plugins/pixi-tiledmap.js'
 import {Store, Signal} from 'jabr'
 import Camera from '../../../src/createCamera.js'
 import createMatterPhysics from "../../../src/plugins/matter.js"
-import createCountdown from '../../../src/timing/createCountdown.js'
+import createCountdown from '../../../src/utility/createCountdown.js'
 import Entity from '../../../src/createEntity.js'
 
 export default function Game() {
@@ -29,18 +29,19 @@ export default function Game() {
         window.player = player
         const entities = createEntityList([map, player]);
         window.entities = entities;
-        //const camera = new Camera({x: -50, y: -50, width: 100, height: 100})
+        const camera = new Camera({x: 0, y: 0, width: 100, height: 100})
         const renderSettings = createRenderSettings({
             canvas,
-            //camera
+            camera
         });
         const physicsEngine = createMatterPhysics(entities)
         const cameraControlPlugin = {
             tick: ()=>{
                 //player.x = player.x % (map.width / 2)
-                //camera.x = player.x
+                camera.x = player.x+ 0.0001
+                camera.y = player.y + 0.0001
             },
-            tickPriority: -1
+            tickPriority: 1
         }
         const gameCore = createGameCore({
             plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings), physicsEngine, cameraControlPlugin],
