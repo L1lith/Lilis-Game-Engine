@@ -56,20 +56,32 @@ function createPixiRenderer(entities, renderSettings) {
     const camera = renderSettings.camera;
     const pixiSprite = pixiSprites.get(entity);
 
-    const transformedWidth =
-      camera?.transformWidth?.(entity.width) || entity.width || 100;
-    const transformedHeight =
-      camera?.transformHeight?.(entity.height) || entity.height || 100;
-    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
-      pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
+    let outputWidth = entity.width || 100;
+    if (
+      !entity.ignoreSceneCamera &&
+      typeof camera?.transformWidth == "function"
+    )
+      outputWidth = camera.transformWidth(entity.width);
+
+    let outputHeight = entity.height || 100;
+    if (
+      !entity.ignoreSceneCamera &&
+      typeof camera?.transformHeight == "function"
+    )
+      outputHeight = camera.transformHeight(entity.height);
+    //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+    //pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
     const finalSizes = worldToScreenSize(
-      transformedWidth,
-      transformedHeight,
+      outputWidth,
+      outputHeight,
       canvasWidth,
       canvasHeight,
     );
+    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+      pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
     pixiSprite.width = finalSizes.width;
     pixiSprite.height = finalSizes.height;
+    //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
   };
 
   const adjustEntityPosition = (entity) => {
