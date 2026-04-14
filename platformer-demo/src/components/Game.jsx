@@ -22,7 +22,7 @@ export default function Game() {
         //     x: 0
         // });
         const map = await createPixiTiledmap("/gameart2d-desert.tmx")
-        const mapCollision = pixiTiledToMatter(map, layer => layer.name === 'foreground')
+        const mapCollision = pixiTiledToMatter(map, layer => layer.name === 'collision')
         mapCollision.width = map.width
         const player = new Entity({
             x: -50,
