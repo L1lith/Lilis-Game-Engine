@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="120" height="18" tilewidth="128" tileheight="128" infinite="0" nextlayerid="4" nextobjectid="1">
  <tileset firstgid="1" name="gameart2d-desert" tilewidth="128" tileheight="128" tilecount="40" columns="5">
-  <image source="C:/Users/05L1/Projects/Lilis-Game-Engine/platformer-demo/public/gameart2d-desert.png" width="640" height="1024"/>
+  <image source="/gameart2d-desert.png" width="640" height="1024"/>
   <tile id="2">
    <properties>
     <property name="type" type="int" value="1"/>
