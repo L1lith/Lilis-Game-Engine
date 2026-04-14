@@ -2,7 +2,7 @@ import { onCleanup, onMount } from 'solid-js'
 import {createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings } from '../../../'
 import createPixiRenderer from '../../../src/plugins/pixi.js'
 import createPixiTiledmap from '../../../src/plugins/pixi-tiledmap.js'
-import {Store} from 'jabr'
+import {Store, Signal} from 'jabr'
 import Camera from '../../../src/createCamera.js'
 import createMatterPhysics from "../../../src/plugins/matter.js"
 import createCountdown from '../../../src/timing/createCountdown.js'
@@ -11,6 +11,7 @@ import Entity from '../../../src/createEntity.js'
 export default function Game() {
     let unmountGameEngine
     let canvas
+    const targetResolution = new Signal([800,800])
     onMount(async ()=>{
         if (typeof window === 'undefined') return // Browser Only
         // const entity = createEntity({
@@ -28,15 +29,16 @@ export default function Game() {
         window.player = player
         const entities = createEntityList([map, player]);
         window.entities = entities;
-        const camera = new Camera({x: 0, y: 0, width: 100, height: 100})
+        //const camera = new Camera({x: -50, y: -50, width: 100, height: 100})
         const renderSettings = createRenderSettings({
             canvas,
-            camera
+            //camera
         });
         const physicsEngine = createMatterPhysics(entities)
         const cameraControlPlugin = {
             tick: ()=>{
-                camera.x = player.x
+                //player.x = player.x % (map.width / 2)
+                //camera.x = player.x
             },
             tickPriority: -1
         }
