@@ -12,4 +12,4 @@ export { default as createEntityList } from "./createEntityList.js";
 export { default as createGameCore } from "./createGameCore.js";
 export { default as createRenderSettings } from "./createRenderSettings.js";
 export { default as createCamera } from "./createCamera";
-export { default as translateToNewOrigin } from "./translateToNewOrigin.js";
+export { default as translateToNewOrigin } from "./utility/translateToNewOrigin.js";

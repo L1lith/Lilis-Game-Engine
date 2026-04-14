@@ -13,9 +13,11 @@ async function createPixiTiledmap(mapURL, entitySettings = {}) {
   const entity = createEntity({
     sprite: container,
     mapData,
+    x: 0,
     ...entitySettings,
+    y: 0,
     width: 100 * widthRatio,
-    height: 100 * heightRatio,
+    height: 100,
     widthRatio,
     heightRatio,
   });
