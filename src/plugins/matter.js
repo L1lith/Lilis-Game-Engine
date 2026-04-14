@@ -1,7 +1,7 @@
 import Matter from "matter-js";
 const { Engine, Bodies, Composite } = Matter;
 import { Signal } from "jabr";
-import translateToNewOrigin from "../translateToNewOrigin.js";
+import translateToNewOrigin from "../utility/translateToNewOrigin.js";
 
 const minimumUpdateThreshold = 0.0001;
 
@@ -46,22 +46,22 @@ export default function matterPlugin(entities) {
         // console.log(
         //   `Position listener triggered for entity at (${entity.x}, ${entity.y})`,
         // );
-        const translatedX = translateToNewOrigin(entity.x, 0, entity.width / 2);
-        const translatedY = translateToNewOrigin(
-          entity.y,
-          0,
-          entity.height / 2,
-        );
+        // const translatedX = translateToNewOrigin(entity.x, 0, entity.width / 2);
+        // const translatedY = translateToNewOrigin(
+        //   entity.y,
+        //   0,
+        //   entity.height / 2,
+        // );
         if (
-          Math.abs(entity.matterBody.position.x - translatedX) >
+          Math.abs(entity.matterBody.position.x - entity.x) >
             minimumUpdateThreshold ||
-          Math.abs(entity.matterBody.position.y - translatedY) >
+          Math.abs(entity.matterBody.position.y - entity.y) >
             minimumUpdateThreshold
         ) {
           // Position is mismatched
-          Matter.Body.position(entity.matterBody, {
-            x: translatedX,
-            y: translatedY,
+          Matter.Body.setPosition(entity.matterBody, {
+            x: entity.x,
+            y: entity.y,
           });
         }
       },
