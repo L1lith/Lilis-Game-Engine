@@ -76,11 +76,15 @@ function createPixiRenderer(entities, renderSettings) {
     const { camera } = renderSettings;
     const pixiSprite = pixiSprites.get(entity);
 
-    const transformedX = camera?.transformX?.(entity.x || 0) || entity.x || 0;
-    const transformedY = camera?.transformY?.(entity.y || 0) || entity.y || 0;
+    let outputX = entity.x || 0;
+    if (!entity.ignoreSceneCamera && typeof camera?.transformX == "function")
+      outputX = camera.transformX(outputX);
+    let outputY = entity.y || 0;
+    if (!entity.ignoreSceneCamera && typeof camera?.transformY == "function")
+      outputY = camera.transformY(outputY);
     const newCoords = worldToScreenPosition(
-      transformedX,
-      transformedY,
+      outputX,
+      outputY,
       canvasWidth,
       canvasHeight,
     );
