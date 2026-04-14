@@ -68,6 +68,7 @@ export default function matterPlugin(entities) {
     };
     entity.on("x", entity.matterListeners.position);
     entity.on("y", entity.matterListeners.position);
+    console.log("adding", engine.world, entity.matterBody);
     Composite.add(engine.world, entity.matterBody);
   };
   const unmountEntity = (entity) => {
@@ -82,6 +83,20 @@ export default function matterPlugin(entities) {
     const engine = Engine.create();
     engineSignal.set(engine);
     entities.get().forEach((entity) => mountEntity(entity, engine));
+    window.matterEntities = matterEntities;
+  };
+  const updateEntityFromMatter = (entity, matterBody) => {
+    if (matterBody.isStatic) return; // Don't update entities with static matter bodies as they will never change
+    const { x, y } = matterBody.position;
+    const translatedX = translateToNewOrigin(x, entity.width / 2, 0);
+    const translatedY = translateToNewOrigin(y, entity.height / 2, 0);
+    if (Math.abs(entity.x - translatedX) > minimumUpdateThreshold) {
+      // Position is mismatched
+      entity.x = translatedX;
+    }
+    if (Math.abs(entity.y - translatedY) > minimumUpdateThreshold) {
+      entity.y = translatedY;
+    }
   };
   const tick = ({ delta }) => {
     isDoingPhysicsUpdate = true;
@@ -89,15 +104,12 @@ export default function matterPlugin(entities) {
     //console.log(delta);
     Engine.update(engineSignal.get(), Math.min(delta, 50)); // Safety Mechanism
     matterEntities.forEach((entity) => {
-      const { x, y } = entity.matterBody.position;
-      const translatedX = translateToNewOrigin(x, entity.width / 2, 0);
-      const translatedY = translateToNewOrigin(y, entity.height / 2, 0);
-      if (Math.abs(entity.x - translatedX) > minimumUpdateThreshold) {
-        // Position is mismatched
-        entity.x = translatedX;
-      }
-      if (Math.abs(entity.y - translatedY) > minimumUpdateThreshold) {
-        entity.y = translatedY;
+      if (Array.isArray(entity.matterBody)) {
+        entity.matterBody.forEach((body) => {
+          updateEntityFromMatter(entity, body);
+        });
+      } else {
+        updateEntityFromMatter(entity, entity.matterBody);
       }
     });
     isDoingPhysicsUpdate = false;
