@@ -29,7 +29,8 @@ export default function Game() {
             y: 0,
             width: 3,
             height: 3,
-            matter: {shape: 'rectangle'}
+            matter: {shape: 'rectangle'},
+            renderScale: 2
         })
         window.player = player
         const entities = createEntityList([map, player, new Entity({x: -45, y: -45, width: 10, height: 10, ignoreSceneCamera: true}), mapCollision]);
