@@ -98,9 +98,10 @@ export default function matterPlugin(entities) {
       entity.y = translatedY;
     }
     if (
-      Math.abs(entity.rotation - matterBody.rotation) > minimumUpdateThreshold
+      !isFinite(entity.rotation) ||
+      Math.abs(entity.rotation - matterBody.angle) > minimumUpdateThreshold
     ) {
-      entity.rotation = rotation;
+      entity.rotation = matterBody.angle;
     }
   };
   const tick = ({ delta }) => {
