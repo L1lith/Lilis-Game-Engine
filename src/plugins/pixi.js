@@ -106,7 +106,7 @@ function createPixiRenderer(entities, renderSettings) {
 
   const adjustEntityRotation = (entity) => {
     const pixiSprite = pixiSprites.get(entity);
-    pixiSprite.rotation = entity.rotation;
+    if (isFinite(entity.rotation)) pixiSprite.rotation = entity.rotation;
   };
 
   const initializeEntity = async (entity) => {
