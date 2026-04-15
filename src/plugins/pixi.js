@@ -71,14 +71,14 @@ function createPixiRenderer(entities, renderSettings) {
       !entity.ignoreSceneCamera &&
       typeof camera?.transformWidth == "function"
     )
-      outputWidth = camera.transformWidth(entity.width);
+      outputWidth = camera.transformWidth(outputWidth);
 
     let outputHeight = (entity.height || 100) * renderYScale;
     if (
       !entity.ignoreSceneCamera &&
       typeof camera?.transformHeight == "function"
     )
-      outputHeight = camera.transformHeight(entity.height);
+      outputHeight = camera.transformHeight(outputHeight);
     //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
     //pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
     const finalSizes = worldToScreenSize(
