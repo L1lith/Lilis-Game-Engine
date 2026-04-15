@@ -141,6 +141,9 @@ function createPixiRenderer(entities, renderSettings) {
     entity.on("width", markEntityDirty);
     entity.on("height", markEntityDirty);
     entity.on("rotation", markEntityDirty);
+    entity.on("renderXScale", markEntityDirty);
+    entity.on("renderYScale", markEntityDirty);
+    entity.on("renderScale", markEntityDirty);
     entityListeners.set(entity, { markEntityDirty });
     entity.pixiSprite = pixiSprite;
     stage.addChild(pixiSprite);
