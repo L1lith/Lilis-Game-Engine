@@ -55,15 +55,25 @@ function createPixiRenderer(entities, renderSettings) {
       renderSettings.canvas.getBoundingClientRect();
     const camera = renderSettings.camera;
     const pixiSprite = pixiSprites.get(entity);
+    const renderXScale = isFinite(entity.renderXScale)
+      ? entity.renderXScale
+      : isFinite(entity.renderScale)
+        ? entity.renderScale
+        : 1;
+    const renderYScale = isFinite(entity.renderYScale)
+      ? entity.renderYScale
+      : isFinite(entity.renderScale)
+        ? entity.renderScale
+        : 1;
 
-    let outputWidth = entity.width || 100;
+    let outputWidth = (entity.width || 100) * renderXScale;
     if (
       !entity.ignoreSceneCamera &&
       typeof camera?.transformWidth == "function"
     )
       outputWidth = camera.transformWidth(entity.width);
 
-    let outputHeight = entity.height || 100;
+    let outputHeight = (entity.height || 100) * renderYScale;
     if (
       !entity.ignoreSceneCamera &&
       typeof camera?.transformHeight == "function"
