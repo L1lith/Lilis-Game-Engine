@@ -27,8 +27,8 @@ export default function Game() {
         const player = new Entity({
             x: -50,
             y: 0,
-            width: 5,
-            height: 5,
+            width: 3,
+            height: 3,
             matter: {shape: 'rectangle'}
         })
         window.player = player
@@ -52,15 +52,22 @@ export default function Game() {
                 const velocity = {}
                 if (arrowKeys.left.get() || arrowKeys.right.get()) velocity.x = arrowKeys.left.get() ? -0.5 : 0.5
                 if (arrowKeys.up.get()) velocity.y = arrowKeys.up.get() ? -0.5 : 0
-                console.log(Object.keys(velocity))
                 if (Object.keys(velocity).length > 0) Matter.Body.setVelocity(player.matterBody, {x: player.matterBody.velocity.x, y: player.matterBody.velocity.y, ...velocity});
+            }
+        }
+        const applyCameraBounds = (x, y) => {
+            return {
+                x: Math.min(Math.max(x, 0 - map.width / 2 + camera.width / 2), 0 + map.width / 2 - camera.width / 2),
+                y: Math.min(Math.max(y, 0 - map.height / 2 + camera.height / 2), 0 + map.height / 2 - camera.height / 2)
             }
         }
         const cameraControlPlugin = {
             tick: ()=>{
                 //player.x = player.x % (map.width / 2)
-                camera.x = player.x+ 0.0001
-                camera.y = player.y + 0.0001
+                const newPosition = applyCameraBounds(player.x, player.y)
+                console.log(newPosition, camera,  - map.width / 2 + camera.width / 2, camera.x + map.width / 2 - camera.width / 2)
+                camera.x = newPosition.x
+                camera.y = newPosition.y
             },
             tickPriority: 1
         }
@@ -70,7 +77,6 @@ export default function Game() {
         window.map = map
 
         await gameCore.mount();
-        console.log(physicsEngine.engineSignal.get())
         const matterEngine = physicsEngine.engineSignal.get()
         //matterEngine.gravity.y = -0.000000001;
         matterEngine.gravity.x = 0
