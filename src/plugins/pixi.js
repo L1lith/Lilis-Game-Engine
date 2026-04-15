@@ -104,6 +104,11 @@ function createPixiRenderer(entities, renderSettings) {
     pixiSprite.position.set(newCoords.x, newCoords.y);
   };
 
+  const adjustEntityRotation = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    pixiSprite.rotation = entity.rotation;
+  };
+
   const initializeEntity = async (entity) => {
     if (pixiSprites.has(entity) || entity.noRender) return;
     let pixiSprite;
@@ -125,6 +130,7 @@ function createPixiRenderer(entities, renderSettings) {
     entity.on("y", markEntityDirty);
     entity.on("width", markEntityDirty);
     entity.on("height", markEntityDirty);
+    entity.on("rotation", markEntityDirty);
     entityListeners.set(entity, { markEntityDirty });
     entity.pixiSprite = pixiSprite;
     stage.addChild(pixiSprite);
@@ -155,6 +161,7 @@ function createPixiRenderer(entities, renderSettings) {
       if (pixiSprites.has(entity)) {
         adjustEntityPosition(entity);
         adjustEntitySize(entity);
+        adjustEntityRotation(entity);
       }
     });
   };
@@ -277,6 +284,7 @@ function createPixiRenderer(entities, renderSettings) {
         if (entity.noRender) return;
         adjustEntityPosition(entity);
         adjustEntitySize(entity);
+        adjustEntityRotation(entity);
       });
     }
     dirtyEntities = [];

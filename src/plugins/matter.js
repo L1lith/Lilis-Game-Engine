@@ -97,6 +97,11 @@ export default function matterPlugin(entities) {
     if (Math.abs(entity.y - translatedY) > minimumUpdateThreshold) {
       entity.y = translatedY;
     }
+    if (
+      Math.abs(entity.rotation - matterBody.rotation) > minimumUpdateThreshold
+    ) {
+      entity.rotation = rotation;
+    }
   };
   const tick = ({ delta }) => {
     isDoingPhysicsUpdate = true;
