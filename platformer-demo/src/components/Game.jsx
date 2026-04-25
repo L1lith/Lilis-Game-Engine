@@ -1,5 +1,5 @@
 import { onCleanup, onMount } from 'solid-js'
-import {createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings } from '../../../'
+import {createGameCore, createGameLoop, createEntity, createEntityList, createRenderSettings, createCanvasManager } from '../../../'
 import createPixiRenderer from '../../../src/plugins/pixi.js'
 import createPixiTiledmap from '../../../src/plugins/pixi-tiledmap.js'
 import {Store, Signal} from 'jabr'
@@ -9,7 +9,9 @@ import createCountdown from '../../../src/utility/createCountdown.js'
 import Entity from '../../../src/createEntity.js'
 import pixiTiledToMatter from '../../../src/plugins/pixi-tiled-to-matter.js'
 import detectKeys from '../../../src/utility/detectKeys.js'
+import constrainToFit from '../../../src/utility/constrainToFit.js'
 import Matter from 'matter-js'
+import '../styles/game.scss'
 
 export default function Game() {
     let unmountGameEngine
@@ -32,6 +34,7 @@ export default function Game() {
             matter: {shape: 'rectangle'},
             renderScale: 2
         })
+
         window.player = player
         const entities = createEntityList([map, player, new Entity({x: -45, y: -45, width: 10, height: 10, ignoreSceneCamera: true}), mapCollision]);
         window.entities = entities;
@@ -40,6 +43,10 @@ export default function Game() {
             canvas,
             camera
         });
+        const canvasController = createCanvasManager(renderSettings, {computeDimensions: ({windowWidth, windowHeight}) => {
+            return constrainToFit({}, {maxWidth: windowWidth, maxHeight: windowHeight, grow: 'fit'})
+        }})
+        const pixiRenderer = createPixiRenderer(entities, renderSettings)
         const physicsEngine = createMatterPhysics(entities)
         const arrowKeys = {
             left: detectKeys('arrowleft'),
@@ -66,27 +73,30 @@ export default function Game() {
             tick: ()=>{
                 //player.x = player.x % (map.width / 2)
                 const newPosition = applyCameraBounds(player.x, player.y)
-                console.log(newPosition, camera,  - map.width / 2 + camera.width / 2, camera.x + map.width / 2 - camera.width / 2)
+                //console.log(newPosition, camera,  - map.width / 2 + camera.width / 2, camera.x + map.width / 2 - camera.width / 2)
                 camera.x = newPosition.x
                 camera.y = newPosition.y
             },
             tickPriority: 1
         }
         const gameCore = createGameCore({
-            plugins: [createGameLoop(), createPixiRenderer(entities, renderSettings), physicsEngine, cameraControlPlugin, playerControlPlugin],
+            plugins: [createGameLoop(), canvasController, pixiRenderer, physicsEngine, cameraControlPlugin, playerControlPlugin],
         });
         window.map = map
-
+        
+        console.log('b')
         await gameCore.mount();
+        console.log('c')
         const matterEngine = physicsEngine.engineSignal.get()
         //matterEngine.gravity.y = -0.000000001;
         matterEngine.gravity.x = 0
         matterEngine.gravity.y = 0.1
         unmountGameEngine = gameCore.unmount;
+        console.log('done with mount')
     })
     onCleanup(async ()=>{
         if (typeof window === 'undefined') return // Browser Only
         await unmountGameEngine()
     })
-    return <canvas ref={canvas}/>
+    return <canvas class="game-canvas" ref={canvas}/>
 }
