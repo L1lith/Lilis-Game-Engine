@@ -12,15 +12,16 @@ import { valid } from "sandhands";
 import RenderSettingsFormat from "../formats/RenderSettings.js";
 import worldToScreenPosition from "../utility/worldToScreenPosition.js";
 import worldToScreenSize from "../utility/worldToScreenSize.js";
+
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
 function createPixiRenderer(entities, renderSettings) {
   if (!valid(entities, EntityListFormat))
     throw new Error("Please supply a valid EntityList");
+
   if (!valid(renderSettings, RenderSettingsFormat))
     throw new Error("Please supply valid RenderSettings");
 
-  // Default camera values
   const defaultCamera = {
     x: 0,
     y: 0,
@@ -29,286 +30,375 @@ function createPixiRenderer(entities, renderSettings) {
   };
 
   const pixiSprites = new WeakMap();
+
   let renderer = null;
   let stage = null;
   let entityListeners = null;
-  let cameraListener = null;
-  let context = null;
+
   let isMounted = false;
+  let isRegenerating = false;
+
+  let currentCanvas = null;
   let currentCamera = defaultCamera;
-  let dirtyCamera = false;
+
+  let dirtyCamera = true;
   let dirtyEntities = [];
 
-  // const toCanvasPixels = (transformedValue, canvasSize) => {
-  //   return (transformedValue / 100) * canvasSize;
-  // };
-  const regenerateRenderer = async () => {
-    if (renderer !== null) renderer.destroy({ removeView: false });
-    renderer = await autoDetectRenderer({
-      view: renderSettings.canvas,
-      // you can pass options here (antialias, resolution, etc.)
-    });
-    context = renderSettings.canvas.getContext("2d");
-  };
-  const adjustEntitySize = (entity) => {
-    const { width: canvasWidth, height: canvasHeight } =
-      renderSettings.canvas.getBoundingClientRect();
-    const camera = renderSettings.camera;
-    const pixiSprite = pixiSprites.get(entity);
-    const renderXScale = isFinite(entity.renderXScale)
-      ? entity.renderXScale
-      : isFinite(entity.renderScale)
-        ? entity.renderScale
-        : 1;
-    const renderYScale = isFinite(entity.renderYScale)
-      ? entity.renderYScale
-      : isFinite(entity.renderScale)
-        ? entity.renderScale
-        : 1;
+  let cameraListener = null;
+  let entityListListener = null;
 
-    let outputWidth = (entity.width || 100) * renderXScale;
-    if (
-      !entity.ignoreSceneCamera &&
-      typeof camera?.transformWidth == "function"
-    )
-      outputWidth = camera.transformWidth(outputWidth);
+  const getCanvasWidth = () =>
+    renderSettings.width || renderSettings.canvas?.width || 1;
 
-    let outputHeight = (entity.height || 100) * renderYScale;
-    if (
-      !entity.ignoreSceneCamera &&
-      typeof camera?.transformHeight == "function"
-    )
-      outputHeight = camera.transformHeight(outputHeight);
-    //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
-    //pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
-    const finalSizes = worldToScreenSize(
-      outputWidth,
-      outputHeight,
-      canvasWidth,
-      canvasHeight,
-    );
-    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
-      pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
-    pixiSprite.width = finalSizes.width;
-    pixiSprite.height = finalSizes.height;
-    //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
-  };
-
-  const adjustEntityPosition = (entity) => {
-    const { width: canvasWidth, height: canvasHeight } = renderSettings.canvas;
-    const { camera } = renderSettings;
-    const pixiSprite = pixiSprites.get(entity);
-
-    let outputX = entity.x || 0;
-    if (!entity.ignoreSceneCamera && typeof camera?.transformX == "function")
-      outputX = camera.transformX(outputX);
-    let outputY = entity.y || 0;
-    if (!entity.ignoreSceneCamera && typeof camera?.transformY == "function")
-      outputY = camera.transformY(outputY);
-    const newCoords = worldToScreenPosition(
-      outputX,
-      outputY,
-      canvasWidth,
-      canvasHeight,
-    );
-    pixiSprite.position.set(newCoords.x, newCoords.y);
-  };
-
-  const adjustEntityRotation = (entity) => {
-    const pixiSprite = pixiSprites.get(entity);
-    if (isFinite(entity.rotation)) pixiSprite.rotation = entity.rotation;
-  };
-
-  const initializeEntity = async (entity) => {
-    if (pixiSprites.has(entity) || entity.noRender) return;
-    let pixiSprite;
-    if (typeof entity?.sprite == "object" && entity?.sprite !== null) {
-      pixiSprite = entity.sprite;
-    } else {
-      let texture =
-        entity.texture ||
-        (typeof entity.imageURL == "string"
-          ? await Assets.load(entity.imageURL)
-          : await Assets.load("https://pixijs.com/assets/bunny.png"));
-      pixiSprite = new Sprite(texture);
-    }
-    pixiSprites.set(entity, pixiSprite);
-    const markEntityDirty = () => {
-      if (!dirtyEntities.includes(entity)) dirtyEntities.push(entity);
-    };
-    entity.on("x", markEntityDirty);
-    entity.on("y", markEntityDirty);
-    entity.on("width", markEntityDirty);
-    entity.on("height", markEntityDirty);
-    entity.on("rotation", markEntityDirty);
-    entity.on("renderXScale", markEntityDirty);
-    entity.on("renderYScale", markEntityDirty);
-    entity.on("renderScale", markEntityDirty);
-    entityListeners.set(entity, { markEntityDirty });
-    entity.pixiSprite = pixiSprite;
-    stage.addChild(pixiSprite);
-  };
-
-  const entityListener = (newEntities, oldEntities) => {
-    newEntities.forEach(initializeEntity);
-    const destroyedEntities = oldEntities.filter(
-      (entity) => !newEntities.includes(entity),
-    );
-    destroyedEntities.forEach(destroyEntity);
-  };
-
-  const destroyEntity = (entity) => {
-    if (pixiSprites.has(entity)) {
-      stage.removeChild(pixiSprites.get(entity));
-      pixiSprites.delete(entity);
-    }
-  };
+  const getCanvasHeight = () =>
+    renderSettings.height || renderSettings.canvas?.height || 1;
 
   const markDirtyCamera = () => {
     dirtyCamera = true;
   };
 
-  const handleCameraChange = () => {
-    // Recalculate all entity positions and sizes when camera changes
-    entities.get().forEach((entity) => {
-      if (pixiSprites.has(entity)) {
-        adjustEntityPosition(entity);
-        adjustEntitySize(entity);
-        adjustEntityRotation(entity);
-      }
-    });
+  const markEntityDirty = (entity) => {
+    if (!dirtyEntities.includes(entity)) {
+      dirtyEntities.push(entity);
+    }
   };
 
-  const handleCanvasResize = () => {
-    const canvas = renderSettings.canvas;
-    if (!canvas || !renderer)
-      return console.warn(
-        "Could not find the canvas or the render, resizing failed",
-      );
+  const regenerateRenderer = async () => {
+    if (isRegenerating) return;
+    if (!renderSettings.canvas) return;
 
-    console.log("potential canvas resize");
-    const { width, height } = renderSettings.canvas.getBoundingClientRect();
+    isRegenerating = true;
 
-    //stage.pivot.set(width / 2, height / 2);
+    if (renderer) {
+      renderer.destroy({ removeView: false });
+      renderer = null;
+    }
+
+    renderer = await autoDetectRenderer({
+      view: renderSettings.canvas,
+      width: getCanvasWidth(),
+      height: getCanvasHeight(),
+      height: getCanvasHeight(),
+    });
+
+    isRegenerating = false;
+  };
+
+  const resizeRenderer = () => {
+    if (!renderer) return;
+
+    const width = getCanvasWidth();
+    const height = getCanvasHeight();
+
     if (renderer.width !== width || renderer.height !== height) {
       renderer.resize(width, height);
+      markDirtyCamera();
     }
-    entities.get().forEach((entity) => {
-      if (pixiSprites.has(entity)) {
-        adjustEntityPosition(entity);
-        adjustEntitySize(entity);
+  };
+
+  const adjustEntityPosition = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+
+    const canvasWidth = getCanvasWidth();
+    const canvasHeight = getCanvasHeight();
+
+    const camera = renderSettings.camera;
+
+    let outputX = entity.x || 0;
+    let outputY = entity.y || 0;
+
+    if (!entity.ignoreSceneCamera && typeof camera?.transformX === "function") {
+      outputX = camera.transformX(outputX);
+    }
+
+    if (!entity.ignoreSceneCamera && typeof camera?.transformY === "function") {
+      outputY = camera.transformY(outputY);
+    }
+
+    const coords = worldToScreenPosition(
+      outputX,
+      outputY,
+      canvasWidth,
+      canvasHeight,
+    );
+
+    pixiSprite.position.set(coords.x, coords.y);
+  };
+
+  const adjustEntitySize = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+
+    const canvasWidth = getCanvasWidth();
+    const canvasHeight = getCanvasHeight();
+
+    const camera = renderSettings.camera;
+
+    const renderXScale = Number.isFinite(entity.renderXScale)
+      ? entity.renderXScale
+      : Number.isFinite(entity.renderScale)
+        ? entity.renderScale
+        : 1;
+
+    const renderYScale = Number.isFinite(entity.renderYScale)
+      ? entity.renderYScale
+      : Number.isFinite(entity.renderScale)
+        ? entity.renderScale
+        : 1;
+
+    let outputWidth = (entity.width || 100) * renderXScale;
+    let outputHeight = (entity.height || 100) * renderYScale;
+
+    if (
+      !entity.ignoreSceneCamera &&
+      typeof camera?.transformWidth === "function"
+    ) {
+      outputWidth = camera.transformWidth(outputWidth);
+    }
+
+    if (
+      !entity.ignoreSceneCamera &&
+      typeof camera?.transformHeight === "function"
+    ) {
+      outputHeight = camera.transformHeight(outputHeight);
+    }
+
+    const finalSize = worldToScreenSize(
+      outputWidth,
+      outputHeight,
+      canvasWidth,
+      canvasHeight,
+    );
+
+    pixiSprite.width = finalSize.width;
+    pixiSprite.height = finalSize.height;
+
+    pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
+  };
+
+  const adjustEntityRotation = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+
+    if (Number.isFinite(entity.rotation)) {
+      pixiSprite.rotation = entity.rotation;
+    }
+  };
+
+  const updateEntity = (entity) => {
+    if (entity.noRender) return;
+    if (!pixiSprites.has(entity)) return;
+
+    adjustEntityPosition(entity);
+    adjustEntitySize(entity);
+    adjustEntityRotation(entity);
+  };
+
+  const updateAllEntities = () => {
+    entities.get().forEach(updateEntity);
+  };
+
+  const initializeEntity = async (entity) => {
+    if (entity.noRender) return;
+    if (pixiSprites.has(entity)) return;
+
+    let pixiSprite;
+
+    if (entity?.sprite && typeof entity.sprite === "object") {
+      pixiSprite = entity.sprite;
+    } else {
+      const texture =
+        entity.texture ||
+        (typeof entity.imageURL === "string"
+          ? await Assets.load(entity.imageURL)
+          : await Assets.load("https://pixijs.com/assets/bunny.png"));
+
+      pixiSprite = new Sprite(texture);
+    }
+
+    pixiSprites.set(entity, pixiSprite);
+    entity.pixiSprite = pixiSprite;
+
+    const onDirty = () => markEntityDirty(entity);
+
+    entity.on("x", onDirty);
+    entity.on("y", onDirty);
+    entity.on("width", onDirty);
+    entity.on("height", onDirty);
+    entity.on("rotation", onDirty);
+    entity.on("renderXScale", onDirty);
+    entity.on("renderYScale", onDirty);
+    entity.on("renderScale", onDirty);
+    entity.on("noRender", onDirty);
+
+    entityListeners.set(entity, onDirty);
+
+    stage.addChild(pixiSprite);
+
+    updateEntity(entity);
+  };
+
+  const destroyEntity = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+
+    if (!pixiSprite) return;
+
+    const listener = entityListeners.get(entity);
+
+    if (listener) {
+      entity.off("x", listener);
+      entity.off("y", listener);
+      entity.off("width", listener);
+      entity.off("height", listener);
+      entity.off("rotation", listener);
+      entity.off("renderXScale", listener);
+      entity.off("renderYScale", listener);
+      entity.off("renderScale", listener);
+      entity.off("noRender", listener);
+    }
+
+    if (stage) {
+      stage.removeChild(pixiSprite);
+    }
+
+    pixiSprites.delete(entity);
+    entityListeners.delete(entity);
+  };
+
+  entityListListener = (newEntities, oldEntities) => {
+    newEntities.forEach(initializeEntity);
+
+    oldEntities
+      .filter((entity) => !newEntities.includes(entity))
+      .forEach(destroyEntity);
+  };
+
+  const unmountCamera = (camera) => {
+    if (!camera || typeof camera !== "object") return;
+
+    camera.off("x", markDirtyCamera);
+    camera.off("y", markDirtyCamera);
+    camera.off("width", markDirtyCamera);
+    camera.off("height", markDirtyCamera);
+  };
+
+  cameraListener = () => {
+    const nextCamera =
+      renderSettings.camera && typeof renderSettings.camera === "object"
+        ? renderSettings.camera
+        : defaultCamera;
+
+    if (currentCamera !== nextCamera) {
+      if (currentCamera !== defaultCamera) {
+        unmountCamera(currentCamera);
       }
-    });
-  };
 
-  const canvasListener = async (canvas) => {
-    await regenerateRenderer();
-    handleCanvasResize();
-    canvas.addEventListener("resize", () => {
-      console.log("canvas resized");
-    });
-  };
+      currentCamera = nextCamera;
 
-  const mount = async () => {
-    if (renderSettings.canvas === null)
-      throw new Error("Cannot mount without a canvas");
-    const { width: canvasWidth, height: canvasHeight } =
-      renderSettings.canvas.getBoundingClientRect();
-    await regenerateRenderer();
-    stage = new Container();
-    //window.addEventListener("resize", handleCanvasResize);
-    //stage.pivot.set(canvasWidth / 2, canvasHeight / 2);
-    window.stage = stage;
-    entityListeners = new WeakMap();
-
-    // Set up camera listener if camera property exists
-    const unmountCamera = (oldCamera) => {
-      oldCamera.off("x", markDirtyCamera);
-      oldCamera.off("y", markDirtyCamera);
-      oldCamera.off("width", markDirtyCamera);
-      camera.off("height", markDirtyCamera);
-    };
-    cameraListener = () => {
-      if (
-        typeof renderSettings.camera == "object" &&
-        renderSettings.camera !== null
-      ) {
-        const oldCamera = currentCamera;
-        if (
-          typeof oldCamera == "object" &&
-          oldCamera !== null &&
-          oldCamera !== defaultCamera
-        ) {
-          unmountCamera(oldCamera);
-        }
-        currentCamera = renderSettings.camera;
+      if (currentCamera !== defaultCamera) {
         currentCamera.on("x", markDirtyCamera);
         currentCamera.on("y", markDirtyCamera);
         currentCamera.on("width", markDirtyCamera);
         currentCamera.on("height", markDirtyCamera);
-      } else {
-        currentCamera = defaultCamera;
       }
-      markDirtyCamera();
-    };
+    }
 
-    // Listen for camera property changes
+    markDirtyCamera();
+  };
+
+  const handleCanvasSwap = async () => {
+    if (renderSettings.canvas === currentCanvas) return;
+
+    currentCanvas = renderSettings.canvas;
+
+    await regenerateRenderer();
+    markDirtyCamera();
+  };
+
+  const mount = async () => {
+    if (!renderSettings.canvas) {
+      throw new Error("Cannot mount without a canvas");
+    }
+
+    stage = new Container();
+    entityListeners = new WeakMap();
+
+    await handleCanvasSwap();
+
+    renderSettings.on("canvas", handleCanvasSwap);
+    renderSettings.on("width", resizeRenderer);
+    renderSettings.on("height", resizeRenderer);
+
     renderSettings.on("camera", cameraListener);
-    // Set initial camera state
     cameraListener();
 
     await Promise.all(entities.get().map(initializeEntity));
-    entities.addListener(entityListener);
-    renderSettings.on("canvas", canvasListener);
+    entities.addListener(entityListListener);
+
     isMounted = true;
   };
 
   const unmount = () => {
-    renderer.destroy({ removeView: false });
-    renderer = null;
-    entities.get().forEach(destroyEntity);
-    entities.removeListener(entityListener);
+    if (!isMounted) return true;
 
-    // Remove camera listeners
+    entities.removeListener(entityListListener);
+
+    renderSettings.off("canvas", handleCanvasSwap);
+    renderSettings.off("width", resizeRenderer);
+    renderSettings.off("height", resizeRenderer);
     renderSettings.off("camera", cameraListener);
-    // Unmount Camera
-    if (
-      typeof renderSettings.camera == "camera" &&
-      renderSettings.camera !== null
-    ) {
-      unmountCamera(renderSettings.camera);
+
+    if (currentCamera !== defaultCamera) {
+      unmountCamera(currentCamera);
     }
 
-    entityListeners = null;
-    cameraListener = null;
+    entities.get().forEach(destroyEntity);
+
+    if (renderer) {
+      renderer.destroy({ removeView: false });
+      renderer = null;
+    }
+
     stage = null;
-    context = null;
-    renderSettings.off("canvas", canvasListener);
+    entityListeners = null;
+    currentCanvas = null;
+    currentCamera = defaultCamera;
+
+    dirtyEntities = [];
+    dirtyCamera = true;
+
     isMounted = false;
+
+    return true;
   };
 
-  const render = async () => {
-    if (!isMounted) throw new Error("Cannot render while unmounted");
-    if (dirtyCamera) {
-      handleCameraChange();
-      dirtyCamera = false;
-    } else if (dirtyEntities.length > 0) {
-      dirtyEntities.forEach((entity) => {
-        if (entity.noRender) return;
-        adjustEntityPosition(entity);
-        adjustEntitySize(entity);
-        adjustEntityRotation(entity);
-      });
+  const render = () => {
+    if (!isMounted) {
+      throw new Error("Cannot render while unmounted");
     }
-    dirtyEntities = [];
+
+    if (!renderer || !stage) return;
+
+    if (dirtyCamera) {
+      updateAllEntities();
+      dirtyCamera = false;
+      dirtyEntities = [];
+    } else if (dirtyEntities.length > 0) {
+      dirtyEntities.forEach(updateEntity);
+      dirtyEntities = [];
+    }
+
     renderer.render(stage);
   };
 
-  const checkMounted = () => {
-    return isMounted;
+  return {
+    mount,
+    unmount,
+    render,
+    markDirty: markDirtyCamera,
+    types: ["renderer"],
   };
-
-  return { mount, unmount, render, handleCanvasResize, types: ["renderer"] };
 }
 
 export default convertFunctionToConstructor(createPixiRenderer);
