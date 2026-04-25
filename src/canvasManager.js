@@ -42,8 +42,13 @@ function createCanvasManager(renderSettings, options = {}) {
     // canvas.style.width = `${dims.width}px`;
     // canvas.style.height = `${dims.height}px`;
 
-    renderSettings.width = newWidth;
-    renderSettings.height = newHeight;
+    renderSettings.realWidth = newWidth;
+    renderSettings.realHeight = newHeight;
+    renderSettings.logicalWidth = dims.width;
+    renderSettings.logicalHeight = dims.height;
+    renderSettings.width = dims.width;
+    renderSettings.height = dims.height;
+    console.log("canvas stuff", dims, newWidth, newHeight);
   };
 
   const mount = () => {
@@ -64,7 +69,6 @@ function createCanvasManager(renderSettings, options = {}) {
     renderSettings.off("canvas", applyDimensions);
     if (autoResize) {
       window.removeEventListener("resize", applyDimensions);
-      resizeHandler = null;
     }
   };
 
