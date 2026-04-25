@@ -78,7 +78,6 @@ function createPixiRenderer(entities, renderSettings) {
       view: renderSettings.canvas,
       width: getCanvasWidth(),
       height: getCanvasHeight(),
-      height: getCanvasHeight(),
     });
 
     isRegenerating = false;
@@ -171,10 +170,11 @@ function createPixiRenderer(entities, renderSettings) {
       canvasHeight,
     );
 
+    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+      pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
+
     pixiSprite.width = finalSize.width;
     pixiSprite.height = finalSize.height;
-
-    pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
   };
 
   const adjustEntityRotation = (entity) => {
