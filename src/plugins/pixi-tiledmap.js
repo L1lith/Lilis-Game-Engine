@@ -1,7 +1,7 @@
 import { convertFunctionToConstructor } from "jabr";
 import { extensions, Assets } from "pixi.js";
 import { tiledMapLoader } from "pixi-tiledmap";
-import createEntity from "../createEntity";
+import createEntity from "../createEntity.js";
 extensions.add(tiledMapLoader);
 
 async function createPixiTiledmap(mapURL, entitySettings = {}) {
