@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import Entity from "../createEntity";
+import Entity from "../createEntity.js";
 const { Bodies, Composite } = Matter;
 
 export default function pixiTiledToMatter(pixiTiledMap, layerFilter) {
