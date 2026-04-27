@@ -1,15 +1,16 @@
 {
   "name": "lilis-engine",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "source": "src/index.js",
   "exports": {
     ".": "./src/index.js",
+    "./utility": "./src/utility/index.js",
     "./pixi": "./src/plugins/pixi.js",
     "./p5": "./src/plugins/p5.js",
     "./pixi-tiled": "./src/plugins/pixi-tiledmap.js",
-    "./matter": "./src/plugins/matter.js",
-    "./utility": "./src/utility/index.js"
+    "./pixi-tiled-matter": "./src/plugins/pixi-tiled-to-matter.js",
+    "./matter": "./src/plugins/matter.js"
   },
   "files": [
     "src"
