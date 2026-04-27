@@ -16,11 +16,11 @@ import worldToScreenSize from "../utility/worldToScreenSize.js";
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
 function createPixiRenderer(entities, renderSettings) {
-  if (!valid(entities, EntityListFormat))
-    throw new Error("Please supply a valid EntityList");
+  // if (!valid(entities, EntityListFormat))
+  //   throw new Error("Please supply a valid EntityList");
 
-  if (!valid(renderSettings, RenderSettingsFormat))
-    throw new Error("Please supply valid RenderSettings");
+  // if (!valid(renderSettings, RenderSettingsFormat))
+  //   throw new Error("Please supply valid RenderSettings");
 
   const defaultCamera = {
     x: 0,

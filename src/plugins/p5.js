@@ -17,10 +17,10 @@ const standardShapes = [
 ];
 
 function createP5Renderer(entities = null, renderSettings) {
-  if (entities !== null && !valid(entities, EntityListFormat))
-    throw new Error("Please supply a valid EntityList");
-  if (!valid(renderSettings, RenderSettingsFormat))
-    throw new Error("Please supply valid RenderSettings");
+  // if (entities !== null && !valid(entities, EntityListFormat))
+  //   throw new Error("Please supply a valid EntityList");
+  // if (!valid(renderSettings, RenderSettingsFormat))
+  //   throw new Error("Please supply valid RenderSettings");
   const p5Instance = new Signal(null);
   const [getInstance, setInstance] = p5Instance;
   const mount = async () => {
