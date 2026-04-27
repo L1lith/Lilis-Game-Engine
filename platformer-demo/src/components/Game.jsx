@@ -84,9 +84,7 @@ export default function Game() {
         });
         window.map = map
         
-        console.log('b')
         await gameCore.mount();
-        console.log('c')
         const matterEngine = physicsEngine.engineSignal.get()
         //matterEngine.gravity.y = -0.000000001;
         matterEngine.gravity.x = 0
