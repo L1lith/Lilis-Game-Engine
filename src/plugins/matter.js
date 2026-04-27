@@ -10,7 +10,6 @@ export default function matterPlugin(entities) {
   let matterEntities = [];
   let isDoingPhysicsUpdate = false;
   const mountEntity = (entity, engine) => {
-    console.log(entity, "Engine Register", entity.matter);
     if (typeof entity.matter !== "object" || entity.matter === null) return; // Don't mount things that aren't intended to have physics
     let matterBody;
     if (
