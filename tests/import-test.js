@@ -22,7 +22,13 @@ describe("Package Import Tests", () => {
     expect(LGE).to.not.respondTo("QOIEW1512JEFOSJsfsef"); // Doesn't respond to non-sense imports, meaning the above tests are meaningful
   });
   it("should have the expected plugin libraries", async () => {
-    const expectedPlugins = ["pixi", "p5"];
+    const expectedPlugins = [
+      "pixi",
+      "p5",
+      "matter",
+      "pixi-tiledmap",
+      "pixi-tiled-to-matter",
+    ];
     for (let i = 0; i < expectedPlugins.length; i++) {
       const expectedPlugin = expectedPlugins[i];
       const plugin = await import("../src/plugins/" + expectedPlugin + ".js");
