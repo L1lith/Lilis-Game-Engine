@@ -15,6 +15,9 @@ export { default as createGameCore } from "./createGameCore.js";
 export { default as createRenderSettings } from "./createRenderSettings.js";
 export { default as createCamera } from "./createCamera.js";
 export { default as createCanvasManager } from "./canvasManager.js";
+<<<<<<< HEAD
 
 // Utilities
 export { default as translateToNewOrigin } from "./utility/translateToNewOrigin.js";
+=======
+>>>>>>> master
