@@ -1,5 +1,5 @@
 import { Signal, convertFunctionToConstructor } from "jabr";
-import { EntityList } from "./createEntityList";
+import EntityList from "./createEntityList.js";
 
 async function createLevelLoader(entityList, levels, defaultLevel = null) {
   const resolveLevel = (nameOrLevel) => {

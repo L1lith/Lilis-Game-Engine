@@ -14,6 +14,8 @@ describe("Package Import Tests", () => {
       "Entity",
       "EntityList",
       "RenderSettings",
+      "LevelLoader",
+      "Camera",
     ];
     for (let i = 0; i < expectedConstructors.length; i++) {
       expect(LGE).to.respondTo(expectedConstructors[i]); // default class style import
