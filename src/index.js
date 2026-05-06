@@ -6,6 +6,7 @@ export { default as GameCore } from "./createGameCore.js";
 export { default as RenderSettings } from "./createRenderSettings.js";
 export { default as Camera } from "./createCamera.js";
 export { default as CanvasManager } from "./canvasManager.js";
+export { default as LevelLoader } from "./createLevelLoader.js";
 
 // Functional Style Exports
 export { default as createGameLoop } from "./createGameLoop.js";
@@ -15,3 +16,4 @@ export { default as createGameCore } from "./createGameCore.js";
 export { default as createRenderSettings } from "./createRenderSettings.js";
 export { default as createCamera } from "./createCamera.js";
 export { default as createCanvasManager } from "./canvasManager.js";
+export { default as createLevelLoader } from "./createLevelLoader.js";
