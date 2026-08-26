@@ -1,4 +1,3 @@
-import { createComponent as _$createComponent } from "solid-js/web";
 import { convertFunctionToConstructor, createSignal } from "jabr";
 import createSolidGetter from "jabr/solid";
 
@@ -22,9 +21,10 @@ function createSolidRenderer(entities, renderSettings) {
     if (typeof entity.solid == "function") {
       // Wrap the .solid property with the entity as a prop and optionally deep pass all the properties of it
       const SolidComponent = entity.solid;
-      entity._wrappedComponent = _$createComponent(SolidComponent, {
-        entity: entity,
-      });
+      entity.wrappedComponent = untrack(() => SolidComponent({ entity }));
+      // entity._wrappedComponent = _$createComponent(SolidComponent, {
+      //   entity: entity,
+      // });
       setSolidChildren(getSolidChildren().concat([entity._wrappedComponent]));
     }
     entity._lastSolidValue = entity.solid;
