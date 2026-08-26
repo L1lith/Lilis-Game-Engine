@@ -1,9 +1,16 @@
+import { createComponent as _$createComponent } from "solid-js/web";
 import { convertFunctionToConstructor, createSignal } from "jabr";
 import createSolidGetter from "jabr/solid";
 
 function createSolidRenderer(entities, renderSettings) {
-  const {solidSetter} = renderSettings
-  const {get: getSolidChildren, set: setSolidChildren, self: childrenSignal, addListener: addChildrenListener, removeListener: removeChildrenListener} = createSignal([]);
+  const { solidSetter } = renderSettings;
+  const {
+    get: getSolidChildren,
+    set: setSolidChildren,
+    self: childrenSignal,
+    addListener: addChildrenListener,
+    removeListener: removeChildrenListener,
+  } = createSignal([]);
   const renderEntity = (entity) => {
     if (entity._lastSolidValue === entity.solid) return; // Don't update as the solid value hasn't changed
     if (entity._wrappedComponent) {
@@ -15,7 +22,9 @@ function createSolidRenderer(entities, renderSettings) {
     if (typeof entity.solid == "function") {
       // Wrap the .solid property with the entity as a prop and optionally deep pass all the properties of it
       const SolidComponent = entity.solid;
-      entity._wrappedComponent = <SolidComponent entity={entity} />;
+      entity._wrappedComponent = _$createComponent(SolidComponent, {
+        entity: entity,
+      });
       setSolidChildren(getSolidChildren().concat([entity._wrappedComponent]));
     }
     entity._lastSolidValue = entity.solid;
@@ -38,17 +47,17 @@ function createSolidRenderer(entities, renderSettings) {
     newEntities.forEach(mountEntity);
     removedEntities.forEach(unmountEntity);
   };
-  const solidUpdater = newChildren => {
-    solidSetter(newChildren)
-  }
+  const solidUpdater = (newChildren) => {
+    solidSetter(newChildren);
+  };
   const mount = () => {
-    addChildrenListener(solidUpdater)
+    addChildrenListener(solidUpdater);
     entities.addListener(entityListListener);
     setSolidChildren([]);
     entityListListener(entities.get(), []);
   };
   const unmount = () => {
-    removeChildrenListener(solidUpdater)
+    removeChildrenListener(solidUpdater);
     entities.removeListener(entityListListener);
     entityListListener([], entities.get());
     setSolidChildren([]);
