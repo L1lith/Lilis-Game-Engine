@@ -2,7 +2,7 @@ import { convertFunctionToConstructor, createSignal } from "jabr";
 import createSolidGetter from "jabr/solid";
 
 function createSolidRenderer(entities, renderSettings) {
-  const [getSolidChildren, setSolidChildren, childrenSignal] = createSignal([]);
+  const {get: getSolidChildren, set: setSolidChildren, self: childrenSignal} = createSignal([]);
   const renderEntity = (entity) => {
     if (entity._lastSolidValue === entity.solid) return; // Don't update as the solid value hasn't changed
     if (entity._wrappedComponent) {
