@@ -1,5 +1,6 @@
+import { untrack } from "solid-js";
 import { convertFunctionToConstructor, createSignal } from "jabr";
-import createSolidGetter from "jabr/solid";
+import createSolidGetter from "jabr/solid-getter";
 
 function createSolidRenderer(entities, renderSettings) {
   const { solidSetter } = renderSettings;
@@ -39,10 +40,10 @@ function createSolidRenderer(entities, renderSettings) {
   };
   const entityListListener = (newEntityList, oldEntityList) => {
     const newEntities = newEntityList.filter(
-      (entity) => !oldEntityList.contains(entity),
+      (entity) => !oldEntityList.includes(entity),
     );
     const removedEntities = oldEntityList.filter(
-      (entity) => !newEntityList.contains(entity),
+      (entity) => !newEntityList.includes(entity),
     );
     newEntities.forEach(mountEntity);
     removedEntities.forEach(unmountEntity);

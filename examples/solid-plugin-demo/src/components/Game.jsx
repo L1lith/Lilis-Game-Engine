@@ -10,7 +10,7 @@ export default function Game() {
     onMount(async ()=>{
         if (isServer) return
         console.log('Mounted! Rendering a chicken on the canvas every animation frame')
-        const renderSettings = new RenderSettings({canvas, solidSetter: setGameEngineSolidOutput})
+        const renderSettings = new RenderSettings({solidSetter: setGameEngineSolidOutput})
         const textEntity = Entity({solid: TestText})
         const entities = new EntityList([textEntity])
         const solidRenderer = createSolidRenderer(entities, renderSettings)
