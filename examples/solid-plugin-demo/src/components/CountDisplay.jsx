@@ -6,7 +6,6 @@ export default function CountDisplay({getReactiveProp}) {
         setInterval(()=>{
             setRegular(regular() + 1)
         }, 1000)
-        console.log(getReactiveProp('count'))
     })
     return <p>Time Passed: {getReactiveProp('count')()} seconds, regular: {regular()}</p>
 }

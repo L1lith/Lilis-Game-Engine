@@ -15,7 +15,6 @@ export default function Game() {
         textEntity.count = 0
         setInterval(()=>{
             textEntity.count += 1
-            console.log('incremented, count: ' + textEntity.count)
         }, 1000)
         const entities = new EntityList([textEntity])
         const solidRenderer = createSolidRenderer(entities, renderSettings)
