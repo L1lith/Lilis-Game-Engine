@@ -17,7 +17,6 @@ export default function Game() {
         const levelLoader = LevelLoader(entities, {
             levelA: {
                 mount: (_, {entityList})=>{
-                    console.log(entityList)
                     entityList.set([new Entity({imageURL: '/chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50})])
                 }
             },
