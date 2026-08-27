@@ -22,7 +22,11 @@ function createSolidRenderer(entities, renderSettings) {
     if (typeof entity.solid == "function") {
       // Wrap the .solid property with the entity as a prop and optionally deep pass all the properties of it
       const SolidComponent = entity.solid;
-      entity._wrappedComponent = untrack(() => SolidComponent({ entity }));
+      const getReactiveProp = (propName) =>
+        createSolidGetter(entity.getSignal(propName));
+      entity._wrappedComponent = untrack(() =>
+        SolidComponent({ entity, getReactiveProp }),
+      );
       // entity._wrappedComponent = _$createComponent(SolidComponent, {
       //   entity: entity,
       // });
