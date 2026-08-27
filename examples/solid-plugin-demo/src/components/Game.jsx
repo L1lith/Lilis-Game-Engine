@@ -2,7 +2,7 @@ import { onMount, onCleanup, createSignal} from "solid-js"
 import { isServer } from 'solid-js/web'
 import {createGameCore, Entity, EntityList, RenderSettings, createGameLoop} from 'lilis-engine'
 import createSolidRenderer from 'lilis-engine/solid'
-import TestText from "./TestText.jsx"
+import CountDisplay from "./CountDisplay.jsx"
 
 export default function Game() {
     let unmountGameEngine
@@ -11,7 +11,12 @@ export default function Game() {
         if (isServer) return
         console.log('Mounted! Rendering a chicken on the canvas every animation frame')
         const renderSettings = new RenderSettings({solidSetter: setGameEngineSolidOutput})
-        const textEntity = Entity({solid: TestText})
+        const textEntity = Entity({solid: CountDisplay})
+        textEntity.count = 0
+        setInterval(()=>{
+            textEntity.count += 1
+            console.log('incremented, count: ' + textEntity.count)
+        }, 1000)
         const entities = new EntityList([textEntity])
         const solidRenderer = createSolidRenderer(entities, renderSettings)
         const gameCore = createGameCore({plugins:[solidRenderer]})
