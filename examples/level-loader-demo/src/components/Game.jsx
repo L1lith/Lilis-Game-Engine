@@ -11,7 +11,7 @@ export default function Game() {
     let unmountGameEngine
     onMount(async ()=>{
         if (isServer) return
-        console.log('Mounted! Rendering a chicken on the canvas every animation frame')
+        console.log('Mounted!')
         const renderSettings = new RenderSettings({canvas})
         const entities = new EntityList([])
         const levelLoader = LevelLoader(entities, {
