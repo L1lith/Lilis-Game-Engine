@@ -41,7 +41,7 @@ function createSolidRenderer(entities, renderSettings) {
       const getReactiveProp = (propName) =>
         createSolidGetter(entity.getSignal(propName));
       entity._wrappedComponent = untrack(() =>
-        SolidComponent({ entity, getReactiveProp }),
+        SolidComponent({ entity, getReactiveProp, createSolidGetter }),
       );
       // entity._wrappedComponent = _$createComponent(SolidComponent, {
       //   entity: entity,
