@@ -1,5 +1,5 @@
 import { createSignal, onMount  } from "solid-js"
-import { } from "solid-js"
+
 export default function TestText({getReactiveProp}) {
     const [regular, setRegular] = createSignal(0)
     onMount(()=>{
