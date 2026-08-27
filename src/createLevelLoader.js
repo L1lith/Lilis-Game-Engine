@@ -1,7 +1,7 @@
 import { Signal, convertFunctionToConstructor, Store } from "jabr";
 import { EntityList } from "lilis-engine";
 
-async function createLevelLoader(entityList, levels, options = {}) {
+function createLevelLoader(entityList, levels, options = {}) {
   const {
     defaultLevel = null,
     globalContext: globalContextInput,
@@ -109,8 +109,9 @@ async function createLevelLoader(entityList, levels, options = {}) {
     mountedLevels = mountedLevels.filter((matchLevel) => matchLevel !== level);
     level.isMounted = false;
   };
-  if (defaultLevel !== null) await loadLevel(defaultLevel);
-  const mount = async () => {};
+  const mount = async () => {
+    if (defaultLevel !== null) await loadLevel(defaultLevel);
+  };
   const unmount = async () => {
     await unloadLevel();
     await Promise.all(mountedLevels.map((level) => unmountLevel(level)));
