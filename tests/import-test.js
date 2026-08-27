@@ -30,6 +30,7 @@ describe("Package Import Tests", () => {
       "matter",
       "pixi-tiledmap",
       "pixi-tiled-to-matter",
+      "solid",
     ];
     for (let i = 0; i < expectedPlugins.length; i++) {
       const expectedPlugin = expectedPlugins[i];
