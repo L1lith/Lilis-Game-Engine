@@ -207,14 +207,12 @@ function createPixiRenderer(entities, renderSettings) {
 
     if (entity?.sprite && typeof entity.sprite === "object") {
       pixiSprite = entity.sprite;
-    } else {
-      const texture =
-        entity.texture ||
-        (typeof entity.imageURL === "string"
-          ? await Assets.load(entity.imageURL)
-          : await Assets.load("https://pixijs.com/assets/bunny.png"));
-
+    } else if (typeof entity.imageURL == "string" || entity.texture) {
+      const texture = entity.texture || (await Assets.load(entity.imageURL));
+      // await Assets.load("https://pixijs.com/assets/bunny.png"));
       pixiSprite = new Sprite(texture);
+    } else {
+      return; // Entity is assumed not to be a pixi sprite.
     }
 
     pixiSprites.set(entity, pixiSprite);
