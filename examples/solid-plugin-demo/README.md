@@ -1,2 +1,2 @@
 # Solid Plugin Demo
-This example is a currently broken demo on how to use solidJS components inside of your entity list using the under development solid renderer.
+An example on how to use solidJS components **inside** of your EntityList using the under development solid renderer.
