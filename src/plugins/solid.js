@@ -1,6 +1,22 @@
-import { untrack } from "solid-js";
+import { untrack, from } from "solid-js";
 import { convertFunctionToConstructor, createSignal } from "jabr";
-import createSolidGetter from "jabr/solid-getter";
+//import createSolidGetter from "jabr/solid-getter";
+
+function createSolidGetter(jabrSignal) {
+  return from(
+    (set) => {
+      // Subscribe to the jabr signal and update the Solid signal on changes
+      const changeListener = (newValue) => {
+        set(newValue);
+      };
+      jabrSignal.addListener(changeListener);
+
+      // Return the cleanup function to unsubscribe
+      return () => jabrSignal.removeListener(changeListener);
+    },
+    jabrSignal.get(), // Use current value from jabr signal as initial value
+  );
+}
 
 function createSolidRenderer(entities, renderSettings) {
   const { solidSetter } = renderSettings;
