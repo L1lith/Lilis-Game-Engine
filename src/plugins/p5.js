@@ -21,6 +21,7 @@ function createP5Renderer(entities = null, renderSettings) {
   //   throw new Error("Please supply a valid EntityList");
   // if (!valid(renderSettings, RenderSettingsFormat))
   //   throw new Error("Please supply valid RenderSettings");
+  entities = entities.deepFlat;
   const p5Instance = new Signal(null);
   const [getInstance, setInstance] = p5Instance;
   const mount = async () => {

@@ -6,6 +6,7 @@ import { translateToNewOrigin } from "lilis-engine/utility";
 const minimumUpdateThreshold = 0.0001;
 
 export default function matterPlugin(entities) {
+  entities = entities.deepFlat;
   const engineSignal = Signal(null);
   let matterEntities = [];
   let collisionEventQueue = [];

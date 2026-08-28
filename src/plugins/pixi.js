@@ -22,6 +22,8 @@ function createPixiRenderer(entities, renderSettings) {
   // if (!valid(renderSettings, RenderSettingsFormat))
   //   throw new Error("Please supply valid RenderSettings");
 
+  entities = entities.deepFlat;
+
   const defaultCamera = {
     x: 0,
     y: 0,

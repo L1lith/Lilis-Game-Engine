@@ -19,6 +19,7 @@ function createSolidGetter(jabrSignal) {
 }
 
 function createSolidRenderer(entities, renderSettings) {
+  entities = entities.deepFlat;
   const { solidSetter } = renderSettings;
   const {
     get: getSolidChildren,
@@ -56,7 +57,9 @@ function createSolidRenderer(entities, renderSettings) {
     if ("solid" in entity) entity._renderSolid();
   };
   const unmountEntity = (entity) => {
-    entity.off("solid", entity._renderSolid);
+    if (typeof entity._renderSolid !== "function")
+      return console.warn("Unable to locate render function for: ", entity);
+    entity.removeListener("solid", entity._renderSolid);
   };
   const entityListListener = (newEntityList, oldEntityList) => {
     const newEntities = newEntityList.filter(
