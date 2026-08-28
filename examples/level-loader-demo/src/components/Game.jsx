@@ -12,18 +12,18 @@ export default function Game() {
     onMount(async ()=>{
         if (isServer) return
         console.log('Mounted!')
-        const renderSettings = new RenderSettings({canvas})
-        const entities = new EntityList([])
+        const renderSettings = RenderSettings({canvas})
+        const entities = EntityList([])
         window.entities = entities
         const levelLoader = LevelLoader(entities, {
             levelA: {
                 mount: (_, {entityList})=>{
-                    entityList.set([new Entity({imageURL: '/chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50})])
+                    entityList.addChild(Entity({imageURL: '/chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50}))
                 }
             },
             levelB: {
                 mount: (_, {entityList})=>{
-                    entityList.set([new Entity({imageURL: '/warrior.png', x: 0, y: 0, width: 50, height: 50})])
+                    entityList.addChild(Entity({imageURL: '/warrior.png', x: 0, y: 0, width: 50, height: 50}))
                 }
             }
         }, {
