@@ -28,25 +28,8 @@ function createLevelLoader(entityList, levels, options = {}) {
       throw new Error("Invalid Level Supplied");
     }
   };
-  //if (defaultLevel !== null) resolveLevel(defaultLevel); // Ensure the default level is valid
   let mountedLevels = [];
   const activeLevel = new Signal(null);
-  const activeLevelEntities = new EntityList([]);
-  const entityListener = (newEntityList, oldEntityList) => {
-    const removedEntities = oldEntityList.filter(
-      (entity) => !newEntityList.includes(entity),
-    );
-    const newEntities = newEntityList.filter(
-      (entity) => !oldEntityList.includes(entity),
-    );
-    const updatedEntityList = entityList
-      .get()
-      .filter((entity) => !removedEntities.includes(entity))
-      .concat(
-        newEntities.filter((entity) => !entityList.get().includes(entity)),
-      );
-    entityList.set(updatedEntityList);
-  };
   const loadLevel = async (nameOrLevel) => {
     let coords = null;
     if (typeof nameOrLevel == "string" && nameOrLevel.includes("@")) {
@@ -65,8 +48,7 @@ function createLevelLoader(entityList, levels, options = {}) {
     if (typeof level.load == "function") {
       await level.load(globalContext, level);
     }
-    level.entityList.addListener(entityListener);
-    entityListener(level.entityList.get(), []);
+    entityList.set(entityList.get().concat([level.entityList]));
   };
   globalContext.load = loadLevel;
   const unloadLevel = async () => {
@@ -75,8 +57,9 @@ function createLevelLoader(entityList, levels, options = {}) {
     if (typeof activeLevel.unload == "function")
       await activeLevel.unload(globalContext, level);
     activeLevel.set(null);
-    level.entityList.removeListener(entityListener);
-    entityListener([], level.entityList.get());
+    entityList.set(
+      entityList.get().filter((list) => list !== level.entityList),
+    );
   };
   const mountLevel = async (level) => {
     level = resolveLevel(level);
