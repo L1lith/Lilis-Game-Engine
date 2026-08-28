@@ -101,9 +101,36 @@ function createEntityList(initialList = []) {
 
   let flattened = null;
 
+  const methods = {
+    addChild: (child) => {
+      const currentContent = output.get();
+      if (currentContent.includes(child)) {
+      } else {
+        output.set(currentContent.concat([child]));
+      }
+      return child;
+    },
+    removeChild: (child) => {
+      const currentContent = output.get();
+      const index = currentContent.indexOf(child);
+      if (index < 0) {
+        // Do Nothing
+      } else {
+        output.set(
+          currentContent
+            .splice(0, index)
+            .concat(currentContent.splice(index + 1)),
+        );
+      }
+      return child;
+    },
+  };
+
   return new Proxy(output, {
     get: (target, prop) => {
-      if (prop === "deepFlat") {
+      if (methods.hasOwnProperty(prop)) {
+        return methods[prop];
+      } else if (prop === "deepFlat") {
         if (flattened === null) flattened = deepFlat(output);
         return flattened;
       }

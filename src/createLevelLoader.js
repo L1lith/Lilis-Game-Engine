@@ -48,7 +48,7 @@ function createLevelLoader(entityList, levels, options = {}) {
     if (typeof level.load == "function") {
       await level.load(globalContext, level);
     }
-    entityList.set(entityList.get().concat([level.entityList]));
+    entityList.addChild(level.entityList);
   };
   globalContext.load = loadLevel;
   const unloadLevel = async () => {
@@ -57,9 +57,7 @@ function createLevelLoader(entityList, levels, options = {}) {
     if (typeof activeLevel.unload == "function")
       await activeLevel.unload(globalContext, level);
     activeLevel.set(null);
-    entityList.set(
-      entityList.get().filter((list) => list !== level.entityList),
-    );
+    entityList.removeChild(level.entityList);
   };
   const mountLevel = async (level) => {
     level = resolveLevel(level);
