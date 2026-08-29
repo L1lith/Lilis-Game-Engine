@@ -60,6 +60,14 @@ function createSolidRenderer(entities, renderSettings) {
     if (typeof entity._renderSolid !== "function")
       return console.warn("Unable to locate render function for: ", entity);
     entity.removeListener("solid", entity._renderSolid);
+    const entityIndex = getSolidChildren().indexOf(entity._wrappedComponent);
+    if (entityIndex >= 0) {
+      setSolidChildren(
+        getSolidChildren()
+          .slice(0, entityIndex)
+          .concat(getSolidChildren().slice(entityIndex + 1)),
+      );
+    }
   };
   const entityListListener = (newEntityList, oldEntityList) => {
     const newEntities = newEntityList.filter(
