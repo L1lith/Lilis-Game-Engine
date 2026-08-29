@@ -34,7 +34,7 @@ export default function Game() {
                 levelLoader.loadLevel(levelLoader.activeLevel.get().name === "levelA" ? 'levelB' : 'levelA')
             }}>Switch Levels</button>
         }})
-        entities.set([levelSwitcher])
+        entities.addChild(levelSwitcher)
         const pixiRenderer = createPixiRenderer(entities, renderSettings)
         renderSettings.solidSetter = setSolidGameContents
         const solidRenderer = createSolidRenderer(entities, renderSettings)
