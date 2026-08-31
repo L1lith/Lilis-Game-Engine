@@ -124,6 +124,12 @@ function createEntityList(initialList = []) {
       }
       return child;
     },
+    hasChild: (child) => {
+      return output.get().includes(child);
+    },
+    findChild: (filter) => {
+      return output.get().find(filter);
+    },
   };
 
   return new Proxy(output, {

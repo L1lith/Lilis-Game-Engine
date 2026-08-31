@@ -40,17 +40,13 @@ export default function matterPlugin(entities) {
       if (shape === "rectangle") {
         //        console.log("init", entity.x, entity.y);
         matterBody = Bodies.rectangle(
-          translateToNewOrigin(entity.x, 0, entity.width / 2),
-          translateToNewOrigin(entity.y, 0, entity.height / 2),
+          entity.x,
+          entity.y,
           entity.width,
           entity.height,
         );
       } else if (shape === "circle") {
-        matterBody = Bodies.circle(
-          translateToNewOrigin(entity.x, 0, entity.width / 2),
-          translateToNewOrigin(entity.y, 0, entity.height / 2),
-          entity.width / 2,
-        ); //        console.log("postinit", matterBody.position);
+        matterBody = Bodies.circle(entity.x, entity.y, entity.width / 2); //        console.log("postinit", matterBody.position);
       } else {
         throw new Error("Unimplemented Shape: " + shape);
       }

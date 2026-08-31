@@ -272,11 +272,17 @@ function createPixiRenderer(entities, renderSettings) {
       // await Assets.load("https://pixijs.com/assets/bunny.png"));
       pixiSprite = new Sprite(texture);
     } else {
-      return; // Entity is assumed not to be a pixi sprite.
+      //return; // Entity is assumed not to be a pixi sprite.
     }
 
     pixiSprites.set(entity, pixiSprite);
     entity.pixiSprite = pixiSprite;
+
+    entity.on("texture", (texture) => {
+      if (!texture) {
+      }
+      pixiSprite.texture = texture;
+    });
 
     entity.on("imageURL", async (newURL) => {
       if (entity.texture) return;
