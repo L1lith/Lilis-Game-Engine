@@ -118,8 +118,8 @@ function createEntityList(initialList = []) {
       } else {
         output.set(
           currentContent
-            .splice(0, index)
-            .concat(currentContent.splice(index + 1)),
+            .slice(0, index)
+            .concat(currentContent.slice(index + 1)),
         );
       }
       return child;
