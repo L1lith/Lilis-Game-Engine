@@ -51,7 +51,7 @@ export default function matterPlugin(entities) {
         throw new Error("Unimplemented Shape: " + shape);
       }
     }
-    entity.collisions = new Signal([]);
+    entity.collisions = [];
     const { static: isStatic } = entity.matter;
     if (typeof isStatic == "boolean")
       Matter.Body.setStatic(matterBody, isStatic);
@@ -147,9 +147,7 @@ export default function matterPlugin(entities) {
             console.warn("Unable to locate entityA");
           } else {
             if (entityA.collisions)
-              entityA.collisions.set(
-                entityA.collisions.get().concat([collisionDataA]),
-              );
+              entityA.collisions = entityA.collisions.concat([collisionDataA]);
 
             if (typeof entityA?.onCollision == "function")
               entityA.onCollision(collisionDataA);
@@ -158,9 +156,7 @@ export default function matterPlugin(entities) {
             console.warn("Unable to locate entityB");
           } else {
             if (entityB.collisions)
-              entityB.collisions.set(
-                entityB.collisions.get().concat([collisionDataB]),
-              );
+              entityB.collisions = entityB.collisions.concat([collisionDataB]);
 
             if (typeof entityB?.onCollision == "function")
               entityB.onCollision(collisionDataB);
@@ -202,13 +198,8 @@ export default function matterPlugin(entities) {
             console.warn("Unable to locate entityA");
           } else {
             if (entityA.collisions)
-              entityA.collisions.set(
-                entityA.collisions
-                  .get()
-                  .filter(
-                    (collisionData) =>
-                      collisionData.eventData.id !== collision.id,
-                  ),
+              entityA.collisions = entityA.collisions.filter(
+                (collisionData) => collisionData.eventData.id !== collision.id,
               );
 
             if (typeof entityA?.onCollisionEnd == "function")
@@ -218,13 +209,8 @@ export default function matterPlugin(entities) {
             console.warn("Unable to locate entityB");
           } else {
             if (entityB.collisions)
-              entityB.collisions.set(
-                entityB.collisions
-                  .get()
-                  .filter(
-                    (collisionData) =>
-                      collisionData.eventData.id !== collision.id,
-                  ),
+              entityB.collisions = entityB.collisions.filter(
+                (collisionData) => collisionData.eventData.id !== collision.id,
               );
 
             if (typeof entityB?.onCollisionEnd == "function")
