@@ -11,7 +11,9 @@
     "./pixi-tiled": "./src/plugins/pixi-tiled.js",
     "./pixi-tiled-matter": "./src/plugins/pixi-tiled-to-matter.js",
     "./matter": "./src/plugins/matter.js",
-    "./solid": "./src/plugins/solid.js"
+    "./solid": "./src/plugins/solid.js",
+    "./resize-observer": "./src/plugins/resize-observer.js",
+    "./music-player": "./src/plugins/music-player.js"
   },
   "files": [
     "src"

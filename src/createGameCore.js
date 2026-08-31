@@ -61,7 +61,7 @@ function createGameCore(initialData = null) {
       );
       return true;
     },
-    getPlugins(type = null) {
+    getPlugins(filter) {
       if (typeof type == "string") {
         return gameStore.plugins.filter(
           (plugin) =>
