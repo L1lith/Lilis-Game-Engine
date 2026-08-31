@@ -34,6 +34,10 @@ function defaultGameLoop() {
           try {
             await plugin[method](...args);
           } catch (err) {
+            console.warn(
+              "There was an error with the following plugin: ",
+              plugin,
+            );
             console.error(err);
           }
         }),

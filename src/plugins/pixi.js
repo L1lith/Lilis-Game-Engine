@@ -12,6 +12,7 @@ import { worldToScreenPosition, worldToScreenSize } from "../utility/index.js";
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
 function createPixiRenderer(entities, renderSettings) {
+  entities = entities.deepFlat;
   // if (!valid(entities, EntityListFormat))
   //   throw new Error("Please supply a valid EntityList");
 
