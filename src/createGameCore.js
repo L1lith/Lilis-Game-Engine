@@ -71,6 +71,12 @@ function createGameCore(initialData = null) {
       }
       return gameStore.plugins;
     },
+    addPlugin: (plugin) => gameStore.plugins.push(plugin),
+    removePlugin: (plugin) =>
+      (gameStore.plugins = gameStore.plugins(
+        (comparePlugin) => comparePlugin !== plugin,
+      )),
+    hasPlugin: (plugin) => gameStore.plugins.includes(plugin),
   };
   return (gameCore = new Proxy(gameStore, {
     get: (target, prop) => {

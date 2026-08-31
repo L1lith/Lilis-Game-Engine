@@ -7,11 +7,7 @@ import {
   Container,
   autoDetectRenderer,
 } from "pixi.js";
-import EntityListFormat from "../formats/EntityList.js";
-import { valid } from "sandhands";
-import RenderSettingsFormat from "../formats/RenderSettings.js";
-import worldToScreenPosition from "../utility/worldToScreenPosition.js";
-import worldToScreenSize from "../utility/worldToScreenSize.js";
+import { worldToScreenPosition, worldToScreenSize } from "../utility/index.js";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
@@ -21,8 +17,6 @@ function createPixiRenderer(entities, renderSettings) {
 
   // if (!valid(renderSettings, RenderSettingsFormat))
   //   throw new Error("Please supply valid RenderSettings");
-
-  entities = entities.deepFlat;
 
   const defaultCamera = {
     x: 0,
@@ -96,7 +90,17 @@ function createPixiRenderer(entities, renderSettings) {
       markDirtyCamera();
     }
   };
-
+  const attachEntityToParent = (entity) => {
+    const pixiParent = entity.pixiParent;
+    const pixiSprite = entity.pixiSprite;
+    if (pixiParent === null) {
+      // Don't Attach
+    } else if (typeof pixiParent === "object") {
+      pixiParent.addChild(pixiSprite);
+    } else {
+      stage.addChild(pixiSprite);
+    }
+  };
   const adjustEntityPosition = (entity) => {
     const pixiSprite = pixiSprites.get(entity);
     if (!pixiSprite) return;
@@ -106,8 +110,22 @@ function createPixiRenderer(entities, renderSettings) {
 
     const camera = renderSettings.camera;
 
-    let outputX = entity.x || 0;
-    let outputY = entity.y || 0;
+    let outputX = isFinite(entity.renderX)
+      ? entity.renderX
+      : isFinite(entity.x)
+        ? entity.x
+        : 0;
+    let outputY = isFinite(entity.renderY)
+      ? entity.renderY
+      : isFinite(entity.y)
+        ? entity.y
+        : 0;
+
+    // console.log(
+    //   entity,
+    //   !entity.ignoreSceneCamera,
+    //   typeof camera?.transformX === "function",
+    // );
 
     if (!entity.ignoreSceneCamera && typeof camera?.transformX === "function") {
       outputX = camera.transformX(outputX);
@@ -125,6 +143,8 @@ function createPixiRenderer(entities, renderSettings) {
     );
 
     pixiSprite.position.set(coords.x, coords.y);
+    if (isFinite(entity.renderPriority))
+      pixiSprite.zIndex = entity.renderPriority;
   };
 
   const adjustEntitySize = (entity) => {
@@ -148,8 +168,10 @@ function createPixiRenderer(entities, renderSettings) {
         ? entity.renderScale
         : 1;
 
-    let outputWidth = (entity.width || 100) * renderXScale;
-    let outputHeight = (entity.height || 100) * renderYScale;
+    let outputWidth =
+      (isFinite(entity.width) ? entity.width : 100) * renderXScale;
+    let outputHeight =
+      (isFinite(entity.height) ? entity.height : 100) * renderYScale;
 
     if (
       !entity.ignoreSceneCamera &&
@@ -174,7 +196,6 @@ function createPixiRenderer(entities, renderSettings) {
 
     if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
       pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
-
     pixiSprite.width = finalSize.width;
     pixiSprite.height = finalSize.height;
   };
@@ -183,8 +204,41 @@ function createPixiRenderer(entities, renderSettings) {
     const pixiSprite = pixiSprites.get(entity);
     if (!pixiSprite) return;
 
-    if (Number.isFinite(entity.rotation)) {
+    if (entity.renderRotation === null) return;
+    if (Number.isFinite(entity.renderRotation)) {
+      pixiSprite.rotation = entity.renderRotation;
+    } else if (Number.isFinite(entity.rotation)) {
       pixiSprite.rotation = entity.rotation;
+    }
+  };
+  const adjustEntityVisibility = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+    if (typeof entity.visible === "boolean") {
+      pixiSprite.visible = entity.visible;
+    }
+  };
+  const setEntityEventMode = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+    if (typeof entity.eventMode == "string") {
+      pixiSprite.eventMode = entity.eventMode;
+    } else {
+      pixiSprite.eventMode = undefined;
+    }
+  };
+  const setEntityCursor = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+    if (typeof entity.cursor == "string") {
+      pixiSprite.cursor = entity.cursor;
+    }
+  };
+  const setEntityVisible = (entity) => {
+    const pixiSprite = pixiSprites.get(entity);
+    if (!pixiSprite) return;
+    if (typeof entity.visible == "boolean") {
+      pixiSprite.visible = entity.visible;
     }
   };
 
@@ -195,6 +249,9 @@ function createPixiRenderer(entities, renderSettings) {
     adjustEntityPosition(entity);
     adjustEntitySize(entity);
     adjustEntityRotation(entity);
+    adjustEntityVisibility(entity);
+    setEntityEventMode(entity);
+    setEntityCursor(entity);
   };
 
   const updateAllEntities = () => {
@@ -220,10 +277,21 @@ function createPixiRenderer(entities, renderSettings) {
     pixiSprites.set(entity, pixiSprite);
     entity.pixiSprite = pixiSprite;
 
+    entity.on("imageURL", async (newURL) => {
+      if (entity.texture) return;
+      pixiSprite.texture =
+        typeof newURL === "string"
+          ? await Assets.load(newURL)
+          : await Assets.load("https://pixijs.com/assets/bunny.png");
+    });
+
     const onDirty = () => markEntityDirty(entity);
 
+    renderSettings.on("visible", onDirty);
     entity.on("x", onDirty);
     entity.on("y", onDirty);
+    entity.on("renderX", onDirty);
+    entity.on("renderY", onDirty);
     entity.on("width", onDirty);
     entity.on("height", onDirty);
     entity.on("rotation", onDirty);
@@ -231,12 +299,17 @@ function createPixiRenderer(entities, renderSettings) {
     entity.on("renderYScale", onDirty);
     entity.on("renderScale", onDirty);
     entity.on("noRender", onDirty);
+    entity.on("renderPriority", onDirty);
+    entity.on("eventMode", onDirty);
+    entity.on("cursor", onDirty);
+    entity.on("visible", onDirty);
 
     entityListeners.set(entity, onDirty);
 
-    stage.addChild(pixiSprite);
+    attachEntityToParent(entity);
 
     updateEntity(entity);
+    if (typeof entity.onPixiMount == "function") entity.onPixiMount(entity);
   };
 
   const destroyEntity = (entity) => {
@@ -249,6 +322,8 @@ function createPixiRenderer(entities, renderSettings) {
     if (listener) {
       entity.off("x", listener);
       entity.off("y", listener);
+      entity.off("renderX", listener);
+      entity.off("renderY", listener);
       entity.off("width", listener);
       entity.off("height", listener);
       entity.off("rotation", listener);
@@ -256,6 +331,10 @@ function createPixiRenderer(entities, renderSettings) {
       entity.off("renderYScale", listener);
       entity.off("renderScale", listener);
       entity.off("noRender", listener);
+      entity.off("eventMode", listener);
+      entity.off("cursor", listener);
+      entity.off("visible", listener);
+      entity.off("renderPriority", listener);
     }
 
     if (stage) {
@@ -264,6 +343,7 @@ function createPixiRenderer(entities, renderSettings) {
 
     pixiSprites.delete(entity);
     entityListeners.delete(entity);
+    if (typeof entity.onPixiUnmount == "function") entity.onPixiUnmount(entity);
   };
 
   entityListListener = (newEntities, oldEntities) => {
@@ -329,6 +409,7 @@ function createPixiRenderer(entities, renderSettings) {
     renderSettings.on("canvas", handleCanvasSwap);
     renderSettings.on("width", resizeRenderer);
     renderSettings.on("height", resizeRenderer);
+    resizeRenderer();
 
     renderSettings.on("camera", cameraListener);
     cameraListener();
