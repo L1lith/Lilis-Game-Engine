@@ -28,9 +28,11 @@ describe("Package Import Tests", () => {
       "pixi",
       "p5",
       "matter",
-      "pixi-tiledmap",
+      "pixi-tiled",
       "pixi-tiled-to-matter",
       "solid",
+      "music-player",
+      "resize-observer",
     ];
     for (let i = 0; i < expectedPlugins.length; i++) {
       const expectedPlugin = expectedPlugins[i];

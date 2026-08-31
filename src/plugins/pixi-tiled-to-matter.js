@@ -1,6 +1,6 @@
 import decomp from "poly-decomp";
 import Matter from "matter-js";
-import Entity from "../createEntity";
+import Entity from "../createEntity.js";
 const { Bodies, Composite, Common } = Matter;
 Common.setDecomp(decomp);
 

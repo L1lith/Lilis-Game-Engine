@@ -1,6 +1,6 @@
 {
   "name": "lilis-engine",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "source": "src/index.js",
   "exports": {
@@ -46,6 +46,7 @@
     "p5": "https://pkg.pr.new/p5@c071281",
     "pixi-tiledmap": "^2.5.1",
     "pixi.js": "^8.17.1",
+    "poly-decomp": "^0.3.0",
     "solid-js": "^1.9.15"
   }
 }
