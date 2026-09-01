@@ -269,31 +269,35 @@ function createPixiRenderer(entities, renderSettings) {
       pixiSprite = entity.sprite;
     } else if (typeof entity.imageURL == "string" || entity.texture) {
       const texture = entity.texture || (await Assets.load(entity.imageURL));
-      // await Assets.load("https://pixijs.com/assets/bunny.png"));
       pixiSprite = new Sprite(texture);
     } else {
-      //return; // Entity is assumed not to be a pixi sprite.
+      return;
     }
 
     pixiSprites.set(entity, pixiSprite);
     entity.pixiSprite = pixiSprite;
 
-    entity.on("texture", (texture) => {
-      if (!texture) {
-      }
-      pixiSprite.texture = texture;
-    });
-
-    entity.on("imageURL", async (newURL) => {
+    // Create and store all listeners
+    const imageURLListener = async (newURL) => {
       if (entity.texture) return;
       pixiSprite.texture =
         typeof newURL === "string"
           ? await Assets.load(newURL)
           : await Assets.load("https://pixijs.com/assets/bunny.png");
-    });
+    };
 
     const onDirty = () => markEntityDirty(entity);
 
+    // Store all listeners for cleanup
+    const listeners = {
+      imageURL: imageURLListener,
+      dirty: onDirty,
+    };
+
+    entityListeners.set(entity, listeners);
+
+    // Attach all listeners
+    entity.on("imageURL", imageURLListener);
     renderSettings.on("visible", onDirty);
     entity.on("x", onDirty);
     entity.on("y", onDirty);
@@ -311,10 +315,7 @@ function createPixiRenderer(entities, renderSettings) {
     entity.on("cursor", onDirty);
     entity.on("visible", onDirty);
 
-    entityListeners.set(entity, onDirty);
-
     attachEntityToParent(entity);
-
     updateEntity(entity);
     if (typeof entity.onPixiMount == "function") entity.onPixiMount(entity);
   };
@@ -324,24 +325,27 @@ function createPixiRenderer(entities, renderSettings) {
 
     if (!pixiSprite) return;
 
-    const listener = entityListeners.get(entity);
+    const listeners = entityListeners.get(entity);
 
-    if (listener) {
-      entity.off("x", listener);
-      entity.off("y", listener);
-      entity.off("renderX", listener);
-      entity.off("renderY", listener);
-      entity.off("width", listener);
-      entity.off("height", listener);
-      entity.off("rotation", listener);
-      entity.off("renderXScale", listener);
-      entity.off("renderYScale", listener);
-      entity.off("renderScale", listener);
-      entity.off("noRender", listener);
-      entity.off("eventMode", listener);
-      entity.off("cursor", listener);
-      entity.off("visible", listener);
-      entity.off("renderPriority", listener);
+    if (listeners) {
+      // Remove all listeners
+      entity.off("imageURL", listeners.imageURL);
+      entity.off("x", listeners.dirty);
+      entity.off("y", listeners.dirty);
+      entity.off("renderX", listeners.dirty);
+      entity.off("renderY", listeners.dirty);
+      entity.off("width", listeners.dirty);
+      entity.off("height", listeners.dirty);
+      entity.off("rotation", listeners.dirty);
+      entity.off("renderXScale", listeners.dirty);
+      entity.off("renderYScale", listeners.dirty);
+      entity.off("renderScale", listeners.dirty);
+      entity.off("noRender", listeners.dirty);
+      entity.off("eventMode", listeners.dirty);
+      entity.off("cursor", listeners.dirty);
+      entity.off("visible", listeners.dirty);
+      entity.off("renderPriority", listeners.dirty);
+      renderSettings.off("visible", listeners.dirty);
     }
 
     if (stage) {
@@ -350,6 +354,7 @@ function createPixiRenderer(entities, renderSettings) {
 
     pixiSprites.delete(entity);
     entityListeners.delete(entity);
+    delete entity.pixiSprite;
     if (typeof entity.onPixiUnmount == "function") entity.onPixiUnmount(entity);
   };
 
@@ -409,6 +414,7 @@ function createPixiRenderer(entities, renderSettings) {
     }
 
     stage = new Container();
+    window.stage = stage;
     entityListeners = new WeakMap();
 
     await handleCanvasSwap();
