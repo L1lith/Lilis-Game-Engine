@@ -1,6 +1,6 @@
 import decomp from "poly-decomp";
 import Matter from "matter-js";
-import Entity from "../createEntity.js";
+import { Entity } from "lilis-engine";
 const { Bodies, Composite, Common } = Matter;
 Common.setDecomp(decomp);
 
@@ -14,7 +14,8 @@ const getLayerProperty = (layer, propertySearch) => {
   return propertyMatch.value;
 };
 
-export default function pixiTiledToMatter(pixiTiledMap, layerFilter) {
+export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
+  const { layerFilter, calculateTileXOffset, calculateTileYOffset } = options;
   let targetLayers =
     typeof layerFilter == "function"
       ? pixiTiledMap.mapData.layers.filter((layer) => layerFilter(layer))
@@ -106,8 +107,43 @@ export default function pixiTiledToMatter(pixiTiledMap, layerFilter) {
             // Center the map at (0, 0) so:
             // x ranges from -worldWidth/2 to +worldWidth/2 (-333 to +333)
             // y ranges from -worldHeight/2 to +worldHeight/2 (-50 to +50)
-            const worldX = x * tileSizeX - 50 + tileSizeX / 2; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
-            const worldY = y * tileSizeY - 50 + tileSizeY / 2; //(y - gridHeight / 2) * tileSizeY + tileSizeY / 2;
+            let calculatedTileXOffset =
+              typeof calculateTileXOffset == "function"
+                ? calculateTileXOffset({
+                    x,
+                    y,
+                    tileSizeX,
+                    tileSizeY,
+                    layer,
+                    tiles,
+                  })
+                : 0;
+            let calculatedTileYOffset =
+              typeof calculateTileYOffset == "function"
+                ? calculateTileYOffset({
+                    x,
+                    y,
+                    tileSizeX,
+                    tileSizeY,
+                    layer,
+                    tiles,
+                  })
+                : 0;
+            if (
+              !isFinite(calculatedTileXOffset) ||
+              calculatedTileXOffset === null
+            )
+              calculatedTileXOffset = 0;
+            if (
+              !isFinite(calculatedTileYOffset) ||
+              calculatedTileYOffset === null
+            )
+              calculatedTileYOffset = 0;
+
+            const worldX =
+              x * tileSizeX - 50 + tileSizeX / 1.5 + calculatedTileXOffset; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
+            const worldY =
+              y * tileSizeY - 50 + tileSizeY / 2 + calculatedTileYOffset; //(y - gridHeight / 2) * tileSizeY + tileSizeY / 2;
             //console.log({ worldX, worldY });
             const body = Bodies.rectangle(
               worldX,
