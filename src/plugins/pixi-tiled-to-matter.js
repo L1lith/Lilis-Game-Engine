@@ -106,7 +106,7 @@ export default function pixiTiledToMatter(pixiTiledMap, layerFilter) {
             // Center the map at (0, 0) so:
             // x ranges from -worldWidth/2 to +worldWidth/2 (-333 to +333)
             // y ranges from -worldHeight/2 to +worldHeight/2 (-50 to +50)
-            const worldX = x * tileSizeX - 50 + tileSizeX / 1.5; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
+            const worldX = x * tileSizeX - 50 + tileSizeX / 2; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
             const worldY = y * tileSizeY - 50 + tileSizeY / 2; //(y - gridHeight / 2) * tileSizeY + tileSizeY / 2;
             //console.log({ worldX, worldY });
             const body = Bodies.rectangle(
