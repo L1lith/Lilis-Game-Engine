@@ -1,88 +1,38 @@
 import { convertFunctionToConstructor } from "jabr";
 import { Signal, isSignal, isStore } from "jabr";
-//import InnerEntityListFormat from "./formats/InnerEntityList.js";
 
 function deepFlat(entityListOrEntity) {
   const outputSignal = Signal([]);
-  const registeredElements = new Set(); // Tracks all signals and stores currently registered
-  const unsubscribeMap = new Map(); // Maps element → cleanup function
 
-  const registerElement = (value) => {
-    if (registeredElements.has(value)) return; // Skip if already registered
-    registeredElements.add(value);
-
+  const flatten = (value) => {
     if (isSignal(value)) {
-      const listener = (newVal, oldVal) => {
-        const oldArray = Array.isArray(oldVal) ? oldVal : [];
-        const newArray = Array.isArray(newVal) ? newVal : [];
-        const added = newArray.filter((v) => !oldArray.includes(v));
-        const removed = oldArray.filter((v) => !newArray.includes(v));
-        added.forEach(registerElement);
-        removed.forEach(unregisterElement);
-      };
-      value.addListener(listener);
-      unsubscribeMap.set(value, () => value.removeListener(listener));
-      // Register all current elements
-      if (Array.isArray(value.get())) {
-        value.get().forEach(registerElement);
+      const currentValue = value.get();
+      if (Array.isArray(currentValue)) {
+        return currentValue.flatMap((item) => flatten(item));
       }
+      return flatten(currentValue);
     } else if (isStore(value)) {
-      // Assumed entity – add to output
-      outputSignal.set(outputSignal.get().concat(value));
-      // Handle nested children if present
+      const result = [value];
       if (isSignal(value.children)) {
-        registerElement(value.children);
-        const childrenListener = (newChildren, oldChildren) => {
-          if (oldChildren === newChildren) return;
-          if (isSignal(oldChildren) || isStore(oldChildren))
-            unregisterElement(oldChildren);
-          if (isSignal(newChildren) || isStore(newChildren))
-            registerElement(newChildren);
-        };
-        value.addListener("children", childrenListener);
-        const cleanup = () =>
-          value.removeListener("children", childrenListener);
-        // Combine with any existing cleanup for this store
-        const existingCleanup = unsubscribeMap.get(value);
-        unsubscribeMap.set(value, () => {
-          if (existingCleanup) existingCleanup();
-          cleanup();
-        });
+        result.push(...flatten(value.children));
       }
+      return result;
     }
+    return [];
   };
 
-  const unregisterElement = (value) => {
-    if (!registeredElements.has(value)) return;
-    registeredElements.delete(value);
-
-    // Remove the store from the output if it is an entity
-    if (isStore(value)) {
-      const currentOutput = outputSignal.get();
-      const index = currentOutput.indexOf(value);
-      if (index >= 0) {
-        outputSignal.set(
-          currentOutput.slice(0, index).concat(currentOutput.slice(index + 1)),
-        );
-      }
-    }
-
-    // Recursively unregister children
-    if (isSignal(value)) {
-      if (Array.isArray(value.get())) value.get().forEach(unregisterElement);
-    } else if (isStore(value) && isSignal(value.children)) {
-      unregisterElement(value.children);
-    }
-
-    // Invoke cleanup
-    const cleanup = unsubscribeMap.get(value);
-    if (cleanup) {
-      cleanup();
-      unsubscribeMap.delete(value);
-    }
+  const updateOutput = () => {
+    outputSignal.set(flatten(entityListOrEntity));
   };
 
-  registerElement(entityListOrEntity);
+  // Listen to the main entity list
+  if (isSignal(entityListOrEntity)) {
+    entityListOrEntity.addListener(updateOutput);
+  }
+
+  // Initial update
+  updateOutput();
+
   return outputSignal;
 }
 
