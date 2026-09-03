@@ -25,6 +25,10 @@ export default function Pong() {
         }))
         const leftPaddle = entities.addChild(Entity({
             shape: 'rect',
+            matter: {
+                shape: 'rectangle',
+                isStatic: true,
+            },
             x: -40,
             y: 0,
             width: 2,
@@ -34,6 +38,10 @@ export default function Pong() {
         
         const rightPaddle = entities.addChild(Entity({
             shape: 'rect',
+            matter: {
+                shape: 'rectangle',
+                isStatic: true,
+            },
             x: 40,
             y: 0,
             width: 2,
@@ -43,14 +51,25 @@ export default function Pong() {
         
         const ball = entities.addChild(Entity({
             shape: 'ellipse',
+            matter: {
+                shape: 'circle',
+            },
             x: 0,
             y: 0,
             width: 2.5,
             height: 2.5,
             fill: 'white'
         }))
+        const matterPlugin = createMatterPlugin(entities, {
+            setup: engine => {
+                engine.gravity.x = 0;
+                engine.gravity.y = 0;
+                leftPaddle.y = 0;
+                rightPaddle.y = 0;
+            }
+        })
         // End of main game setup
-        const gameCore = createGameCore({plugins: [createGameLoop(), createP5Renderer(entities, renderSettings), createMatterPlugin(entities)]})
+        const gameCore = createGameCore({plugins: [createGameLoop(), createP5Renderer(entities, renderSettings), matterPlugin]})
         await gameCore.mount()
         console.log("Game Mounted")
     })

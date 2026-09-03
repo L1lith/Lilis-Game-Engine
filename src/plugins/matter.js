@@ -5,7 +5,7 @@ import { translateToNewOrigin } from "lilis-engine/utility";
 
 const minimumUpdateThreshold = 0.0001;
 
-export default function matterPlugin(entities) {
+export default function matterPlugin(entities, settings) {
   entities = entities.deepFlat;
   const engineSignal = Signal(null);
   let matterEntities = [];
@@ -112,8 +112,11 @@ export default function matterPlugin(entities) {
         entity.matterBody === body ||
         entity?.matter?.predefined?.includes(body),
     ) || null;
-  const mount = () => {
+  const mount = async () => {
     const engine = Engine.create();
+    if (typeof settings.setup == "function") {
+      await settings.setup(engine, entities);
+    }
     Events.on(engine, "collisionStart", (collisionEvent) => {
       const collisions = collisionEvent.source.pairs.list;
       collisions.forEach((collision) => {
