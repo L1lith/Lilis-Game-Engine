@@ -26,8 +26,8 @@ function createP5Renderer(entities = null, renderSettings) {
   const p5Instance = new Signal(null);
   const [getInstance, setInstance] = p5Instance;
   const mount = async () => {
-    if ((!renderSettings.container) instanceof HTMLElement)
-      throw new Error("Cannot mount, missing container");
+    // if ((!renderSettings.container) instanceof HTMLElement)
+    //   throw new Error("Cannot mount, missing container");
     await new Promise((res) => {
       new p5((p) => {
         p.setup = async () => {
@@ -63,11 +63,28 @@ function createP5Renderer(entities = null, renderSettings) {
         p.draw = async () => {
           if (entities.get().length > 0) {
             for (
-              let i = 0, fetchedEntities = entities.get();
+              let i = 0,
+                fetchedEntities = entities
+                  .get()
+                  .sort(
+                    (a, b) => (a.renderPriority || 0) - (b.renderPriority || 0),
+                  );
               i < fetchedEntities.length;
               i++
             ) {
               const entity = fetchedEntities[i];
+              const { shape, x, y, width, height } = entity;
+              const { width: canvasWidth, height: canvasHeight } = p;
+              const { x: entityCenterCanvasX, y: entityCenterCanvasY } =
+                worldToScreenPosition(x, y, canvasWidth, canvasHeight);
+              const { width: entityCanvasWidth, height: entityCanvasHeight } =
+                worldToScreenSize(width, height, canvasWidth, canvasHeight);
+              const entityPositionData = {
+                x: entityCenterCanvasX,
+                y: entityCenterCanvasY,
+                width: entityCanvasWidth,
+                height: entityCanvasHeight,
+              };
               if (typeof entity.fill == "string") {
                 p.fill(entity.fill);
               } else if (Array.isArray(entity.fill)) {
@@ -78,6 +95,12 @@ function createP5Renderer(entities = null, renderSettings) {
               } else if (Array.isArray(entity.stroke)) {
                 p.stroke(...entity.stroke);
               }
+              if (
+                isFinite(entity.strokeWeight) &&
+                entity.strokeWeight !== null
+              ) {
+                p.strokeWeight(entity.strokeWeight);
+              }
               if ("prerender" in entity) {
                 // Allow us to add behavior before the automatic shape drawing
                 if (!(typeof entity.prerender == "function")) {
@@ -85,18 +108,12 @@ function createP5Renderer(entities = null, renderSettings) {
                   continue;
                 }
                 try {
-                  await entity.prerender(p, entity);
+                  await entity.prerender(p, entityPositionData, entity);
                 } catch (error) {
                   console.error(error);
                 }
               }
               if ("shape" in entity) {
-                const { shape, x, y, width, height } = entity;
-                const { width: canvasWidth, height: canvasHeight } = p;
-                const { x: entityCenterCanvasX, y: entityCenterCanvasY } =
-                  worldToScreenPosition(x, y, canvasWidth, canvasHeight);
-                const { width: entityCanvasWidth, height: entityCanvasHeight } =
-                  worldToScreenSize(width, height, canvasWidth, canvasHeight);
                 // Automatically render the entity's shape
                 if (!standardShapes.includes(shape)) {
                   console.error(new Error("Invalid Shape Provided"));
@@ -123,6 +140,7 @@ function createP5Renderer(entities = null, renderSettings) {
                 }
                 // Render the specified shape
               }
+
               if ("render" in entity) {
                 // Standard rendering behavior happens after the shape drawing
                 if (!(typeof entity.render == "function")) {
@@ -130,7 +148,7 @@ function createP5Renderer(entities = null, renderSettings) {
                   continue;
                 }
                 try {
-                  await entity.render(p, entity);
+                  await entity.render(p, entityPositionData, entity);
                 } catch (error) {
                   console.error(error);
                 }

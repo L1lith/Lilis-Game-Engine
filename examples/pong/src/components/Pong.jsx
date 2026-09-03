@@ -41,8 +41,21 @@ export default function Pong() {
         width: 100,
         height: 100,
         fill: "#000000",
+        renderPriority: -100
       }),
     );
+    const infoColor = '#8e8e8e'
+       const tableSplit = entities.addChild(Entity({
+        color: 'white',
+        stroke: infoColor,
+        render: p=>{
+            p.drawingContext.setLineDash([5, 10, 30, 10])
+            p.strokeWeight(4)
+            p.line(p.width / 2, 0, p.width / 2, p.height)
+            p.strokeWeight(0)
+        },
+        renderPriority: -10
+    }))
     const leftPaddle = entities.addChild(
       Entity({
         shape: "rect",
@@ -129,6 +142,7 @@ export default function Pong() {
         height: 8,
       }),
     );
+
     const matterPlugin = createMatterPlugin(entities, {
       setup: (engine) => {
         engine.gravity.x = 0;
@@ -138,10 +152,39 @@ export default function Pong() {
         engine.velocityIterations = 20
       },
     });
-
+    const player1Score = Signal(0)
+    const player2Score = Signal(0)
     const handlePlayerScore = (winner) => {
-        console.log(`Player ${winner} scored!`)
+        const targetScore = (winner === 1 ? player1Score : player2Score)
+        targetScore.set(targetScore.get() + 1)
+        console.log(`Player ${winner} scored!, total score: ${targetScore.get()}`)
     }
+
+    const player1ScoreDisplay = entities.addChild(Entity({
+        fill: infoColor,
+        render: (p, positionData)=>{
+            const {x, y} = positionData
+            p.textSize(p.width / 10)
+            p.textAlign(p.CENTER)
+            p.text(player1Score.get(), x, y)
+        },
+        x: -25, y: -40,
+        renderPriority: -10
+    }))
+    const player2ScoreDisplay = entities.addChild(Entity({
+        fill: infoColor,
+        render: (p, positionData)=>{
+            const {x, y} = positionData
+            p.textSize(p.width / 10)
+            p.textAlign(p.CENTER)
+            p.text(player2Score.get(), x, y)
+        },
+        x: 25, y: -40,
+        renderPriority: -10
+    }))
+
+    const ballInitialForce = 0.000025
+    const ballSpeed = 1.1
 
     const ballManager = {
         tick: ()=>{
@@ -153,14 +196,14 @@ export default function Pong() {
                 handlePlayerScore(isOffscreenLeft ? 2 : 1)
             }
             if (Body.getSpeed(ball.matterBody) === 0 || isOffscreenLeft || isOffscreenRight) {
-                ball.matterBody.force.x = 0.000025 * (Math.random() < 0.5 ? -1 : 1)
-                ball.matterBody.force.y = 0.000025 * (Math.random() < 0.5 ? -1 : 1)
+                const xForce = ball.matterBody.force.x = (ballInitialForce / 2 * Math.random() + ballInitialForce / 2) * (Math.random() < 0.5 ? -1 : 1)
+                ball.matterBody.force.y = Math.min((ballInitialForce / 2) * Math.random() * (Math.random() < 0.5 ? -1 : 1), ballInitialForce / 2, xForce) // Math.min here prevents us from shooting upwards balls which take forever to score.
                 
                 //Body.setVelocity(ball.matterBody, {x: 0.5 * Math.random() + 0.3, y: 0 /*0.5 * Math.random()*/})
             } else {
 
             }// else if (Body.getSpeed(ball.matterBody) < 0.5) {
-            Body.setSpeed(ball.matterBody, 1.1)
+            Body.setSpeed(ball.matterBody, ballSpeed)
             //     //Body.setSpeed(ball.matterBody, 1)
             // }
             // console.log(Body.getSpeed(ball.matterBody))
