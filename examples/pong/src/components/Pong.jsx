@@ -197,7 +197,7 @@ export default function Pong() {
             }
             if (Body.getSpeed(ball.matterBody) === 0 || isOffscreenLeft || isOffscreenRight) {
                 const xForce = ball.matterBody.force.x = (ballInitialForce / 2 * Math.random() + ballInitialForce / 2) * (Math.random() < 0.5 ? -1 : 1)
-                ball.matterBody.force.y = Math.min((ballInitialForce / 2) * Math.random() * (Math.random() < 0.5 ? -1 : 1), ballInitialForce / 2, xForce) // Math.min here prevents us from shooting upwards balls which take forever to score.
+                ball.matterBody.force.y = Math.min((ballInitialForce / 2) * Math.random(), ballInitialForce / 2, Math.abs(xForce)) * (Math.random() < 0.5 ? -1 : 1) // Math.min here prevents us from shooting upwards balls which take forever to score.
                 
                 //Body.setVelocity(ball.matterBody, {x: 0.5 * Math.random() + 0.3, y: 0 /*0.5 * Math.random()*/})
             } else {
