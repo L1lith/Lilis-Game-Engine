@@ -3,6 +3,7 @@ import p5 from "p5/global";
 import EntityListFormat from "../formats/EntityList.js";
 import { valid } from "sandhands";
 import RenderSettingsFormat from "../formats/RenderSettings.js";
+import { worldToScreenPosition, worldToScreenSize } from "../utility/index.js";
 
 const standardShapes = [
   "square",
@@ -30,7 +31,26 @@ function createP5Renderer(entities = null, renderSettings) {
     await new Promise((res) => {
       new p5((p) => {
         p.setup = async () => {
-          p.noLoop();
+          if (renderSettings.canvas instanceof HTMLCanvasElement) {
+            const [width, height] =
+              typeof renderSettings.calculateDimensions == "function"
+                ? renderSettings.calculateDimensions(
+                    p.windowWidth,
+                    p.windowHeight,
+                  )
+                : [200, 200];
+            p.createCanvas(width, height, renderSettings.canvas);
+          }
+          p.windowResized = () => {
+            if (typeof renderSettings.calculateDimensions == "function") {
+              const [width, height] = renderSettings.calculateDimensions(
+                p.windowWidth,
+                p.windowHeight,
+              );
+              p.createCanvas(width, height, renderSettings.canvas);
+            }
+          };
+          if (renderSettings.fitToScreen) p.noLoop();
           if (typeof renderSettings.setup == "function") {
             try {
               await renderSettings.setup(p);
@@ -41,13 +61,23 @@ function createP5Renderer(entities = null, renderSettings) {
         };
 
         p.draw = async () => {
-          if (entities) {
+          if (entities.get().length > 0) {
             for (
-              let i = 0, fetchedEntities = entities.get;
+              let i = 0, fetchedEntities = entities.get();
               i < fetchedEntities.length;
               i++
             ) {
               const entity = fetchedEntities[i];
+              if (typeof entity.fill == "string") {
+                p.fill(entity.fill);
+              } else if (Array.isArray(entity.fill)) {
+                p.fill(...entity.fill);
+              }
+              if (typeof entity.stroke == "string") {
+                p.stroke(entity.stroke);
+              } else if (Array.isArray(entity.stroke)) {
+                p.stroke(...entity.stroke);
+              }
               if ("prerender" in entity) {
                 // Allow us to add behavior before the automatic shape drawing
                 if (!(typeof entity.prerender == "function")) {
@@ -61,10 +91,28 @@ function createP5Renderer(entities = null, renderSettings) {
                 }
               }
               if ("shape" in entity) {
+                const { shape, x, y, width, height } = entity;
+                const { width: canvasWidth, height: canvasHeight } = p;
+                const { x: entityCenterCanvasX, y: entityCenterCanvasY } =
+                  worldToScreenPosition(x, y, canvasWidth, canvasHeight);
+                const { width: entityCanvasWidth, height: entityCanvasHeight } =
+                  worldToScreenSize(width, height, canvasWidth, canvasHeight);
                 // Automatically render the entity's shape
-                if (!standardShapes.includes(entity.shape)) {
+                if (!standardShapes.includes(shape)) {
                   console.error(new Error("Invalid Shape Provided"));
                   continue;
+                }
+                if (shape === "rect") {
+                  p.rect(
+                    entityCenterCanvasX - entityCanvasWidth / 2,
+                    entityCenterCanvasY - entityCanvasHeight / 2,
+                    entityCanvasWidth,
+                    entityCanvasHeight,
+                  );
+                } else {
+                  console.warn(
+                    "Unimplemented shape, skipping: " + entity.shape,
+                  );
                 }
                 // Render the specified shape
               }
@@ -100,7 +148,10 @@ function createP5Renderer(entities = null, renderSettings) {
     setInstance(null);
   };
   const render = async () => {
-    instance.redraw();
+    if (!getInstance()) return console.warn("Unable to find p5 instance");
+    if (typeof getInstance?.redraw == "function")
+      return console.warn("Unable to find the redraw method");
+    getInstance().redraw();
   };
   return { mount, unmount, p5Instance, render };
 }
