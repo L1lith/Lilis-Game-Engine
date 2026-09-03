@@ -1,7 +1,7 @@
 import Matter from "matter-js";
 const { Engine, Bodies, Composite, Body, Events } = Matter;
 import { Signal } from "jabr";
-import { translateToNewOrigin } from "lilis-engine/utility";
+//import { translateToNewOrigin } from "lilis-engine/utility";
 
 const minimumUpdateThreshold = 0.0001;
 
@@ -230,8 +230,8 @@ export default function matterPlugin(entities, settings) {
   const updateEntityFromMatter = (entity, matterBody) => {
     if (matterBody.isStatic) return; // Don't update entities with static matter bodies as they will never change
     const { x, y } = matterBody.position;
-    const translatedX = translateToNewOrigin(x, entity.width / 2, 0);
-    const translatedY = translateToNewOrigin(y, entity.height / 2, 0);
+    const translatedX = x; //translateToNewOrigin(x, entity.width / 2, 0);
+    const translatedY = y; //translateToNewOrigin(y, entity.height / 2, 0);
     if (Math.abs(entity.x - translatedX) > minimumUpdateThreshold) {
       // Position is mismatched
       entity.x = translatedX;
