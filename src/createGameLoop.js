@@ -31,6 +31,7 @@ function defaultGameLoop() {
     for (const priorityGroup of priorityGroups) {
       await Promise.all(
         priorityGroup.map(async (plugin) => {
+          if (typeof plugin[method] != "function") return;
           try {
             await plugin[method](...args);
           } catch (err) {
