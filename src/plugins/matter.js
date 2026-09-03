@@ -25,6 +25,11 @@ export default function matterPlugin(entities, settings) {
     if (engine === null) engine = engineSignal.get();
     if (typeof entity?.matter !== "object" || entity.matter === null) return; // Don't mount things that aren't intended to have physics
     let matterBody;
+    const matterOptions = { ...entity.matter };
+    delete matterOptions.predefined;
+    delete matterOptions.shape;
+    delete matterOptions.static;
+    delete matterOptions.inertia;
     if (
       typeof entity.matter.predefined == "object" &&
       entity.matter.predefined !== null
@@ -44,17 +49,27 @@ export default function matterPlugin(entities, settings) {
           entity.y,
           entity.width,
           entity.height,
+          matterOptions,
         );
       } else if (shape === "circle") {
-        matterBody = Bodies.circle(entity.x, entity.y, entity.width / 2); //        console.log("postinit", matterBody.position);
+        matterBody = Bodies.circle(
+          entity.x,
+          entity.y,
+          entity.width / 2,
+          matterOptions,
+        ); //        console.log("postinit", matterBody.position);
       } else {
         throw new Error("Unimplemented Shape: " + shape);
       }
     }
     entity.collisions = [];
-    const { static: isStatic } = entity.matter;
+    const { static: isStatic, inertia, restitution } = entity.matter;
     if (typeof isStatic == "boolean")
       Matter.Body.setStatic(matterBody, isStatic);
+    if (isFinite(inertia) && inertia !== null)
+      Body.setInertia(matterBody, inertia);
+    if (isFinite(restitution) && restitution !== null)
+      matterBody.restitution = restitution;
     entity.matterBody = matterBody;
     if (!matterEntities.includes(entity)) matterEntities.push(entity);
     entity.matterListeners = {

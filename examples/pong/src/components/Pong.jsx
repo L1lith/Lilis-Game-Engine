@@ -10,6 +10,9 @@ import {
 } from "lilis-engine";
 import createMatterPlugin from "lilis-engine/matter";
 import createP5Renderer from "lilis-engine/p5";
+import {Signal} from 'jabr'
+import Matter from "matter-js";
+const {Body} = Matter
 
 export default function Pong() {
   let canvas;
@@ -43,7 +46,9 @@ export default function Pong() {
         shape: "rect",
         matter: {
           shape: "rectangle",
-          isStatic: true,
+          static: true,
+          restitution: 1,
+          friction: 0,
         },
         x: -40,
         y: 0,
@@ -58,7 +63,10 @@ export default function Pong() {
         shape: "rect",
         matter: {
           shape: "rectangle",
-          isStatic: true,
+          static: true,
+          restitution: 1,
+          mass: 1,
+          friction: 0,
         },
         x: 40,
         y: 0,
@@ -68,11 +76,17 @@ export default function Pong() {
       }),
     );
 
+    const targetSpeed = Signal(1)
     const ball = entities.addChild(
       Entity({
         shape: "ellipse",
         matter: {
           shape: "circle",
+          friction: 0,
+          restitution: 1,
+          frictionAir: 0,
+          mass: 1,
+          inertia: Infinity
         },
         x: 0,
         y: 0,
@@ -85,7 +99,10 @@ export default function Pong() {
       Entity({
         matter: {
           shape: "rectangle",
-          isStatic: true,
+          static: true,
+          restitution: 1,
+          friction: 0,
+          mass: 1
         },
         x: 0,
         y: -51,
@@ -94,16 +111,20 @@ export default function Pong() {
       }),
     );
 
-    const bottomWall = entities.addChild(
+    const bottomWall = window.bottomWall = entities.addChild(
       Entity({
         matter: {
           shape: "rectangle",
-          isStatic: true,
+          static: true,
+          restitution: 1,
+          friction: 0,
+          mass: 1,
+          inertia: Infinity
         },
         x: 0,
-        y: 51,
+        y: 54,
         width: 100,
-        height: 2,
+        height: 8,
       }),
     );
     const matterPlugin = createMatterPlugin(entities, {
@@ -114,12 +135,28 @@ export default function Pong() {
         rightPaddle.y = 0;
       },
     });
+    const ballManager = {
+        mount: ()=>{
+        },
+        tick: ()=>{
+            if (Body.getSpeed(ball.matterBody) === 0) {
+                Body.setVelocity(ball.matterBody, {x: 0.5 * Math.random() + 0.3, y: 0 /*0.5 * Math.random()*/})
+            } else if (Body.getSpeed(ball.matterBody) < 0.5) {
+                //Body.setSpeed(ball.matterBody, 1)
+            }
+           //Body.setSpeed(ball.matterBody, targetSpeed.get())
+        }
+    }
+    window.start = ()=>ball.matterBody.force.x = 0.00003
+    window.kick = (speed=targetSpeed.get())=>Body.setSpeed(ball.matterBody, speed)
+    window.read = ()=>Body.getSpeed(ball.matterBody)
     // End of main game setup
     const gameCore = createGameCore({
       plugins: [
         createGameLoop(),
         createP5Renderer(entities, renderSettings),
         matterPlugin,
+        ballManager
       ],
     });
     await gameCore.mount();
