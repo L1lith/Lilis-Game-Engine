@@ -109,6 +109,13 @@ function createP5Renderer(entities = null, renderSettings) {
                     entityCanvasWidth,
                     entityCanvasHeight,
                   );
+                } else if (shape === "ellipse") {
+                  p.ellipse(
+                    entityCenterCanvasX,
+                    entityCenterCanvasY,
+                    entityCanvasWidth,
+                    entityCanvasHeight,
+                  );
                 } else {
                   console.warn(
                     "Unimplemented shape, skipping: " + entity.shape,

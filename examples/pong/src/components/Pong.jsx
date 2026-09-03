@@ -27,22 +27,22 @@ export default function Pong() {
             shape: 'rect',
             x: -40,
             y: 0,
-            width: 2.5,
+            width: 2,
             height: 10,
-            fill: 'white'
+            fill: '#85e8ff'
         }))
         
         const rightPaddle = entities.addChild(Entity({
             shape: 'rect',
             x: 40,
             y: 0,
-            width: 2.5,
+            width: 2,
             height: 10,
-            fill: 'white'
+            fill: '#85ffba'
         }))
         
         const ball = entities.addChild(Entity({
-            shape: 'rect',
+            shape: 'ellipse',
             x: 0,
             y: 0,
             width: 2.5,
