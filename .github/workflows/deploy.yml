@@ -3,6 +3,10 @@ name: Deploy Astro Sites to GitHub Pages
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - 'site/**'
+      - 'examples/**'
+      - '.github/workflows/*'
   workflow_dispatch:
 
 permissions:
@@ -15,74 +19,197 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      site_changed: ${{ steps.changes.outputs.site_changed }}
+      examples_json: ${{ steps.changes.outputs.examples_json }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Detect changes
+        id: changes
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+          
+          # Check site
+          if echo "$CHANGED_FILES" | grep -q "^site/"; then
+            echo "site_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "site_changed=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Find changed examples
+          EXAMPLES=()
+          for example in examples/*/; do
+            if [ -d "$example" ]; then
+              example_name=$(basename "$example")
+              if echo "$CHANGED_FILES" | grep -q "^examples/$example_name/"; then
+                EXAMPLES+=("$example_name")
+              fi
+            fi
+          done
+          
+          # Convert to JSON array
+          JSON_EXAMPLES=$(printf '%s\n' "${EXAMPLES[@]}" | jq -R . | jq -s .)
+          echo "examples_json=$JSON_EXAMPLES" >> $GITHUB_OUTPUT
+
+  build-site:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.site_changed == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node.js (LTS)
+      
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'npm'
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Install optional dependencies in root
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            site/node_modules
+          key: ${{ runner.os }}-site-${{ hashFiles('site/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-site-
+      
+      - name: Install optional dependencies
         run: |
-          echo "📦 Installing optional dependencies from root package.json..."
-          # Extract and install optional dependencies from root package.json
           if [ -f "package.json" ]; then
-            # Get optional dependencies from package.json
             OPTIONAL_DEPS=$(node -p "Object.keys(require('./package.json').optionalDependencies || {}).join(' ')" 2>/dev/null || echo "")
-            
             if [ -n "$OPTIONAL_DEPS" ]; then
-              echo "Found optional dependencies: $OPTIONAL_DEPS"
-              echo "Installing: $OPTIONAL_DEPS"
-              npm install $OPTIONAL_DEPS
-            else
-              echo "ℹ️ No optional dependencies found in root package.json"
+              npm install --prefer-offline --no-audit --no-fund $OPTIONAL_DEPS
             fi
-          else
-            echo "⚠️ No root package.json found, skipping optional dependencies"
           fi
-
-      - name: Build main site
+      
+      - name: Build site
         run: |
-          echo "Building main site..."
           cd site
-          npm install
+          npm install --prefer-offline --no-audit --no-fund
           npm run build
           cd ..
           mkdir -p combined_build
           cp -r site/dist/* combined_build/
+      
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: combined_build/
+          retention-days: 1
 
-      - name: Build example projects
+  build-examples:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.examples_json != '[]' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: ${{ fromJson(needs.detect-changes.outputs.examples_json || '["all"]') }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            examples/${{ matrix.example }}/node_modules
+          key: ${{ runner.os }}-example-${{ matrix.example }}-${{ hashFiles('examples/${{ matrix.example }}/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-example-${{ matrix.example }}-
+      
+      - name: Install optional dependencies
         run: |
-          # Find all example directories
-          for example_dir in examples/*/; do
+          if [ -f "package.json" ]; then
+            OPTIONAL_DEPS=$(node -p "Object.keys(require('./package.json').optionalDependencies || {}).join(' ')" 2>/dev/null || echo "")
+            if [ -n "$OPTIONAL_DEPS" ]; then
+              npm install --prefer-offline --no-audit --no-fund $OPTIONAL_DEPS
+            fi
+          fi
+      
+      - name: Build example
+        run: |
+          cd examples/${{ matrix.example }}
+          npm install --prefer-offline --no-audit --no-fund
+          npm run build
+          cd ../..
+          mkdir -p combined_build/examples/${{ matrix.example }}
+          cp -r examples/${{ matrix.example }}/dist/* combined_build/examples/${{ matrix.example }}/
+      
+      - name: Upload example artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-${{ matrix.example }}-build
+          path: combined_build/
+          retention-days: 1
+
+  combine-and-deploy:
+    needs: [detect-changes, build-site, build-examples]
+    if: |
+      always() && 
+      (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
+      (needs.build-examples.result == 'success' || needs.build-examples.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      
+      - name: Combine builds
+        run: |
+          mkdir -p final_build
+          
+          # Copy site build if exists
+          if [ -d "artifacts/site-build" ]; then
+            cp -r artifacts/site-build/* final_build/
+          fi
+          
+          # Copy all example builds
+          for example_dir in artifacts/example-*-build/; do
             if [ -d "$example_dir" ]; then
-              example_name=$(basename "$example_dir")
-              echo "Building example: $example_name"
-              cd "$example_dir"
-              npm install
-              npm run build
-              cd ../..
-              mkdir -p "combined_build/examples/$example_name"
-              cp -r "$example_dir/dist/"* "combined_build/examples/$example_name/"
+              cp -r "$example_dir"/* final_build/
             fi
           done
-
-      - name: Upload artifact
+          
+          # Create index page if missing
+          if [ ! -f "final_build/index.html" ]; then
+            cat > final_build/index.html << 'EOF'
+            <!DOCTYPE html>
+            <html><head><title>Projects</title></head>
+            <body><h1>Projects</h1><ul>
+            <li><a href="/Lilis-Game-Engine/">Main Site</a></li>
+            EOF
+            for example_dir in final_build/examples/*/; do
+              if [ -d "$example_dir" ]; then
+                example_name=$(basename "$example_dir")
+                echo "<li><a href=\"/Lilis-Game-Engine/examples/$example_name/\">$example_name</a></li>" >> final_build/index.html
+              fi
+            done
+            echo "</ul></body></html>" >> final_build/index.html
+          fi
+      
+      - name: Upload final artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './combined_build'
-
+          path: './final_build'
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
