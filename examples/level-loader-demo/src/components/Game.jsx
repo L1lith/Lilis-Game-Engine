@@ -18,12 +18,12 @@ export default function Game() {
         const levelLoader = LevelLoader(entities, {
             levelA: {
                 mount: (_, {entityList})=>{
-                    entityList.addChild(Entity({imageURL: '/chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50}))
+                    entityList.addChild(Entity({imageURL: 'chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50}))
                 }
             },
             levelB: {
                 mount: (_, {entityList})=>{
-                    entityList.addChild(Entity({imageURL: '/warrior.png', x: 0, y: 0, width: 50, height: 50}))
+                    entityList.addChild(Entity({imageURL: 'warrior.png', x: 0, y: 0, width: 50, height: 50}))
                 }
             }
         }, {
