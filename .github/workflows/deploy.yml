@@ -33,7 +33,7 @@ jobs:
       - name: Detect changes
         id: changes
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1)
+          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1 || echo "")
           
           # Check site
           if echo "$CHANGED_FILES" | grep -q "^site/"; then
@@ -43,18 +43,27 @@ jobs:
           fi
           
           # Find changed examples
-          EXAMPLES=()
+          EXAMPLES=""
           for example in examples/*/; do
             if [ -d "$example" ]; then
               example_name=$(basename "$example")
               if echo "$CHANGED_FILES" | grep -q "^examples/$example_name/"; then
-                EXAMPLES+=("$example_name")
+                if [ -z "$EXAMPLES" ]; then
+                  EXAMPLES="\"$example_name\""
+                else
+                  EXAMPLES="$EXAMPLES, \"$example_name\""
+                fi
               fi
             fi
           done
           
-          # Convert to JSON array
-          JSON_EXAMPLES=$(printf '%s\n' "${EXAMPLES[@]}" | jq -R . | jq -s .)
+          # Create JSON array
+          if [ -n "$EXAMPLES" ]; then
+            JSON_EXAMPLES="[$EXAMPLES]"
+          else
+            JSON_EXAMPLES="[]"
+          fi
+          
           echo "examples_json=$JSON_EXAMPLES" >> $GITHUB_OUTPUT
 
   build-site:
@@ -112,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: ${{ fromJson(needs.detect-changes.outputs.examples_json || '["all"]') }}
+        example: ${{ fromJson(needs.detect-changes.outputs.examples_json || '[]') }}
       fail-fast: false
     steps:
       - name: Checkout
@@ -192,17 +201,26 @@ jobs:
           if [ ! -f "final_build/index.html" ]; then
             cat > final_build/index.html << 'EOF'
             <!DOCTYPE html>
-            <html><head><title>Projects</title></head>
-            <body><h1>Projects</h1><ul>
-            <li><a href="/Lilis-Game-Engine/">Main Site</a></li>
+            <html>
+            <head>
+              <title>Projects</title>
+            </head>
+            <body>
+              <h1>Projects</h1>
+              <ul>
+                <li><a href="/Lilis-Game-Engine/">Main Site</a></li>
             EOF
+            
             for example_dir in final_build/examples/*/; do
               if [ -d "$example_dir" ]; then
                 example_name=$(basename "$example_dir")
-                echo "<li><a href=\"/Lilis-Game-Engine/examples/$example_name/\">$example_name</a></li>" >> final_build/index.html
+                echo "                <li><a href=\"/Lilis-Game-Engine/examples/$example_name/\">$example_name</a></li>" >> final_build/index.html
               fi
             done
-            echo "</ul></body></html>" >> final_build/index.html
+            
+            echo "              </ul>" >> final_build/index.html
+            echo "            </body>" >> final_build/index.html
+            echo "            </html>" >> final_build/index.html
           fi
       
       - name: Upload final artifact
