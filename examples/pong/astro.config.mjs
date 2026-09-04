@@ -1,12 +1,20 @@
-// @ts-check
 import { defineConfig } from "astro/config";
-
 import solidJs from "@astrojs/solid-js";
 
-// https://astro.build/config
-export default defineConfig({
+// Check if we're running in GitHub Actions
+const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
+
+// Base configuration for all environments
+const config = {
   integrations: [solidJs()],
-  site: "https://l1lith.github.io",
-  base: "/Lilis-Game-Engine/examples/pong", // This is the subpath
-  output: "static", // SSG mode
-});
+};
+
+// Add GitHub Pages specific settings only when in GitHub Actions
+if (isGitHubActions) {
+  config.site = "https://l1lith.github.io";
+  config.base = "/Lilis-Game-Engine/examples/pong";
+  config.output = "static";
+}
+
+// https://astro.build/config
+export default defineConfig(config);
