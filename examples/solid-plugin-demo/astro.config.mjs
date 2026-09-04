@@ -1,9 +1,12 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
-import solidJs from '@astrojs/solid-js';
+import solidJs from "@astrojs/solid-js";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [solidJs()]
+  integrations: [solidJs()],
+  site: "https://l1lith.github.io",
+  base: "/Lilis-Game-Engine/solid-plugin-demo", // This is the subpath
+  output: "static", // SSG mode
 });
