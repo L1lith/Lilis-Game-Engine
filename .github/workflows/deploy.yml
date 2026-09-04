@@ -196,20 +196,6 @@ jobs:
               cp -r "$example_dir"/* final_build/
             fi
           done
-          
-            for example_dir in final_build/examples/*/; do
-              if [ -d "$example_dir" ]; then
-                example_name=$(basename "$example_dir")
-                # Convert to title case for display
-                display_name=$(echo "$example_name" | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
-                printf '    <li><a href="/Lilis-Game-Engine/examples/%s/">📦 %s</a></li>\n' "$example_name" "$display_name" >> final_build/index.html
-              fi
-            done
-            
-            printf '%s\n' '  </ul>' \
-              '</body>' \
-              '</html>' >> final_build/index.html
-          fi
       
       - name: Upload final artifact
         uses: actions/upload-pages-artifact@v3
