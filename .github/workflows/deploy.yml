@@ -3,10 +3,10 @@ name: Deploy Astro Sites to GitHub Pages
 on:
   push:
     branches: [ "master" ]
-    paths:
-      - 'site/**'
-      - 'examples/**'
-      - '.github/workflows/*'
+    # paths:
+    #   - 'site/**'
+    #   - 'examples/**'
+    #   - '.github/workflows/*'
   workflow_dispatch:
 
 permissions:
@@ -19,6 +19,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  discover-examples:
+    runs-on: ubuntu-latest
+    outputs:
+      example_matrix: ${{ steps.set-matrix.outputs.example_matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Discover example projects
+        id: set-matrix
+        run: |
+          # Find all directories in examples/ that contain package.json and astro.config.*
+          EXAMPLES=""
+          for example in examples/*/; do
+            if [ -d "$example" ]; then
+              example_name=$(basename "$example")
+              # Check if it's a valid Astro project (has package.json and astro config)
+              if [ -f "examples/$example_name/package.json" ] && \
+                 ( [ -f "examples/$example_name/astro.config.js" ] || \
+                   [ -f "examples/$example_name/astro.config.mjs" ] || \
+                   [ -f "examples/$example_name/astro.config.ts" ] ); then
+                if [ -z "$EXAMPLES" ]; then
+                  EXAMPLES="\"$example_name\""
+                else
+                  EXAMPLES="$EXAMPLES, \"$example_name\""
+                fi
+              else
+                echo "⚠️ Skipping $example_name - not an Astro project"
+              fi
+            fi
+          done
+          
+          # Create JSON array
+          if [ -n "$EXAMPLES" ]; then
+            JSON_EXAMPLES="[$EXAMPLES]"
+          else
+            JSON_EXAMPLES="[]"
+          fi
+          
+          echo "example_matrix=$JSON_EXAMPLES" >> $GITHUB_OUTPUT
+          echo "Found examples: $JSON_EXAMPLES"
+
   build-site:
     runs-on: ubuntu-latest
     steps:
@@ -67,10 +109,12 @@ jobs:
           retention-days: 1
 
   build-examples:
+    needs: discover-examples
+    if: needs.discover-examples.outputs.example_matrix != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: [pong, snake, breakout]  # REPLACE WITH YOUR ACTUAL EXAMPLE NAMES
+        example: ${{ fromJson(needs.discover-examples.outputs.example_matrix) }}
       fail-fast: false
     steps:
       - name: Checkout
@@ -119,6 +163,10 @@ jobs:
 
   combine-and-deploy:
     needs: [build-site, build-examples]
+    if: |
+      always() && 
+      (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
+      (needs.build-examples.result == 'success' || needs.build-examples.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -130,7 +178,7 @@ jobs:
         run: |
           mkdir -p final_build
           
-          # Copy site build
+          # Copy site build if exists
           if [ -d "artifacts/site-build" ]; then
             cp -r artifacts/site-build/* final_build/
           fi
@@ -141,6 +189,13 @@ jobs:
               cp -r "$example_dir"/* final_build/
             fi
           done
+          
+          echo "Final build contents:"
+          ls -la final_build/
+          if [ -d "final_build/examples" ]; then
+            echo "Examples:"
+            ls -la final_build/examples/
+          fi
       
       - name: Upload final artifact
         uses: actions/upload-pages-artifact@v3
