@@ -27,11 +27,30 @@ jobs:
       - name: Setup Node.js (LTS)
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'  # Uses the latest LTS version
+          node-version: 'lts/*'
           cache: 'npm'
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
+      - name: Install optional dependencies in root
+        run: |
+          echo "📦 Installing optional dependencies from root package.json..."
+          # Extract and install optional dependencies from root package.json
+          if [ -f "package.json" ]; then
+            # Get optional dependencies from package.json
+            OPTIONAL_DEPS=$(node -p "Object.keys(require('./package.json').optionalDependencies || {}).join(' ')" 2>/dev/null || echo "")
+            
+            if [ -n "$OPTIONAL_DEPS" ]; then
+              echo "Found optional dependencies: $OPTIONAL_DEPS"
+              echo "Installing: $OPTIONAL_DEPS"
+              npm install $OPTIONAL_DEPS
+            else
+              echo "ℹ️ No optional dependencies found in root package.json"
+            fi
+          else
+            echo "⚠️ No root package.json found, skipping optional dependencies"
+          fi
 
       - name: Build main site
         run: |
@@ -58,42 +77,6 @@ jobs:
               cp -r "$example_dir/dist/"* "combined_build/examples/$example_name/"
             fi
           done
-
-      # - name: Create index page
-      #   run: |
-      #     cat > combined_build/index.html << 'EOF'
-      #     <!DOCTYPE html>
-      #     <html>
-      #     <head>
-      #       <meta charset="utf-8">
-      #       <title>Astro Projects</title>
-      #       <style>
-      #         body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
-      #         h1 { color: #333; }
-      #         .project-list { list-style: none; padding: 0; }
-      #         .project-list li { padding: 0.5rem; border-bottom: 1px solid #eee; }
-      #         .project-list a { color: #0366d6; text-decoration: none; font-size: 1.1rem; }
-      #         .project-list a:hover { text-decoration: underline; }
-      #       </style>
-      #     </head>
-      #     <body>
-      #       <h1>🚀 Astro Projects</h1>
-      #       <ul class="project-list">
-      #         <li><a href="/${{ github.event.repository.name }}/">✨ Main Site</a></li>
-      #     EOF
-          
-      #     for example_dir in examples/*/; do
-      #       if [ -d "$example_dir" ]; then
-      #         example_name=$(basename "$example_dir")
-      #         echo "              <li><a href=\"/${{ github.event.repository.name }}/examples/$example_name/\">📦 $example_name</a></li>" >> combined_build/index.html
-      #       fi
-      #     done
-          
-      #     cat >> combined_build/index.html << 'EOF'
-      #       </ul>
-      #     </body>
-      #     </html>
-      #     EOF
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
