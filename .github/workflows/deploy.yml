@@ -1,0 +1,221 @@
+name: Deploy Astro Sites to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+# Sets permissions for GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: 'npm'
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build all projects
+        run: |
+          # Create combined build directory
+          mkdir -p combined_build
+          
+          # Build main site (located at root/site)
+          echo "Building main site..."
+          cd site
+          npm install
+          npm run build
+          cd ..
+          
+          # Copy main site build to root of combined_build
+          cp -r site/dist/* combined_build/
+          
+          # Find and build all example projects
+          echo "Finding example projects..."
+          examples=$(find examples -maxdepth 1 -type d -not -path examples | sed 's|^\./||' | sort)
+          
+          for example in $examples
+          do
+            echo "Building $example..."
+            cd $example
+            npm install
+            npm run build
+            cd ../..
+            
+            # Copy example build to appropriate subdirectory
+            mkdir -p combined_build/examples/$(basename $example)
+            cp -r $example/dist/* combined_build/examples/$(basename $example)/
+          done
+          
+          # List built projects for debugging
+          echo "Built projects:"
+          ls -la combined_build/
+          if [ -d "combined_build/examples" ]; then
+            echo "Examples:"
+            ls -la combined_build/examples/
+          fi
+
+      # - name: Create index page with links
+      #   run: |
+      #     # Generate a nice index page
+      #     cat > combined_build/index.html << 'EOF'
+      #     <!DOCTYPE html>
+      #     <html>
+      #     <head>
+      #       <meta charset="utf-8">
+      #       <meta name="viewport" content="width=device-width, initial-scale=1">
+      #       <title>Main Project - Examples</title>
+      #       <style>
+      #         * {
+      #           margin: 0;
+      #           padding: 0;
+      #           box-sizing: border-box;
+      #         }
+      #         body {
+      #           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      #           max-width: 900px;
+      #           margin: 0 auto;
+      #           padding: 3rem 2rem;
+      #           background: #fafafa;
+      #           color: #24292e;
+      #           line-height: 1.6;
+      #         }
+      #         h1 {
+      #           font-size: 2.5rem;
+      #           margin-bottom: 0.5rem;
+      #           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      #           -webkit-background-clip: text;
+      #           -webkit-text-fill-color: transparent;
+      #           background-clip: text;
+      #         }
+      #         .subtitle {
+      #           color: #586069;
+      #           font-size: 1.1rem;
+      #           margin-bottom: 2rem;
+      #           border-bottom: 2px solid #e1e4e8;
+      #           padding-bottom: 1rem;
+      #         }
+      #         .project-grid {
+      #           display: grid;
+      #           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      #           gap: 1.5rem;
+      #           margin-top: 2rem;
+      #         }
+      #         .project-card {
+      #           background: white;
+      #           border: 1px solid #e1e4e8;
+      #           border-radius: 10px;
+      #           padding: 1.5rem;
+      #           transition: transform 0.2s, box-shadow 0.2s;
+      #           box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      #         }
+      #         .project-card:hover {
+      #           transform: translateY(-4px);
+      #           box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      #         }
+      #         .project-card a {
+      #           text-decoration: none;
+      #           color: #0366d6;
+      #           font-size: 1.2rem;
+      #           font-weight: 600;
+      #           display: block;
+      #           margin-bottom: 0.5rem;
+      #         }
+      #         .project-card a:hover {
+      #           text-decoration: underline;
+      #         }
+      #         .project-card .description {
+      #           color: #586069;
+      #           font-size: 0.9rem;
+      #         }
+      #         .main-project {
+      #           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      #           color: white;
+      #           margin-bottom: 2rem;
+      #           padding: 2rem;
+      #           border-radius: 12px;
+      #           text-align: center;
+      #         }
+      #         .main-project a {
+      #           color: white !important;
+      #           font-size: 1.5rem !important;
+      #           font-weight: 600;
+      #           text-decoration: none;
+      #         }
+      #         .main-project a:hover {
+      #           text-decoration: underline;
+      #         }
+      #         .main-project .badge {
+      #           display: inline-block;
+      #           background: rgba(255,255,255,0.2);
+      #           padding: 0.2rem 0.8rem;
+      #           border-radius: 20px;
+      #           font-size: 0.8rem;
+      #           margin-top: 0.5rem;
+      #         }
+      #       </style>
+      #     </head>
+      #     <body>
+      #       <h1>🚀 Astro Projects</h1>
+      #       <div class="subtitle">Monorepo of Astro static sites</div>
+            
+      #       <div class="main-project">
+      #         <a href="/projectname/">✨ Main Site</a>
+      #         <div class="badge">Primary Project</div>
+      #       </div>
+            
+      #       <h2 style="margin-top: 2rem; color: #24292e;">📦 Example Projects</h2>
+      #       <div class="project-grid">
+      #     EOF
+          
+      #     # Add each example project to the grid
+      #     if [ -d "examples" ]; then
+      #       for example in examples/*/; do
+      #         example_name=$(basename "$example")
+      #         # Convert kebab-case or snake_case to Title Case for display
+      #         display_name=$(echo "$example_name" | sed 's/[_-]/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
+      #         echo "            <div class=\"project-card\">" >> combined_build/index.html
+      #         echo "              <a href=\"/projectname/examples/$example_name/\">$display_name</a>" >> combined_build/index.html
+      #         echo "              <div class=\"description\">Example project showcasing Astro features</div>" >> combined_build/index.html
+      #         echo "            </div>" >> combined_build/index.html
+      #       done
+      #     fi
+          
+      #     # Close the HTML
+      #     cat >> combined_build/index.html << 'EOF'
+      #       </div>
+      #       <footer style="margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid #e1e4e8; color: #586069; font-size: 0.9rem; text-align: center;">
+      #         Built with ❤️ using Astro &amp; GitHub Actions
+      #       </footer>
+      #     </body>
+      #     </html>
+      #     EOF
+
+      - name: Upload combined artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './combined_build'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
