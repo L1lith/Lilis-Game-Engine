@@ -197,30 +197,18 @@ jobs:
             fi
           done
           
-          # Create index page if missing
-          if [ ! -f "final_build/index.html" ]; then
-            cat > final_build/index.html << 'EOF'
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>Projects</title>
-            </head>
-            <body>
-              <h1>Projects</h1>
-              <ul>
-                <li><a href="/Lilis-Game-Engine/">Main Site</a></li>
-            EOF
-            
             for example_dir in final_build/examples/*/; do
               if [ -d "$example_dir" ]; then
                 example_name=$(basename "$example_dir")
-                echo "                <li><a href=\"/Lilis-Game-Engine/examples/$example_name/\">$example_name</a></li>" >> final_build/index.html
+                # Convert to title case for display
+                display_name=$(echo "$example_name" | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1')
+                printf '    <li><a href="/Lilis-Game-Engine/examples/%s/">📦 %s</a></li>\n' "$example_name" "$display_name" >> final_build/index.html
               fi
             done
             
-            echo "              </ul>" >> final_build/index.html
-            echo "            </body>" >> final_build/index.html
-            echo "            </html>" >> final_build/index.html
+            printf '%s\n' '  </ul>' \
+              '</body>' \
+              '</html>' >> final_build/index.html
           fi
       
       - name: Upload final artifact
