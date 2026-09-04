@@ -130,7 +130,7 @@ export default function matterPlugin(entities, settings) {
   const mount = async () => {
     const engine = Engine.create();
     if (typeof settings.setup == "function") {
-      await settings.setup(engine, entities);
+      await settings.setup(engine, entities, Matter);
     }
     Events.on(engine, "collisionStart", (collisionEvent) => {
       const collisions = collisionEvent.source.pairs.list;

@@ -159,7 +159,8 @@ export default function Pong() {
     ));
 
     const matterPlugin = createMatterPlugin(entities, {
-      setup: (engine) => {
+      setup: (engine, _, matterLib) => {
+        matterLib.Resolver._restingThresh = 0.001;
         engine.gravity.x = 0;
         engine.gravity.y = 0;
         leftPaddle.y = 0;
