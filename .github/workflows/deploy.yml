@@ -19,56 +19,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      site_changed: ${{ steps.changes.outputs.site_changed }}
-      examples_json: ${{ steps.changes.outputs.examples_json }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      
-      - name: Detect changes
-        id: changes
-        run: |
-          CHANGED_FILES=$(git diff --name-only HEAD HEAD~1 || echo "")
-          
-          # Check site
-          if echo "$CHANGED_FILES" | grep -q "^site/"; then
-            echo "site_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "site_changed=false" >> $GITHUB_OUTPUT
-          fi
-          
-          # Find changed examples
-          EXAMPLES=""
-          for example in examples/*/; do
-            if [ -d "$example" ]; then
-              example_name=$(basename "$example")
-              if echo "$CHANGED_FILES" | grep -q "^examples/$example_name/"; then
-                if [ -z "$EXAMPLES" ]; then
-                  EXAMPLES="\"$example_name\""
-                else
-                  EXAMPLES="$EXAMPLES, \"$example_name\""
-                fi
-              fi
-            fi
-          done
-          
-          # Create JSON array
-          if [ -n "$EXAMPLES" ]; then
-            JSON_EXAMPLES="[$EXAMPLES]"
-          else
-            JSON_EXAMPLES="[]"
-          fi
-          
-          echo "examples_json=$JSON_EXAMPLES" >> $GITHUB_OUTPUT
-
   build-site:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.site_changed == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -116,12 +67,10 @@ jobs:
           retention-days: 1
 
   build-examples:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.examples_json != '[]' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        example: ${{ fromJson(needs.detect-changes.outputs.examples_json || '[]') }}
+        example: [pong, snake, breakout]  # REPLACE WITH YOUR ACTUAL EXAMPLE NAMES
       fail-fast: false
     steps:
       - name: Checkout
@@ -169,11 +118,7 @@ jobs:
           retention-days: 1
 
   combine-and-deploy:
-    needs: [detect-changes, build-site, build-examples]
-    if: |
-      always() && 
-      (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
-      (needs.build-examples.result == 'success' || needs.build-examples.result == 'skipped')
+    needs: [build-site, build-examples]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -185,7 +130,7 @@ jobs:
         run: |
           mkdir -p final_build
           
-          # Copy site build if exists
+          # Copy site build
           if [ -d "artifacts/site-build" ]; then
             cp -r artifacts/site-build/* final_build/
           fi
