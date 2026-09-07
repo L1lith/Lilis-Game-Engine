@@ -9,7 +9,7 @@ export default function Game() {
     const [getGameEngineSolidOutput, setGameEngineSolidOutput] = createSignal(null)
     onMount(async ()=>{
         if (isServer) return
-        console.log('Mounted! Rendering a chicken on the canvas every animation frame')
+        console.log('Mounted! Rendering our counter.')
         const renderSettings = new RenderSettings({solidSetter: setGameEngineSolidOutput})
         const textEntity = Entity({solid: CountDisplay})
         textEntity.count = 0
