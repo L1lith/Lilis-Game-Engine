@@ -1,6 +1,8 @@
-The Earth Stewardship MIT Variant License (ESMV)
+Modified Earth Stewardship MIT Variant License (MESMV)
 
 Copyright (c) 2025 Lili a.k.a. [L1lith](https://github.com/L1lith)
+
+The below license terms apply to everything in this repo except for game assets in the [examples folder](https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples) (especially images and other visual elements of the games, but also other assets like sound etc) that were not made by [me](https://github.com/L1lith). The assets in the examples folder are licensed under the terms of the original creators. If the asset was made by me it is then licensed under the below terms. If you are uncertain about the source of any given assets please open an issue rather than make assumptions about the licensing terms, however I have made an effort to select open source assets.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software (or anything else being published under the license) and associated documentation files (the "Software" which may or may not refer to literal software), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
