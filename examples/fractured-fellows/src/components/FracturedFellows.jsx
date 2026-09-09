@@ -13,7 +13,7 @@ import createMatterPlugin from "lilis-engine/matter";
 import createPixiRenderer from "lilis-engine/pixi";
 import { Signal } from "jabr";
 import Matter from "matter-js";
-Matter.Resolver._restingThresh = 0.001;
+//Matter.Resolver._restingThresh = 0.001;
 const { Body } = Matter;
 
 export default function FracturedFellows() {
@@ -21,7 +21,13 @@ export default function FracturedFellows() {
   onMount(async () => {
     if (isServer) return;
     const entities = (window.entities = createEntityList([]));
-    const renderSettings = RenderSettings({});
+    const renderSettings = RenderSettings({canvas});
+    const autoResize = ()=>{
+      const size = Math.min(window.innerWidth, window.innerHeight)
+      renderSettings.width = renderSettings.height = size
+    }
+    window.addEventListener('resize', autoResize)
+    autoResize()
     const matterPlugin = createMatterPlugin(entities)
     // End of main game setup
     const gameCore = createGameCore({
@@ -29,8 +35,6 @@ export default function FracturedFellows() {
         createGameLoop(),
         createPixiRenderer(entities, renderSettings),
         matterPlugin,
-        ballManager,
-        playerController,
       ],
     });
     await gameCore.mount();

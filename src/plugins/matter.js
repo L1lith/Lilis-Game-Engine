@@ -5,7 +5,7 @@ import { Signal } from "jabr";
 
 const minimumUpdateThreshold = 0.0001;
 
-export default function matterPlugin(entities, settings) {
+export default function matterPlugin(entities, settings = {}) {
   entities = entities.deepFlat;
   const engineSignal = Signal(null);
   let matterEntities = [];
