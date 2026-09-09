@@ -62,7 +62,7 @@ export default function FracturedFellows() {
       y: slingshot.y,
       renderPriority: (slingshot.renderPriority || 0) + 10
     }))
-    const sceneCamera = Camera({x: -25, y: 25, width: 50, height: 50})
+    const sceneCamera = renderSettings.camera = Camera({x: -25, y: 25, width: 50, height: 50})
     
     const matterPlugin = createMatterPlugin(entities)
     // End of main game setup
