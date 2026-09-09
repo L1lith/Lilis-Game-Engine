@@ -6,6 +6,7 @@ import {
   TextureStyle,
   Container,
   autoDetectRenderer,
+  TilingSprite,
 } from "pixi.js";
 import { worldToScreenPosition, worldToScreenSize } from "../utility/index.js";
 
@@ -142,6 +143,8 @@ function createPixiRenderer(entities, renderSettings) {
       canvasWidth,
       canvasHeight,
     );
+    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+      pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
 
     pixiSprite.position.set(coords.x, coords.y);
     if (isFinite(entity.renderPriority))
@@ -195,10 +198,42 @@ function createPixiRenderer(entities, renderSettings) {
       canvasHeight,
     );
 
-    if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+    //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+    if (pixiSprite instanceof TilingSprite) {
+      // Set the tiling area dimensions
+      //if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
       pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
-    pixiSprite.width = finalSize.width;
-    pixiSprite.height = finalSize.height;
+      pixiSprite.width = finalSize.width;
+      pixiSprite.height = finalSize.height;
+
+      // Calculate pixels per world unit
+      const pixelsPerWorldUnitX = canvasWidth / 100;
+      const pixelsPerWorldUnitY = canvasHeight / 100;
+
+      // Base scale: 1 world unit = texture's native size
+      // This makes the texture appear at 1 world unit by default
+      const baseScaleX = pixelsPerWorldUnitX / pixiSprite.texture.width;
+      const baseScaleY = pixelsPerWorldUnitY / pixiSprite.texture.height;
+
+      // Apply entity's tileScale multipliers
+      let tileScaleX =
+        baseScaleX * (isFinite(entity.tileScaleX) ? entity.tileScaleX : 1);
+      let tileScaleY =
+        baseScaleY * (isFinite(entity.tileScaleY) ? entity.tileScaleY : 1);
+
+      if (camera) {
+        tileScaleX = camera.transformWidth(tileScaleX);
+        tileScaleY = camera.transformHeight(tileScaleY);
+      }
+      // Set final tileScale
+      pixiSprite.tileScale.set(tileScaleX, tileScaleY);
+    } else {
+      // For regular Sprite
+      if (pixiSprite.pivot._x === 0 && pixiSprite.pivot._y === 0)
+        pixiSprite.pivot.set(pixiSprite.width / 2, pixiSprite.height / 2);
+      pixiSprite.width = finalSize.width;
+      pixiSprite.height = finalSize.height;
+    }
   };
 
   const adjustEntityRotation = (entity) => {
