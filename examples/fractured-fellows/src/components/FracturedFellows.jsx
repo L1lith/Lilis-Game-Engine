@@ -34,10 +34,12 @@ export default function FracturedFellows() {
       sprite: new TilingSprite({
         texture: grassTexture,
       }),
-      width: 100,
-      height: 5,
+      width: 110,
+      height: 9.5,
       x: 0,
-      y: 47.5
+      y: 47.5,
+      tileScaleX: 10,
+      tileScaleY: 10
     }))
     const matterPlugin = createMatterPlugin(entities)
     // End of main game setup
