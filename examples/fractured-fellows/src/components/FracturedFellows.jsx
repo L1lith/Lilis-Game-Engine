@@ -13,8 +13,9 @@ import createMatterPlugin from "lilis-engine/matter";
 import createPixiRenderer from "lilis-engine/pixi";
 import { Signal } from "jabr";
 import Matter from "matter-js";
+import {Assets, TilingSprite} from 'pixi.js'
 //Matter.Resolver._restingThresh = 0.001;
-const { Body } = Matter;
+const { Body } = Matter; // https://www.youtube.com/watch?v=Ilq5XHRpUSE
 
 export default function FracturedFellows() {
   let canvas;
@@ -28,6 +29,16 @@ export default function FracturedFellows() {
     }
     window.addEventListener('resize', autoResize)
     autoResize()
+    const grassTexture = await Assets.load('/grass.png')
+    const ground = entities.addChild(Entity({
+      sprite: new TilingSprite({
+        texture: grassTexture,
+      }),
+      width: 100,
+      height: 5,
+      x: 0,
+      y: 47.5
+    }))
     const matterPlugin = createMatterPlugin(entities)
     // End of main game setup
     const gameCore = createGameCore({
