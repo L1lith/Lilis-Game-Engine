@@ -7,6 +7,7 @@ import {
   RenderSettings,
   createGameLoop,
   createEntityList,
+  Camera
 } from "lilis-engine";
 import { detectKeys } from "lilis-engine/utility";
 import createMatterPlugin from "lilis-engine/matter";
@@ -34,6 +35,10 @@ export default function FracturedFellows() {
       sprite: new TilingSprite({
         texture: grassTexture,
       }),
+      matter: {
+        static: true,
+        shape: 'rectangle'
+      },
       width: 110,
       height: 9.5,
       x: 0,
@@ -41,6 +46,24 @@ export default function FracturedFellows() {
       tileScaleX: 10,
       tileScaleY: 10
     }))
+    const slingshot = entities.addChild(Entity({
+      imageURL: '/slingshot.png',
+      height: 15,
+      width: 8,
+      x: -40,
+      y: 32,
+      renderPriority: 1
+    }))
+    const slingshotLeft = entities.addChild(Entity({
+      imageURL: '/slingshot-left.png',
+      height: slingshot.height,
+      width: slingshot.width,
+      x: slingshot.x,
+      y: slingshot.y,
+      renderPriority: (slingshot.renderPriority || 0) + 10
+    }))
+    const sceneCamera = Camera({x: -25, y: 25, width: 50, height: 50})
+    
     const matterPlugin = createMatterPlugin(entities)
     // End of main game setup
     const gameCore = createGameCore({
