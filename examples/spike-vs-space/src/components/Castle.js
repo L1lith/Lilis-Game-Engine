@@ -12,7 +12,7 @@ export default function Castle(xCenter, yBottom) {
   };
   castle.addChild(
     Block({
-      imageURL: "/stone-1x1.png",
+      imageURL: "stone-1x1.png",
       matter: standardMatterSettings,
       x: xCenter - baseBrickSize,
       y: yBottom - baseBrickSize / 2,
@@ -23,7 +23,7 @@ export default function Castle(xCenter, yBottom) {
 
   castle.addChild(
     Block({
-      imageURL: "/stone-1x1.png",
+      imageURL: "stone-1x1.png",
       matter: standardMatterSettings,
       x: xCenter + baseBrickSize,
       y: yBottom - baseBrickSize / 2,
@@ -34,7 +34,7 @@ export default function Castle(xCenter, yBottom) {
 
   castle.addChild(
     Block({
-      imageURL: "/wood-1x3.png",
+      imageURL: "wood-1x3.png",
       matter: {
         ...standardMatterSettings,
         mass: standardMatterSettings.mass * 0.5,
@@ -48,7 +48,7 @@ export default function Castle(xCenter, yBottom) {
 
   castle.addChild(
     Block({
-      imageURL: "/stone-1x1.png",
+      imageURL: "stone-1x1.png",
       matter: standardMatterSettings,
       x: xCenter - baseBrickSize,
       y: yBottom - baseBrickSize * 2.5,
@@ -59,7 +59,7 @@ export default function Castle(xCenter, yBottom) {
 
   castle.addChild(
     Block({
-      imageURL: "/stone-1x1.png",
+      imageURL: "stone-1x1.png",
       matter: standardMatterSettings,
       x: xCenter + baseBrickSize,
       y: yBottom - baseBrickSize * 2.5,
@@ -70,7 +70,7 @@ export default function Castle(xCenter, yBottom) {
 
   castle.addChild(
     Block({
-      imageURL: "/wood-1x3.png",
+      imageURL: "wood-1x3.png",
       matter: {
         ...standardMatterSettings,
         mass: standardMatterSettings.mass * 0.5,
@@ -154,7 +154,7 @@ function Block(options) {
 // const castle = entities.addChild(EntityList());
 // blocks.forEach((block) => {
 //   const blockEntity = Entity({
-//     imageURL: "/block.png",
+//     imageURL: "block.png",
 //     matter: {
 //       shape: "rectangle",
 //     },

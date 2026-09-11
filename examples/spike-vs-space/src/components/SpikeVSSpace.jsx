@@ -135,7 +135,7 @@ export default function SpikeVSSpace() {
       castle = entities.addChild(Castle(30, 45))
     }
     resetCastle()
-    const grassTexture = await Assets.load("/grass.png");
+    const grassTexture = await Assets.load("grass.png");
     const ground = entities.addChild(
       Entity({
         sprite: new TilingSprite({
@@ -157,7 +157,7 @@ export default function SpikeVSSpace() {
 
     const slingshot = entities.addChild(
       Entity({
-        imageURL: "/slingshot.png",
+        imageURL: "slingshot.png",
         height: 30,
         width: 16,
         x: -30,
@@ -167,7 +167,7 @@ export default function SpikeVSSpace() {
     );
     const slingshotLeft = entities.addChild(
       Entity({
-        imageURL: "/slingshot-left.png",
+        imageURL: "slingshot-left.png",
         height: slingshot.height,
         width: slingshot.width,
         x: slingshot.x,
