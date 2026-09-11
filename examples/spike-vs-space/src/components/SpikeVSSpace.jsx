@@ -167,6 +167,10 @@ export default function SpikeVSSpace() {
     const rubberBandAngleCenter = 150
     const rubberBandDegreesOfFreedom = 80
     let spike = entities.addChild(Entity({
+      matter: {
+        shape: 'circle',
+        static: true,
+      },
       imageURL: "mr-spike.png",
       x: rubberBandRestingPoint.x,
       y: rubberBandRestingPoint.y,
@@ -207,7 +211,7 @@ export default function SpikeVSSpace() {
         rubberBandA.opacity = targetX >= rubberBandRestingPoint.x - 2 ? 0 : 1
     }
     const [isDraggingSlingshot, setDraggingSlingshot] = Signal(false)
-    const sceneCamera = renderSettings.camera = Camera({x: -25, y: 25, width: 50, height: 50})
+    const sceneCamera = renderSettings.camera = Camera()// Camera({x: -25, y: 25, width: 50, height: 50})
     dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y)
     const slingshotMoveListener = (e) => {
       if (launchPoint() !== null) return // Disable Slingshot interaction while a launch is happening
@@ -236,6 +240,7 @@ export default function SpikeVSSpace() {
       if (launchPoint() !== null) return // Disable Slingshot interaction while a launch is happening
       setDraggingSlingshot(isTouchingSlingshot(e))
     }
+    const launchForceModifier = 0.6
     const slingshotTouchEndListener = e=>{
       if (isDraggingSlingshot() && isTouchingSlingshot(e)) {
         // Launch happened
@@ -245,8 +250,11 @@ export default function SpikeVSSpace() {
         setLaunchTime(Date.now())
         const force = Math.min(calculateDistance(spike.x, spike.y, rubberBandRestingPoint.x, rubberBandRestingPoint.y) / maxRubberBandLength / 0.66666666666, 1)
         const angle = calculateAngle(spike.x, spike.y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
-        let xFactor = Math.abs(spike.x - rubberBandRestingPoint.x)
-        let yFactor = Math.abs(spike.y - rubberBandRestingPoint.y)
+        let xFactor = (rubberBandRestingPoint.x - spike.x ) * force * launchForceModifier
+        let yFactor = (rubberBandRestingPoint.y - spike.y) * force * launchForceModifier
+        spike.static = false
+        console.log(xFactor, yFactor)
+        Body.setVelocity(spike.matterBody, {x: xFactor, y: yFactor})
       }
       setDraggingSlingshot(false)
     }
@@ -257,7 +265,6 @@ export default function SpikeVSSpace() {
         const transitionPercent = (Date.now() - launchTime()) / returnToRestTime
         const startingDistance = calculateDistance(launchPoint().x, launchPoint().y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
         const currentDistance = Math.max(0, startingDistance * (1 - transitionPercent))
-        console.log(startingDistance, currentDistance)
         const {x, y} = getPointAtDistance(rubberBandRestingPoint, launchPoint(), currentDistance, true)
         dragRubberBandsTo(x, y, true)
       }

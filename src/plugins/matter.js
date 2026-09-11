@@ -97,9 +97,13 @@ export default function matterPlugin(entities, settings = {}) {
           });
         }
       },
+      static: () => {
+        Matter.Body.setStatic(entity.matterBody, entity.static);
+      },
     };
     entity.on("x", entity.matterListeners.position);
     entity.on("y", entity.matterListeners.position);
+    entity.on("static", entity.matterListeners.static);
     //console.log("adding", engine.world, entity.matterBody);
     Composite.add(engine.world, entity.matterBody);
   };
