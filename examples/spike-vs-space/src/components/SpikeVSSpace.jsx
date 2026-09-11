@@ -102,7 +102,7 @@ function clampAngleToRange(start, end, centerAngleDeg, angleRangeDeg) {
     };
 }
 
-export default function FracturedFellows() {
+export default function SpikeVSSpace() {
   let canvas;
   onMount(async () => {
     if (isServer) return;
@@ -166,7 +166,7 @@ export default function FracturedFellows() {
     const maxRubberBandLength = 15
     const rubberBandAngleCenter = 150
     const rubberBandDegreesOfFreedom = 80
-    let rat = entities.addChild(Entity({
+    let spike = entities.addChild(Entity({
       imageURL: "mr-spike.png",
       x: rubberBandRestingPoint.x,
       y: rubberBandRestingPoint.y,
@@ -174,7 +174,7 @@ export default function FracturedFellows() {
       height: 10,
       renderPriority: 2
     }))
-    const ratInsetDistance = 5
+    const spikeInsetDistance = 5
     const dragRubberBandsTo = (targetX, targetY) => {
         // const width = Math.max(x, rubberBandRestingPoint.x) - Math.min(x, rubberBandRestingPoint.x)
         // const height = Math.max(y, rubberBandRestingPoint.y) - Math.min(y, rubberBandRestingPoint.y)
@@ -183,9 +183,9 @@ export default function FracturedFellows() {
         const {x, y} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, maxRubberBandLength, true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
         
         const rubberBandAClampedX = Math.min(x, rubberBandRestingPoint.x - 4)
-        const {x: ratX, y: ratY} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, Math.min(Math.max(distance - ratInsetDistance, 0), maxRubberBandLength - ratInsetDistance), true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
-        rat.x = ratX
-        rat.y = ratY
+        const {x: spikeX, y: spikeY} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, Math.min(Math.max(distance - spikeInsetDistance, 0), maxRubberBandLength - spikeInsetDistance), true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
+        spike.x = spikeX
+        spike.y = spikeY
         const rubberBandADistance = calculateDistance(rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
         const rubberBandBDistance = calculateDistance(x, y, rubberBandAttachmentB.x, rubberBandAttachmentB.y)
         rubberBandA.width = rubberBandADistance
@@ -228,12 +228,17 @@ export default function FracturedFellows() {
       return target === canvas && worldX < rubberBandRestingPoint.x + 5 && worldY > rubberBandRestingPoint.y - 10
     }
     const slingshotTouchListener = e=>{
-      console.log(e, isTouchingSlingshot(e))
       setDraggingSlingshot(isTouchingSlingshot(e))
     }
     const slingshotTouchEndListener = e=>{
       if (isDraggingSlingshot() && isTouchingSlingshot(e)) {
         // Launch happened
+        // Force: 0-1
+        const force = Math.min(calculateDistance(spike.x, spike.y, rubberBandRestingPoint.x, rubberBandRestingPoint.y) / maxRubberBandLength / 0.66666666666, 1)
+        const angle = calculateAngle(spike.x, spike.y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
+        let xFactor = Math.abs(spike.x - rubberBandRestingPoint.x)
+        let yFactor = Math.abs(spike.y - rubberBandRestingPoint.y)
+        console.log({force, angle, xFactor, yFactor})
       }
       setDraggingSlingshot(false)
     }
