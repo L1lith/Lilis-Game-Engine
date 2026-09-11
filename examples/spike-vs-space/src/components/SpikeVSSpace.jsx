@@ -306,12 +306,28 @@ export default function SpikeVSSpace() {
     };
     const [isDraggingSlingshot, setDraggingSlingshot] = Signal(false);
     const sceneCamera = (renderSettings.camera = Camera()); // Camera({x: -25, y: 25, width: 50, height: 50})
+    const getCanvasCoordinates = e => {
+      const canvasBounding = canvas.getBoundingClientRect()
+      let xInput, yInput
+      if (e.touches && e.touches.length > 0) {
+        console.log(e.touches)
+        const touch = e.touches[0]
+        if (touch.clientX < canvasBounding.left || touch.clientX > canvasBounding.right || touch.clientY < canvasBounding.top || touch.clientY > canvasBounding.bottom) return // out of bounds of the canvas
+        xInput = touch.clientX - canvasBounding.left
+        yInput = touch.clientY - canvasBounding.top
+      } else {
+        const { layerX, layerY } = e;
+        xInput = layerX
+        yInput = layerY
+      }
+      return {x: xInput, y: yInput}
+    }
     dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y);
     const slingshotMoveListener = (e) => {
       if (launchPoint() !== null) return; // Disable Slingshot interaction while a launch is happening
-      const { layerX, layerY } = e;
-      const xPercent = layerX / renderSettings.width;
-      const yPercent = layerY / renderSettings.height;
+      const {x, y} = getCanvasCoordinates(e)
+      const xPercent = x / renderSettings.width;
+      const yPercent = y / renderSettings.height;
       const worldX = sceneCamera.inverseTransformX(xPercent * 100 - 50);
       const worldY = sceneCamera.inverseTransformY(yPercent * 100 - 50);
       const isTouching = isTouchingSlingshot(e);
@@ -323,9 +339,10 @@ export default function SpikeVSSpace() {
       dragRubberBandsTo(worldX, worldY);
     };
     const isTouchingSlingshot = (e) => {
-      const { layerX, layerY, target } = e;
-      const xPercent = layerX / renderSettings.width;
-      const yPercent = layerY / renderSettings.height;
+      const { target } = e;
+      const {x, y} = getCanvasCoordinates(e)
+      const xPercent = x / renderSettings.width;
+      const yPercent = y / renderSettings.height;
       const worldX = sceneCamera.inverseTransformX(xPercent * 100 - 50);
       const worldY = sceneCamera.inverseTransformY(yPercent * 100 - 50);
       return (
@@ -340,7 +357,7 @@ export default function SpikeVSSpace() {
     };
     const launchForceModifier = 0.6;
     const slingshotTouchEndListener = (e) => {
-      if (isDraggingSlingshot() && isTouchingSlingshot(e)) {
+      if (isDraggingSlingshot()) {
         // Launch happened
         // Force: 0-1
         setLaunchPoint({ x: spike.x, y: spike.y });
