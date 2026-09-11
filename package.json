@@ -1,6 +1,6 @@
 {
   "name": "lilis-engine",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "source": "src/index.js",
   "license": "MESMV (see LICENSE.md)",
