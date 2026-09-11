@@ -253,7 +253,6 @@ export default function SpikeVSSpace() {
         let xFactor = (rubberBandRestingPoint.x - spike.x ) * force * launchForceModifier
         let yFactor = (rubberBandRestingPoint.y - spike.y) * force * launchForceModifier
         spike.static = false
-        console.log(xFactor, yFactor)
         Body.setVelocity(spike.matterBody, {x: xFactor, y: yFactor})
       }
       setDraggingSlingshot(false)
@@ -267,6 +266,40 @@ export default function SpikeVSSpace() {
         const currentDistance = Math.max(0, startingDistance * (1 - transitionPercent))
         const {x, y} = getPointAtDistance(rubberBandRestingPoint, launchPoint(), currentDistance, true)
         dragRubberBandsTo(x, y, true)
+      }
+    }
+    const resetSpike = ()=>{
+      setLaunchPoint(null)
+      setLaunchTime(null)
+      setDraggingSlingshot(false)
+      spike.static = true
+      spike.rotation = 0
+      spike.x = rubberBandRestingPoint.x
+      spike.y = rubberBandRestingPoint.y
+      dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y, false)
+    }
+    const restThreshold = 0.005
+    const restResetTime = 1000
+    let lastRest = null
+    const detectLaunchFinishedPlugin = {
+      tick: ()=>{
+        if (spike.x > 50 + spike.width / 2 || spike.x < -50 - spike.width / 2 || spike.y > 50 + spike.height / 2 || spike.y < -50 - spike.height / 2) {
+          // Spike is out of bounds
+          resetSpike()
+        }
+        if (!launchPoint()) return
+          const spikeSpeed = Body.getSpeed(spike.matterBody)
+          const isAtRest = spikeSpeed < restThreshold
+          if (isAtRest) {
+            if (lastRest === null) lastRest = Date.now()
+            const restLength = Date.now() - lastRest
+            if (restLength > restResetTime) {
+              // Reset the launcher
+              resetSpike()
+            }
+          } else {
+            lastRest = null
+          }
       }
     }
     window.addEventListener('mousedown', slingshotTouchListener)
@@ -283,7 +316,8 @@ export default function SpikeVSSpace() {
         createGameLoop(),
         createPixiRenderer(entities, renderSettings),
         matterPlugin,
-        returnToRestPlugin
+        returnToRestPlugin,
+        detectLaunchFinishedPlugin
       ],
     });
     await gameCore.mount();
