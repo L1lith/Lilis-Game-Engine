@@ -68,6 +68,20 @@ export default function Castle(xCenter, yBottom) {
     }),
   );
 
+  castle.addChild(
+    Block({
+      imageURL: "/wood-1x3.png",
+      matter: {
+        ...standardMatterSettings,
+        mass: standardMatterSettings.mass * 0.5,
+      },
+      x: xCenter,
+      y: yBottom - baseBrickSize * 3.5,
+      width: baseBrickSize * 5,
+      height: baseBrickSize,
+    }),
+  );
+
   return castle;
 }
 
