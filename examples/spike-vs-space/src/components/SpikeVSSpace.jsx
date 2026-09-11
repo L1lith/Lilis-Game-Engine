@@ -123,7 +123,7 @@ export default function SpikeVSSpace() {
     autoResize();
     const background = entities.addChild(
       Entity({
-        imageURL: "/sky.png",
+        imageURL: "sky.png",
         width: 100,
         height: 100,
         renderPriority: -100,
@@ -177,14 +177,14 @@ export default function SpikeVSSpace() {
     );
     const rubberBandA = entities.addChild(
       Entity({
-        imageURL: "/rubber-band.png",
+        imageURL: "rubber-band.png",
         height: 1,
         renderPriority: 3,
       }),
     );
     const rubberBandB = entities.addChild(
       Entity({
-        imageURL: "/rubber-band.png",
+        imageURL: "rubber-band.png",
         height: rubberBandA.height,
       }),
     );
