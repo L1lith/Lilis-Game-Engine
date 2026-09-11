@@ -145,7 +145,7 @@ export default function SpikeVSSpace() {
           static: true,
           shape: "rectangle",
         },
-        width: 110,
+        width: 1000,
         height: 9.5,
         x: 0,
         y: 47.5,
