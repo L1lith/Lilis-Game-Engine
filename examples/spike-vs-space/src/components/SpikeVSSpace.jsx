@@ -443,7 +443,11 @@ export default function SpikeVSSpace() {
     window.addEventListener("mouseup", slingshotTouchEndListener);
     window.addEventListener("touchend", slingshotTouchEndListener);
 
-    const matterPlugin = createMatterPlugin(entities);
+    const matterPlugin = createMatterPlugin(entities, {
+      setup: (engine, _, matterLib) => {
+        engine.velocityIterations = 20;
+      },
+    });
     // End of main game setup
     const gameCore = createGameCore({
       plugins: [
