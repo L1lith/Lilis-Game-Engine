@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import solidJs from "@astrojs/solid-js";
+import { basename } from "path";
 
 // Check if we're running in GitHub Actions
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
@@ -13,7 +14,7 @@ const config = {
 // Add GitHub Pages specific settings only when in GitHub Actions
 if (isGitHubActions) {
   config.site = "https://l1lith.github.io";
-  config.base = "/Lilis-Game-Engine/examples/spike-vs-space";
+  config.base = "/Lilis-Game-Engine/examples/" + basename(import.meta.dirname);
   config.output = "static";
 }
 
