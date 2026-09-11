@@ -12,10 +12,13 @@ import {
 import { detectKeys, screenToWorldPosition } from "lilis-engine/utility";
 import createMatterPlugin from "lilis-engine/matter";
 import createPixiRenderer from "lilis-engine/pixi";
+import createSolidRenderer from 'lilis-engine/solid'
 import { Signal } from "jabr";
 import Matter from "matter-js";
 import { Assets, TilingSprite } from "pixi.js";
 import Castle from './Castle'
+import { createSignal as createSolidSignal } from "solid-js";
+import HUD from './HUD.jsx'
 //Matter.Resolver._restingThresh = 0.001;
 const { Body } = Matter; // https://www.youtube.com/watch?v=Ilq5XHRpUSE
 
@@ -104,6 +107,7 @@ function clampAngleToRange(start, end, centerAngleDeg, angleRangeDeg) {
 }
 
 export default function SpikeVSSpace() {
+  const [solidGameContents, setSolidGameContents] = createSolidSignal(null)
   let canvas;
   onMount(async () => {
     if (isServer) return;
@@ -121,6 +125,7 @@ export default function SpikeVSSpace() {
     };
     window.addEventListener("resize", autoResize);
     autoResize();
+    const HUDEntity = entities.addChild(Entity({solid: HUD}))
     const background = entities.addChild(
       Entity({
         imageURL: "sky.png",
@@ -407,6 +412,10 @@ export default function SpikeVSSpace() {
         false,
       );
     };
+    HUDEntity.reset = ()=>{
+      resetSpike()
+      resetCastle()
+    }
     const restThreshold = 0.005;
     const restResetTime = 1000;
     let lastRest = null;
@@ -448,6 +457,7 @@ export default function SpikeVSSpace() {
         engine.velocityIterations = 20;
       },
     });
+    const solidRenderer = createSolidRenderer(entities, RenderSettings({solidSetter: setSolidGameContents}))
     // End of main game setup
     const gameCore = createGameCore({
       plugins: [
@@ -456,15 +466,18 @@ export default function SpikeVSSpace() {
         matterPlugin,
         returnToRestPlugin,
         detectLaunchFinishedPlugin,
+        solidRenderer
       ],
     });
     await gameCore.mount();
     console.log("Game Mounted");
   });
-  return (
+  return (<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vmin; height: 100vmin;" class="game">
     <canvas
-      style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+      style="width: 100%;height: 100%;"
       ref={canvas}
     />
+    {solidGameContents()}
+  </div>
   );
 }
