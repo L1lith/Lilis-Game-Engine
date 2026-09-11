@@ -36,7 +36,6 @@ function calculateCenter(x1, y1, x2, y2) {
   }
 }
 function getPointAtDistance(start, end, distance, clamp = false) {
-    console.log(JSON.stringify({start, end, distance, clamp}))
     // Calculate the vector from start to end
     const dx = end.x - start.x;
     const dy = end.y - start.y;
@@ -138,10 +137,10 @@ export default function FracturedFellows() {
     }))
     const slingshot = entities.addChild(Entity({
       imageURL: '/slingshot.png',
-      height: 15,
-      width: 8,
+      height: 30,
+      width: 16,
       x: -30,
-      y: 36,
+      y: 28,
       renderPriority: 1
     }))
     const slingshotLeft = entities.addChild(Entity({
@@ -155,51 +154,96 @@ export default function FracturedFellows() {
     const rubberBandA = entities.addChild(Entity({
       imageURL: '/rubber-band.png',
       height: 1,
-      renderPriority: 2
+      renderPriority: 3
     }))
     const rubberBandB = entities.addChild(Entity({
       imageURL: '/rubber-band.png',
       height: rubberBandA.height
     }))
-    const rubberBandAttachmentA = {x: slingshot.x - 3, y: slingshot.y - 3}
-    const rubberBandAttachmentB = {x: slingshot.x + 1.75, y: slingshot.y - 6}
-    const rubberBandRestingPoint = {x: slingshot.x, y: slingshot.y - 5}
+    const rubberBandAttachmentA = {x: slingshot.x - 5, y: slingshot.y - 6}
+    const rubberBandAttachmentB = {x: slingshot.x + 3.5, y: slingshot.y - 12}
+    const rubberBandRestingPoint = {x: slingshot.x, y: slingshot.y - 10}
     const maxRubberBandLength = 15
     const rubberBandAngleCenter = 150
     const rubberBandDegreesOfFreedom = 80
+    let rat = entities.addChild(Entity({
+      imageURL: "mr-spike.png",
+      x: rubberBandRestingPoint.x,
+      y: rubberBandRestingPoint.y,
+      width: 10,
+      height: 10,
+      renderPriority: 2
+    }))
+    const ratInsetDistance = 5
     const dragRubberBandsTo = (targetX, targetY) => {
         // const width = Math.max(x, rubberBandRestingPoint.x) - Math.min(x, rubberBandRestingPoint.x)
         // const height = Math.max(y, rubberBandRestingPoint.y) - Math.min(y, rubberBandRestingPoint.y)
         // const restingPointAngle = calculateAngle(x, y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
+        const distance = calculateDistance(targetX, targetY, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
         const {x, y} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, maxRubberBandLength, true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
-        console.log({targetX, x, targetY, y})
-        const rubberBandADistance = calculateDistance(x, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
+        
+        const rubberBandAClampedX = Math.min(x, rubberBandRestingPoint.x - 4)
+        const {x: ratX, y: ratY} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, Math.min(Math.max(distance - ratInsetDistance, 0), maxRubberBandLength - ratInsetDistance), true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
+        rat.x = ratX
+        rat.y = ratY
+        const rubberBandADistance = calculateDistance(rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
         const rubberBandBDistance = calculateDistance(x, y, rubberBandAttachmentB.x, rubberBandAttachmentB.y)
         rubberBandA.width = rubberBandADistance
         rubberBandB.width = rubberBandBDistance
-        const {x: bandAx, y: bandAy} = calculateCenter(rubberBandAttachmentA.x, rubberBandAttachmentA.y, x, y)
+        const {x: bandAx, y: bandAy} = calculateCenter(rubberBandAttachmentA.x, rubberBandAttachmentA.y, rubberBandAClampedX, y)
         const {x: bandBx, y: bandBy} = calculateCenter(rubberBandAttachmentB.x, rubberBandAttachmentB.y, x, y)
         rubberBandA.x = bandAx
         rubberBandA.y = bandAy
         rubberBandB.x = bandBx
         rubberBandB.y = bandBy
-        const rubberBandARotation = calculateAngle(x, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
+        const rubberBandARotation = calculateAngle(rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
         const rubberBandBRotation = calculateAngle(x, y, rubberBandAttachmentB.x, rubberBandAttachmentB.y)
         rubberBandA.rotation = rubberBandARotation
         rubberBandB.rotation = rubberBandBRotation
+        rubberBandA.opacity = targetX >= rubberBandRestingPoint.x - 2 ? 0 : 1
     }
-    const sceneCamera = renderSettings.camera = Camera()//Camera({x: -25, y: 25, width: 50, height: 50})
+    const [isDraggingSlingshot, setDraggingSlingshot] = Signal(false)
+    const sceneCamera = renderSettings.camera = Camera({x: -25, y: 25, width: 50, height: 50})
     dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y)
-    window.addEventListener('mousemove', ({layerX, layerY, target}) => {
-      if (target !== canvas) return dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y)
+    const slingshotMoveListener = (e) => {
+      const {layerX, layerY} = e
       const xPercent = layerX / renderSettings.width
       const yPercent = layerY / renderSettings.height
       const worldX = sceneCamera.inverseTransformX(xPercent * 100 - 50)
       const worldY = sceneCamera.inverseTransformY(yPercent * 100 - 50)
-      if (worldX > rubberBandRestingPoint.x || worldY < rubberBandRestingPoint.y - 10) return dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y)
+      const isTouching = isTouchingSlingshot(e)
+      if (!isTouching) setDraggingSlingshot(false)
+      if (!isDraggingSlingshot()) {
+        dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y)
+        return
+      }
       dragRubberBandsTo(worldX, worldY)
-    })
-    
+    }
+    const isTouchingSlingshot = e => {
+      const {layerX, layerY, target} = e
+      const xPercent = layerX / renderSettings.width
+      const yPercent = layerY / renderSettings.height
+      const worldX = sceneCamera.inverseTransformX(xPercent * 100 - 50)
+      const worldY = sceneCamera.inverseTransformY(yPercent * 100 - 50)
+      return target === canvas && worldX < rubberBandRestingPoint.x + 5 && worldY > rubberBandRestingPoint.y - 10
+    }
+    const slingshotTouchListener = e=>{
+      console.log(e, isTouchingSlingshot(e))
+      setDraggingSlingshot(isTouchingSlingshot(e))
+    }
+    const slingshotTouchEndListener = e=>{
+      if (isDraggingSlingshot() && isTouchingSlingshot(e)) {
+        // Launch happened
+      }
+      setDraggingSlingshot(false)
+    }
+    window.addEventListener('mousedown', slingshotTouchListener)
+    window.addEventListener('touchstart', slingshotTouchListener)
+    window.addEventListener('mousemove', slingshotMoveListener)
+    window.addEventListener('touchmove', slingshotMoveListener)
+    window.addEventListener('mouseup', slingshotTouchEndListener)
+    window.addEventListener('touchend', slingshotTouchEndListener)
+
     const matterPlugin = createMatterPlugin(entities)
     // End of main game setup
     const gameCore = createGameCore({
