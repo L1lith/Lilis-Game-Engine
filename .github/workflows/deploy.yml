@@ -148,7 +148,20 @@ jobs:
       - name: Build example
         run: |
           cd examples/${{ matrix.example }}
+          # Remove lilis-engine from the example's package.json so npm install
+          # doesn't try to resolve the file:../.. path (which doesn't exist in CI
+          # outside the checkout root and can behave differently in production).
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            if (pkg.dependencies) delete pkg.dependencies['lilis-engine'];
+            if (pkg.devDependencies) delete pkg.devDependencies['lilis-engine'];
+            if (pkg.peerDependencies) delete pkg.peerDependencies['lilis-engine'];
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
           npm install --prefer-offline --no-audit --no-fund
+          # Install the latest published version of lilis-engine from npm
+          npm install lilis-engine@latest --no-audit --no-fund
           npm run build
           cd ../..
           mkdir -p combined_build/examples/${{ matrix.example }}
