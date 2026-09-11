@@ -175,7 +175,9 @@ export default function SpikeVSSpace() {
       renderPriority: 2
     }))
     const spikeInsetDistance = 5
-    const dragRubberBandsTo = (targetX, targetY) => {
+    const [launchPoint, setLaunchPoint] = Signal(null)
+    const [launchTime, setLaunchTime] = Signal(null)
+    const dragRubberBandsTo = (targetX, targetY, ignoreSpike=false) => {
         // const width = Math.max(x, rubberBandRestingPoint.x) - Math.min(x, rubberBandRestingPoint.x)
         // const height = Math.max(y, rubberBandRestingPoint.y) - Math.min(y, rubberBandRestingPoint.y)
         // const restingPointAngle = calculateAngle(x, y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
@@ -183,20 +185,22 @@ export default function SpikeVSSpace() {
         const {x, y} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, maxRubberBandLength, true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
         
         const rubberBandAClampedX = Math.min(x, rubberBandRestingPoint.x - 4)
-        const {x: spikeX, y: spikeY} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, Math.min(Math.max(distance - spikeInsetDistance, 0), maxRubberBandLength - spikeInsetDistance), true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
-        spike.x = spikeX
-        spike.y = spikeY
-        const rubberBandADistance = calculateDistance(rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
+        if (!ignoreSpike) {
+          const {x: spikeX, y: spikeY} = clampAngleToRange(rubberBandRestingPoint, getPointAtDistance(rubberBandRestingPoint, {x: targetX, y: targetY}, Math.min(Math.max(distance - spikeInsetDistance, 0), maxRubberBandLength - spikeInsetDistance), true), rubberBandAngleCenter, rubberBandDegreesOfFreedom)
+          spike.x = spikeX
+          spike.y = spikeY
+        }
+        const rubberBandADistance = calculateDistance(ignoreSpike ? x : rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
         const rubberBandBDistance = calculateDistance(x, y, rubberBandAttachmentB.x, rubberBandAttachmentB.y)
         rubberBandA.width = rubberBandADistance
         rubberBandB.width = rubberBandBDistance
-        const {x: bandAx, y: bandAy} = calculateCenter(rubberBandAttachmentA.x, rubberBandAttachmentA.y, rubberBandAClampedX, y)
+        const {x: bandAx, y: bandAy} = calculateCenter(rubberBandAttachmentA.x, rubberBandAttachmentA.y, ignoreSpike ? x : rubberBandAClampedX, y)
         const {x: bandBx, y: bandBy} = calculateCenter(rubberBandAttachmentB.x, rubberBandAttachmentB.y, x, y)
         rubberBandA.x = bandAx
         rubberBandA.y = bandAy
         rubberBandB.x = bandBx
         rubberBandB.y = bandBy
-        const rubberBandARotation = calculateAngle(rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
+        const rubberBandARotation = calculateAngle(ignoreSpike ? x : rubberBandAClampedX, y, rubberBandAttachmentA.x, rubberBandAttachmentA.y)
         const rubberBandBRotation = calculateAngle(x, y, rubberBandAttachmentB.x, rubberBandAttachmentB.y)
         rubberBandA.rotation = rubberBandARotation
         rubberBandB.rotation = rubberBandBRotation
@@ -206,6 +210,7 @@ export default function SpikeVSSpace() {
     const sceneCamera = renderSettings.camera = Camera({x: -25, y: 25, width: 50, height: 50})
     dragRubberBandsTo(rubberBandRestingPoint.x, rubberBandRestingPoint.y)
     const slingshotMoveListener = (e) => {
+      if (launchPoint() !== null) return // Disable Slingshot interaction while a launch is happening
       const {layerX, layerY} = e
       const xPercent = layerX / renderSettings.width
       const yPercent = layerY / renderSettings.height
@@ -228,19 +233,34 @@ export default function SpikeVSSpace() {
       return target === canvas && worldX < rubberBandRestingPoint.x + 5 && worldY > rubberBandRestingPoint.y - 10
     }
     const slingshotTouchListener = e=>{
+      if (launchPoint() !== null) return // Disable Slingshot interaction while a launch is happening
       setDraggingSlingshot(isTouchingSlingshot(e))
     }
     const slingshotTouchEndListener = e=>{
       if (isDraggingSlingshot() && isTouchingSlingshot(e)) {
         // Launch happened
         // Force: 0-1
+        setLaunchPoint({x: spike.x, y: spike.y})
+        setDraggingSlingshot(false)
+        setLaunchTime(Date.now())
         const force = Math.min(calculateDistance(spike.x, spike.y, rubberBandRestingPoint.x, rubberBandRestingPoint.y) / maxRubberBandLength / 0.66666666666, 1)
         const angle = calculateAngle(spike.x, spike.y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
         let xFactor = Math.abs(spike.x - rubberBandRestingPoint.x)
         let yFactor = Math.abs(spike.y - rubberBandRestingPoint.y)
-        console.log({force, angle, xFactor, yFactor})
       }
       setDraggingSlingshot(false)
+    }
+    const returnToRestTime = 80
+    const returnToRestPlugin = {
+      tick: ()=>{
+        if (!launchPoint() || !isFinite(launchTime()) || launchTime === null) return
+        const transitionPercent = (Date.now() - launchTime()) / returnToRestTime
+        const startingDistance = calculateDistance(launchPoint().x, launchPoint().y, rubberBandRestingPoint.x, rubberBandRestingPoint.y)
+        const currentDistance = Math.max(0, startingDistance * (1 - transitionPercent))
+        console.log(startingDistance, currentDistance)
+        const {x, y} = getPointAtDistance(rubberBandRestingPoint, launchPoint(), currentDistance, true)
+        dragRubberBandsTo(x, y, true)
+      }
     }
     window.addEventListener('mousedown', slingshotTouchListener)
     window.addEventListener('touchstart', slingshotTouchListener)
@@ -256,6 +276,7 @@ export default function SpikeVSSpace() {
         createGameLoop(),
         createPixiRenderer(entities, renderSettings),
         matterPlugin,
+        returnToRestPlugin
       ],
     });
     await gameCore.mount();
