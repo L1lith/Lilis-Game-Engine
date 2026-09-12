@@ -4,5 +4,5 @@
 }
 
 body {
-    font-size: calc(1vmin + 1vmax);
+    font-size: max(calc(1vmin + 1vmax), 1em);
 }
