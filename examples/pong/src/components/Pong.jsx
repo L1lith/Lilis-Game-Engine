@@ -246,11 +246,86 @@ export default function Pong() {
       },
     };
 
-    const player1Controls = { up: detectKeys("w"), down: detectKeys("s") };
+    const player1Controls = { up: detectKeys("w"), down: detectKeys("s"), mobile: Signal(null) };
     const player2Controls = {
       up: detectKeys("ArrowUp"),
       down: detectKeys("ArrowDown"),
+      mobile: Signal(null)
     };
+
+    // BEGIN MOBILE CONTROLS
+    const activeTouches = new Map();
+    const lastDirection = { left: null, right: null };
+
+    function getPlayerFromX(clientX) {
+      return clientX < window.innerWidth / 2 ? 'left' : 'right';
+    }
+
+    function getDirectionFromY(clientY) {
+      return clientY < window.innerHeight / 2 ? 'up' : 'down';
+    }
+
+    function updatePlayerControl(player) {
+      let bestTouch = null;
+      for (const info of activeTouches.values()) {
+        if (info.player === player && (!bestTouch || info.lastUpdate > bestTouch.lastUpdate)) {
+          bestTouch = info;
+        }
+      }
+      const newDirection = bestTouch ? bestTouch.direction : null;
+      if (lastDirection[player] !== newDirection) {
+        lastDirection[player] = newDirection;
+        handlePlayerMovement(player, newDirection);
+      }
+    }
+
+    function handleTouchStart(e) {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        activeTouches.set(touch.identifier, {
+          player: getPlayerFromX(touch.clientX),
+          direction: getDirectionFromY(touch.clientY),
+          lastUpdate: performance.now()
+        });
+      }
+      updatePlayerControl('left');
+      updatePlayerControl('right');
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        const existing = activeTouches.get(touch.identifier);
+        if (!existing) continue;
+        existing.player = getPlayerFromX(touch.clientX);
+        existing.direction = getDirectionFromY(touch.clientY);
+        existing.lastUpdate = performance.now();
+      }
+      updatePlayerControl('left');
+      updatePlayerControl('right');
+    }
+
+    function handleTouchEnd(e) {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        activeTouches.delete(touch.identifier);
+      }
+      updatePlayerControl('left');
+      updatePlayerControl('right');
+    }
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    document.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
+    function handlePlayerMovement(player, direction) {
+      // player: 'left' | 'right'
+      // direction: 'up' | 'down' | null
+      if (player === "left") player1Controls.mobile.set(direction)
+      if (player === "right") player2Controls.mobile.set(direction)
+    }
+    // END MOBILE CONTROLS
 
     const playerSpeed = 2;
     const enforceBounds = (paddleY, entity) =>
@@ -260,14 +335,14 @@ export default function Pong() {
       );
     const playerController = {
       tick: () => {
-        const player1Direction = player1Controls.up.get()
+        const player1Direction = player1Controls.up.get() || player1Controls.mobile.get() === "up"
           ? -1
-          : player1Controls.down.get()
+          : player1Controls.down.get() || player1Controls.mobile.get() === "down"
             ? 1
             : 0;
-        const player2Direction = player2Controls.up.get()
+        const player2Direction = player2Controls.up.get() || player2Controls.mobile.get() === "up"
           ? -1
-          : player2Controls.down.get()
+          : player2Controls.down.get() || player2Controls.mobile.get() === "down"
             ? 1
             : 0;
         leftPaddle.y = enforceBounds(
