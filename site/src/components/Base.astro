@@ -1,0 +1,37 @@
+---
+import '@/styles/global.scss'
+import siteConfig from '@/configs/siteConfig.js'
+import mime from 'mime/lite';
+let {title="Lili's Game Engine", image, description} = Astro.props
+const {favicons=[]} = siteConfig
+
+const maxDescriptionLength = 55
+if (typeof description == 'string') {
+    description = description.trim()
+    if (description.length > maxDescriptionLength) {
+        description = description.substring(0, maxDescriptionLength - 3).trim() + '...'
+    }
+}
+---
+<html lang="en">
+    <head>
+        <title>{title}</title>
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
+        <meta property="og:title" content={title}>
+        {typeof description == 'string' ? <meta property="og:description" content={description}/> : null}
+        {typeof image == 'string' ? <meta property="og:image" content={new URL(image, import.meta.env.SITE).href}/> : null}
+        <slot name="head"/>
+             {favicons.map(favicon => {
+      if ((typeof favicon != 'object' && typeof favicon != 'string') || favicon === null) throw new Error("Invalid Favicon")
+      const url = typeof favicon == 'string' ? favicon : favicon.url
+      let extension = url.split('.')
+      extension = extension[extension.length - 1]
+      const size = favicon?.size || null
+      const favMime = mime.getType(extension)
+      return <link rel="shortcut icon" href={url} sizes={size ? size[0] + 'x' + size[1] : null} type={favMime}/>
+     })}
+    </head>
+    <body>
+        <slot/>
+    </body>
+</html>
