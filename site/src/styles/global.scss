@@ -5,4 +5,18 @@
 
 body {
     font-size: max(calc(1vmin + 1vmax), 1em);
+    background-color: rgb(16, 0, 52);
+    background: linear-gradient(to bottom, rgb(16, 0, 52), #004600);
+    background-size: cover;
+    min-height: 100vh;
+    color: white;
+}
+
+img {
+    pointer-events: none;
+    user-select: none;
+}
+
+a {
+    color: inherit;
 }

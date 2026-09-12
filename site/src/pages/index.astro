@@ -1,9 +1,14 @@
 ---
 import Base from '../components/Base.astro';
+import '@/styles/index.scss'
 ---
 
 <Base>
-	<h1>Lili's Game Engine</h1>
-	<a href="/Lilis-Game-Engine/examples/pong">Play Pong</a>
-	<a href="/Lilis-Game-Engine/examples/spike-vs-space">Play Angry Bird Knock Off</a>
+	<img class="site-logo" src="lilis-game-engine-logo.png" alt="Lili's Game Engine"/>
+	<nav>
+		<ul>
+			<li><a href="/Lilis-Game-Engine/examples/pong">Play Pong</a></li>
+			<li><a href="/Lilis-Game-Engine/examples/spike-vs-space">Play Angry Birds Knock Off</a></li>
+		</ul>
+	</nav>
 </Base>
