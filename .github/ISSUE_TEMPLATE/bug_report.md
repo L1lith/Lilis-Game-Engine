@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Create a report to help improve the game engine
+title: "[BUG] "
+labels: bug
+assignees: ''
+
+---
+
 ## AI Disclosure
 - [ ] I used AI while discovering or debugging this issue
 
