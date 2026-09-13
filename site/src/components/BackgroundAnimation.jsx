@@ -46,7 +46,7 @@ export default function BackgroundAnimation() {
             const widthRatio = Math.max(window.innerWidth / window.innerHeight, 1)
             const heightRatio = Math.max(window.innerHeight / window.innerWidth, 1)
             
-            crtFilter.vignetting = 0.3 / (1 + Math.pow(Math.max(0, 1.25 - widthRatio), 3))
+            crtFilter.vignetting = 0.3 / Math.max((1 + Math.pow(Math.max(0, 1.25 - widthRatio), 3)), Math.pow(heightRatio, 5))
             console.log(widthRatio, heightRatio)
             godrayFilter.center.x = window.innerWidth
             godrayFilter.center.y = 0 - window.innerHeight * .5
