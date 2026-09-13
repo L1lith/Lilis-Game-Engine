@@ -3,7 +3,7 @@ import '@/styles/Header.scss'
 
 ---
 <header class="site-header">
-		<a href="/"><img height="500" width="475" class="site-logo" src="lilis-game-engine-logo.png" alt="Lili's Game Engine"/></a>
+		<a href={import.meta.env.BASE_URL}><img height="500" width="475" class="site-logo" src={import.meta.env.BASE_URL + "lilis-game-engine-logo.png"} alt="Lili's Game Engine"/></a>
         <nav class="site-nav">
             <ul>
                 <li>
