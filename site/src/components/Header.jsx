@@ -11,6 +11,9 @@ export default function Header() {
                 <li>
                     <a href="/docs">Documentation</a>
                 </li>
+                <li>
+                    <a href="https://webslc.com">About Lili</a>
+                </li>
             </ul>
         </nav>
 	</header>)
