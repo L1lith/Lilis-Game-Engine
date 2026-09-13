@@ -1,4 +1,4 @@
-import { convertFunctionToConstructor } from "jabr";
+import { convertFunctionToConstructor, Signal } from "jabr";
 import {
   Application,
   Assets,
@@ -30,7 +30,7 @@ function createPixiRenderer(entities, renderSettings) {
   const pixiSprites = new WeakMap();
 
   let renderer = null;
-  let stage = null;
+  let stage = Signal(null);
   let entityListeners = null;
 
   let isMounted = false;
@@ -107,7 +107,7 @@ function createPixiRenderer(entities, renderSettings) {
     } else if (typeof pixiParent === "object") {
       pixiParent.addChild(pixiSprite);
     } else {
-      stage.addChild(pixiSprite);
+      stage.get().addChild(pixiSprite);
     }
   };
   const adjustEntityPosition = (entity) => {
@@ -390,8 +390,8 @@ function createPixiRenderer(entities, renderSettings) {
       renderSettings.off("visible", listeners.dirty);
     }
 
-    if (stage) {
-      stage.removeChild(pixiSprite);
+    if (stage.get()) {
+      stage.get().removeChild(pixiSprite);
     }
 
     pixiSprites.delete(entity);
@@ -455,8 +455,7 @@ function createPixiRenderer(entities, renderSettings) {
       throw new Error("Cannot mount without a canvas");
     }
 
-    stage = new Container();
-    window.stage = stage;
+    stage.set(new Container());
     entityListeners = new WeakMap();
 
     await handleCanvasSwap();
@@ -496,7 +495,7 @@ function createPixiRenderer(entities, renderSettings) {
       renderer = null;
     }
 
-    stage = null;
+    stage.set(null);
     entityListeners = null;
     currentCanvas = null;
     currentCamera = defaultCamera;
@@ -514,7 +513,7 @@ function createPixiRenderer(entities, renderSettings) {
       throw new Error("Cannot render while unmounted");
     }
 
-    if (!renderer || !stage) return;
+    if (!renderer || !stage.get()) return;
 
     if (dirtyCamera) {
       updateAllEntities();
@@ -525,13 +524,14 @@ function createPixiRenderer(entities, renderSettings) {
       dirtyEntities = [];
     }
 
-    renderer.render(stage);
+    renderer.render(stage.get());
   };
 
   return {
     mount,
     unmount,
     render,
+    stage,
     markDirty: markDirtyCamera,
     types: ["renderer"],
   };

@@ -4,20 +4,46 @@ import { isServer } from 'solid-js/web'
 import createPixiRenderer from 'lilis-engine/pixi'
 import randomBetween from '@/utility/randomBetween'
 import '@/styles/BackgroundAnimation.scss'
-import { Assets } from 'pixi.js'
+import { Assets, Texture, DisplacementFilter, Sprite} from 'pixi.js'
+import { GodrayFilter, AsciiFilter, AdjustmentFilter} from 'pixi-filters'
+
+function createBackgroundTexture() {
+  // adjust it if somehow you need better quality for very very big images
+  const quality = 256;
+  const canvas = document.createElement('canvas');
+
+  canvas.width = 1;
+  canvas.height = quality;
+
+  const ctx = canvas.getContext('2d');
+  // use canvas2d API to create gradient
+  const grd = ctx.createLinearGradient(0, 0, 0, quality);
+
+  grd.addColorStop(0, 'rgb(16, 0, 52)');
+  grd.addColorStop(1, '#004600');
+
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, 1, quality);
+
+  return Texture.from(canvas);
+}
 
 export default function BackgroundAnimation() {
     let canvas, unmountGameEngine
     onMount(async ()=>{
         if (isServer) return
-        const renderSettings = new RenderSettings({canvas, appOptions: {backgroundAlpha: 0}})
+        const renderSettings = new RenderSettings({canvas/*, appOptions: {backgroundAlpha: 0}*/})
         const entities = EntityList()
+        const pixiRenderer = createPixiRenderer(entities, renderSettings)
         const bubbles = entities.addChild(EntityList())
+        const godrayFilter = new GodrayFilter({ gain: 0.5, parallel: false, alpha: 0.5, center: {x: 1000, y: -100}})
         const autoResize = () => {
             renderSettings.width = window.innerWidth
             renderSettings.height = window.innerHeight
             const widthRatio = Math.max(window.innerWidth / window.innerHeight, 1)
             const heightRatio = Math.max(window.innerHeight / window.innerWidth, 1)
+            godrayFilter.center.x = window.innerWidth
+            godrayFilter.center.y = 0 - window.innerHeight * .5
             bubbles.get().forEach(bubble => {
                 bubble.width = bubble.size * heightRatio
                 bubble.height = bubble.size * widthRatio
@@ -29,6 +55,19 @@ export default function BackgroundAnimation() {
         window.entities = entities
         window.bubbles = bubbles
         // Main Game Logic
+        const background = entities.addChild(Entity({
+            texture: createBackgroundTexture(),
+            width: 100,
+            height: 100,
+            x: 0,
+            y: 0,
+            //rotation: Math.PI / 2
+        }))
+        const displacementMap = new Sprite(await Assets.load(import.meta.env.BASE_URL + 'displacement_map.png'))
+        pixiRenderer.stage.addListener(stage => {
+            if (!stage) return
+            stage.filters = [new DisplacementFilter(displacementMap), godrayFilter, new AdjustmentFilter({brightness: 0.8})]
+        })
         const bubbleTextures = await Promise.all(Array.from(Array(6)).map(async (_, n) => {
             return await Assets.load(import.meta.env.BASE_URL + 'backgroundAnimation/abubble' + (n + 1) + '.png')
         }))
@@ -54,6 +93,11 @@ export default function BackgroundAnimation() {
         }
 
         const floatRate = 0.25
+        const animateGodraysPlugin = {
+            tick: ({lifespan}) => {
+                godrayFilter.time = lifespan / 3000
+            }
+        }
         const floatBubblesPlugin = {
             tick: ()=>{
                 if (Math.random() < 0.05) createRandomBubble()
@@ -78,9 +122,8 @@ export default function BackgroundAnimation() {
 
 
         // End Main Game Logic
-        const pixiRenderer = createPixiRenderer(entities, renderSettings)
         const gameLoop = createGameLoop()
-        const gameCore = createGameCore({plugins:[pixiRenderer, gameLoop, floatBubblesPlugin]})
+        const gameCore = createGameCore({plugins:[pixiRenderer, gameLoop, floatBubblesPlugin, animateGodraysPlugin]})
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
