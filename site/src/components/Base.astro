@@ -3,6 +3,7 @@ import '@/styles/global.scss'
 import siteConfig from '@/configs/siteConfig.js'
 import mime from 'mime/lite';
 import Header from '@/components/Header.astro'
+import BackgroundAnimation from './BackgroundAnimation';
 
 let {title="Lili's Game Engine", image, description, noHeader=false, class: className} = Astro.props
 const {favicons=[]} = siteConfig
@@ -33,7 +34,8 @@ if (typeof description == 'string') {
      })}
     </head>
     <body>
-        {noHeader ? null : <Header base={ Astro.url.origin + (Astro.url.origin.endsWith('/') ? '' : '/') }/>}
+        <BackgroundAnimation client:load/>
+        {noHeader ? null : <Header/>}
         <main class={className || null}>
             <slot/>
         </main>

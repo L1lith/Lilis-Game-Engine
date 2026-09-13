@@ -72,10 +72,17 @@ function createPixiRenderer(entities, renderSettings) {
       renderer = null;
     }
 
+    const appOptions =
+      typeof renderSettings.appOptions === "object" &&
+      renderSettings.appOptions !== null
+        ? renderSettings.appOptions
+        : {};
+
     renderer = await autoDetectRenderer({
       view: renderSettings.canvas,
       width: getCanvasWidth(),
       height: getCanvasHeight(),
+      ...appOptions,
     });
 
     isRegenerating = false;

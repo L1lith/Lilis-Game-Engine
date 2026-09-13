@@ -3,21 +3,33 @@ import { Signal, isSignal, isStore } from "jabr";
 
 function deepFlat(entityListOrEntity) {
   const outputSignal = Signal([]);
+  const registeredListeners = new WeakSet();
+
+  const isSignalLike = (v) =>
+    v != null &&
+    typeof v === "object" &&
+    typeof v.get === "function" &&
+    typeof v.addListener === "function";
 
   const flatten = (value) => {
-    if (isSignal(value)) {
+    if (isSignalLike(value)) {
+      if (!registeredListeners.has(value)) {
+        registeredListeners.add(value);
+        value.addListener(() => updateOutput());
+      }
+
       const currentValue = value.get();
       if (Array.isArray(currentValue)) {
         return currentValue.flatMap((item) => flatten(item));
       }
       return flatten(currentValue);
-    } else if (isStore(value)) {
-      const result = [value];
-      if (isSignal(value.children)) {
-        result.push(...flatten(value.children));
-      }
-      return result;
     }
+
+    // Plain entity object
+    if (value != null && typeof value === "object") {
+      return [value];
+    }
+
     return [];
   };
 
@@ -25,12 +37,6 @@ function deepFlat(entityListOrEntity) {
     outputSignal.set(flatten(entityListOrEntity));
   };
 
-  // Listen to the main entity list
-  if (isSignal(entityListOrEntity)) {
-    entityListOrEntity.addListener(updateOutput);
-  }
-
-  // Initial update
   updateOutput();
 
   return outputSignal;
