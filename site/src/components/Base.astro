@@ -2,7 +2,9 @@
 import '@/styles/global.scss'
 import siteConfig from '@/configs/siteConfig.js'
 import mime from 'mime/lite';
-let {title="Lili's Game Engine", image, description} = Astro.props
+import Header from '@/components/Header.jsx'
+
+let {title="Lili's Game Engine", image, description, noHeader=false, class: className} = Astro.props
 const {favicons=[]} = siteConfig
 
 const maxDescriptionLength = 55
@@ -32,6 +34,9 @@ if (typeof description == 'string') {
      })}
     </head>
     <body>
-        <slot/>
+        {noHeader ? null : <Header/>}
+        <main class={className || null}>
+            <slot/>
+        </main>
     </body>
 </html>

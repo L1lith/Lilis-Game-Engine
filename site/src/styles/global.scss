@@ -10,6 +10,8 @@ body {
     background-size: cover;
     min-height: 100vh;
     color: white;
+    display: flex;
+    flex-direction: column;
 }
 
 img {
@@ -19,4 +21,8 @@ img {
 
 a {
     color: inherit;
+}
+
+ul, li {
+    list-style: none;
 }
