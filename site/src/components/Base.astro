@@ -4,6 +4,7 @@ import siteConfig from '@/configs/siteConfig.js'
 import mime from 'mime/lite';
 import Header from '@/components/Header.astro'
 import BackgroundAnimation from './BackgroundAnimation';
+import { ClientRouter } from "astro:transitions";
 
 let {title="Lili's Game Engine", image, description, noHeader=false, class: className} = Astro.props
 const {favicons=[]} = siteConfig
@@ -14,6 +15,7 @@ if (typeof description == 'string') {
         description = description.substring(0, maxDescriptionLength - 3).trim() + '...'
     }
 }
+
 ---
 <html lang="en">
     <head>
@@ -32,9 +34,10 @@ if (typeof description == 'string') {
       const favMime = mime.getType(extension)
       return <link rel="shortcut icon" href={url} sizes={size ? size[0] + 'x' + size[1] : null} type={favMime}/>
      })}
+     <ClientRouter />
     </head>
     <body>
-        <BackgroundAnimation client:load/>
+        <BackgroundAnimation transition:name="background-animation" client:load/>
         {noHeader ? null : <Header/>}
         <main class={className || null}>
             <slot/>
