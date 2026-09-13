@@ -6,13 +6,13 @@ import '@/styles/demos.scss'
 <Base>
 	<nav class="demo-list">
 		<ul>
-			<li><a href="/examples/pong">
+			<li><a href={import.meta.env.BASE_URL + "examples/pong"}>
                 <h3>Pong</h3>
-                <img class="preview" src="pong-preview.png"/>
+                <img class="preview" src={import.meta.env.BASE_URL + "pong-preview.png"}/>
             </a></li>
-			<li><a href="/examples/spike-vs-space">
+			<li><a href={import.meta.env.BASE_URL + "examples/spike-vs-space"}>
                 <h3>Angry Birds Knock Off</h3>
-                <img class="preview" src="angry-birds-preview.png"/>
+                <img class="preview" src={import.meta.env.BASE_URL + "angry-birds-preview.png"}/>
             </a></li>
 		</ul>
 	</nav>
