@@ -28,7 +28,7 @@ export default function BackgroundAnimation() {
         window.bubbleTextures = bubbleTextures
         const createRandomBubble = (entityOptions={})=>{
             console.log('creating bubble')
-            const wiggleSpeed = randomBetween(100, 1000)
+            const wiggleSpeed = randomBetween(200, 1000)
             const spawnX = randomBetween(-50, 50)
             bubbles.addChild(Entity({
                 texture: bubbleTextures[randomBetween(0, bubbleTextures.length - 1)],
