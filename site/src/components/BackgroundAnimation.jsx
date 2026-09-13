@@ -4,6 +4,7 @@ import { isServer } from 'solid-js/web'
 import createPixiRenderer from 'lilis-engine/pixi'
 import randomBetween from '@/utility/randomBetween'
 import '@/styles/BackgroundAnimation.scss'
+import { Assets } from 'pixi.js'
 
 export default function BackgroundAnimation() {
     let canvas, unmountGameEngine
@@ -21,14 +22,23 @@ export default function BackgroundAnimation() {
         window.entities = entities
         window.bubbles = bubbles
         // Main Game Logic
+        const bubbleTextures = await Promise.all(Array.from(Array(6)).map(async (_, n) => {
+            return await Assets.load(import.meta.env.BASE_URL + 'backgroundAnimation/abubble' + (n + 1) + '.png')
+        }))
+        window.bubbleTextures = bubbleTextures
         const createRandomBubble = (entityOptions={})=>{
             console.log('creating bubble')
+            const wiggleSpeed = randomBetween(100, 1000)
+            const spawnX = randomBetween(-50, 50)
             bubbles.addChild(Entity({
-                imageURL: import.meta.env.BASE_URL + '/backgroundAnimation/abubble' + randomBetween(1, 6) + '.png',
+                texture: bubbleTextures[randomBetween(0, bubbleTextures.length - 1)],
                 width: 5,
                 height: 5,
-                x: randomBetween(-50, 50),
+                x: spawnX,
+                spawnX,
+                wiggleSpeed,
                 y: 50,
+                birth: Date.now(),
                 ...entityOptions
             }))
         }
@@ -37,13 +47,22 @@ export default function BackgroundAnimation() {
         const floatBubblesPlugin = {
             tick: ()=>{
                 if (Math.random() < 0.05) createRandomBubble()
-                bubbles.get().forEach(bubble => {
-                    bubble.y = bubble.y - floatRate
-                    if (bubble.y < -50 - bubble.height / 2) {
-                        console.log('clearing bubble')
-                        bubbles.removeChild(bubble)
+                
+                const toRemove = []
+                const currentBubbles = bubbles.get()  // snapshot
+                for (const bubble of currentBubbles) {
+                    const newY = bubble.y - floatRate
+                    bubble.y = newY
+                    const age = Date.now() - bubble.birth
+                    bubble.x = bubble.spawnX + Math.sin(age / bubble.wiggleSpeed) * 10 - 5
+                    if (newY < -50 - (bubble.height ?? 5) / 2) {
+                        toRemove.push(bubble)
                     }
-                })
+                }
+                // Remove AFTER iterating
+                for (const bubble of toRemove) {
+                    bubbles.removeChild(bubble)
+                }
             }
         }
 
