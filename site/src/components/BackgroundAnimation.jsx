@@ -97,7 +97,7 @@ export default function BackgroundAnimation() {
         const animateFiltersPlugin = {
             tick: ({lifespan}) => {
                 godrayFilter.time = lifespan / 3000
-                crtFilter.time = lifespan / 3000
+                crtFilter.time = lifespan / 500
             }
         }
         const floatBubblesPlugin = {
