@@ -37,7 +37,7 @@ if (typeof description == 'string') {
      <ClientRouter />
     </head>
     <body>
-        <BackgroundAnimation transition:name="background-animation" client:load/>
+        <BackgroundAnimation transition:persist transition:name="background-animation" client:load/>
         {noHeader ? null : <Header/>}
         <main class={className || null}>
             <slot/>
