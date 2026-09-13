@@ -5,6 +5,7 @@ import { isServer } from 'solid-js/web'
 import createPixiRenderer from 'lilis-engine/pixi'
 import randomBetween from '@/utility/randomBetween'
 import '@/styles/BackgroundAnimation.scss'
+import {Signal} from 'jabr'
 import { Assets, Texture, DisplacementFilter, Sprite} from 'pixi.js'
 import { GodrayFilter, AsciiFilter, AdjustmentFilter, CRTFilter} from 'pixi-filters'
 
@@ -80,7 +81,7 @@ export default function BackgroundAnimation() {
         window.bubbleTextures = bubbleTextures
         const createRandomBubble = (entityOptions={})=>{
             const wiggleSpeed = randomBetween(200, 1000)
-            const spawnX = randomBetween(-50, 50)
+            const spawnX = isFinite(entityOptions.x) && entityOptions.x !== null ? entityOptions.x : randomBetween(-50, 50)
             const size = Math.random() * 5 + 2
             const widthRatio = Math.max(window.innerWidth / window.innerHeight, 1)
             const heightRatio = Math.max(window.innerHeight / window.innerWidth, 1)
@@ -97,6 +98,37 @@ export default function BackgroundAnimation() {
                 ...entityOptions
             }))
         }
+
+        const isTouchingPC = Signal(false)
+        const isTouchingMobile = Signal(false)
+        const touchBubble = (e, mobile=false) => {
+            if (e.touches) {
+                if (!isTouchingMobile.get()) return
+                return e.touches.forEach(touch => touchBubble(touch, true))
+            }
+            if (mobile === false && !isTouchingPC.get()) return
+            //if (mobile === false) e.preventDefault()
+            const {clientX, clientY} = e
+            const x = (clientX / window.innerWidth) * 100 - 50 + 6
+            const y = (clientY / window.innerHeight) * 100 - 50
+            const position = {x, y}
+            createRandomBubble(position)
+        }
+        window.addEventListener('mousedown', (e)=>{
+            console.log(e.target)
+            isTouchingPC.set(true)
+            if (e.target === canvas || e.target === document.body) document.body.style.userSelect = 'none'
+        })
+        window.addEventListener('mouseup', ()=>{
+            isTouchingPC.set(false)
+            document.body.style.userSelect = 'initial'
+        })
+        window.addEventListener('touchstart', ()=>isTouchingMobile.set(true))
+        window.addEventListener('touchend', (e)=>{
+            if (e.touches.length < 1) isTouchingMobile.set(false)
+        })
+        window.addEventListener('mousemove', touchBubble)
+        window.addEventListener('touchmove', touchBubble)
 
         const floatRate = 0.25
         const animateFiltersPlugin = {
