@@ -10,15 +10,22 @@ export default function BackgroundAnimation() {
     let canvas, unmountGameEngine
     onMount(async ()=>{
         if (isServer) return
-        const renderSettings = new RenderSettings({canvas, appOptions: {backgroundAlpha: 0}})        
+        const renderSettings = new RenderSettings({canvas, appOptions: {backgroundAlpha: 0}})
+        const entities = EntityList()
+        const bubbles = entities.addChild(EntityList())
         const autoResize = () => {
             renderSettings.width = window.innerWidth
             renderSettings.height = window.innerHeight
+            const widthRatio = Math.max(window.innerWidth / window.innerHeight, 1)
+            const heightRatio = Math.max(window.innerHeight / window.innerWidth, 1)
+            bubbles.get().forEach(bubble => {
+                bubble.width = bubble.size * heightRatio
+                bubbly.height = bubble.size * widthRatio
+            })
         };
         window.addEventListener("resize", autoResize);
-        const entities = EntityList()
-        const bubbles = EntityList()
-        entities.addChild(bubbles)
+        autoResize()
+        
         window.entities = entities
         window.bubbles = bubbles
         // Main Game Logic
@@ -27,15 +34,18 @@ export default function BackgroundAnimation() {
         }))
         window.bubbleTextures = bubbleTextures
         const createRandomBubble = (entityOptions={})=>{
-            console.log('creating bubble')
             const wiggleSpeed = randomBetween(200, 1000)
             const spawnX = randomBetween(-50, 50)
+            const size = Math.random() * 5 + 2
+            const widthRatio = Math.max(window.innerWidth / window.innerHeight, 1)
+            const heightRatio = Math.max(window.innerHeight / window.innerWidth, 1)
             bubbles.addChild(Entity({
                 texture: bubbleTextures[randomBetween(0, bubbleTextures.length - 1)],
-                width: 5,
-                height: 5,
+                width: size * heightRatio,
+                height: size * widthRatio,
                 x: spawnX,
                 spawnX,
+                size,
                 wiggleSpeed,
                 y: 50,
                 birth: Date.now(),
