@@ -39,6 +39,11 @@ img {
 
 a {
     color: inherit;
+    text-decoration: inherit;
+}
+
+p a {
+    text-decoration: underline;
 }
 
 ul, li {
