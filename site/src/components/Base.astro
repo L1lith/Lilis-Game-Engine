@@ -2,7 +2,7 @@
 import '@/styles/global.scss'
 import siteConfig from '@/configs/siteConfig.js'
 import mime from 'mime/lite';
-import Header from '@/components/Header.jsx'
+import Header from '@/components/Header.astro'
 
 let {title="Lili's Game Engine", image, description, noHeader=false, class: className} = Astro.props
 const {favicons=[]} = siteConfig
