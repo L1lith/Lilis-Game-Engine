@@ -5,7 +5,7 @@ import createPixiRenderer from 'lilis-engine/pixi'
 import randomBetween from '@/utility/randomBetween'
 import '@/styles/BackgroundAnimation.scss'
 import { Assets, Texture, DisplacementFilter, Sprite} from 'pixi.js'
-import { GodrayFilter, AsciiFilter, AdjustmentFilter} from 'pixi-filters'
+import { GodrayFilter, AsciiFilter, AdjustmentFilter, CRTFilter} from 'pixi-filters'
 
 function createBackgroundTexture() {
   // adjust it if somehow you need better quality for very very big images
@@ -37,6 +37,7 @@ export default function BackgroundAnimation() {
         const pixiRenderer = createPixiRenderer(entities, renderSettings)
         const bubbles = entities.addChild(EntityList())
         const godrayFilter = new GodrayFilter({ gain: 0.5, parallel: false, alpha: 0.5, center: {x: 1000, y: -100}})
+        const crtFilter = new CRTFilter({vignetting: 0.42})
         const autoResize = () => {
             renderSettings.width = window.innerWidth
             renderSettings.height = window.innerHeight
@@ -66,7 +67,7 @@ export default function BackgroundAnimation() {
         const displacementMap = new Sprite(await Assets.load(import.meta.env.BASE_URL + 'displacement_map.png'))
         pixiRenderer.stage.addListener(stage => {
             if (!stage) return
-            stage.filters = [new DisplacementFilter(displacementMap), godrayFilter, new AdjustmentFilter({brightness: 0.8})]
+            stage.filters = [new DisplacementFilter(displacementMap), godrayFilter, new AdjustmentFilter({brightness: 0.8}), crtFilter]
         })
         const bubbleTextures = await Promise.all(Array.from(Array(6)).map(async (_, n) => {
             return await Assets.load(import.meta.env.BASE_URL + 'backgroundAnimation/abubble' + (n + 1) + '.png')
@@ -93,9 +94,10 @@ export default function BackgroundAnimation() {
         }
 
         const floatRate = 0.25
-        const animateGodraysPlugin = {
+        const animateFiltersPlugin = {
             tick: ({lifespan}) => {
                 godrayFilter.time = lifespan / 3000
+                crtFilter.time = lifespan / 3000
             }
         }
         const floatBubblesPlugin = {
@@ -123,7 +125,7 @@ export default function BackgroundAnimation() {
 
         // End Main Game Logic
         const gameLoop = createGameLoop()
-        const gameCore = createGameCore({plugins:[pixiRenderer, gameLoop, floatBubblesPlugin, animateGodraysPlugin]})
+        const gameCore = createGameCore({plugins:[pixiRenderer, gameLoop, floatBubblesPlugin, animateFiltersPlugin]})
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
