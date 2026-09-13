@@ -53,7 +53,7 @@ export default function BackgroundAnimation() {
             }))
         }
 
-        const floatRate = 0.5
+        const floatRate = 0.25
         const floatBubblesPlugin = {
             tick: ()=>{
                 if (Math.random() < 0.05) createRandomBubble()
