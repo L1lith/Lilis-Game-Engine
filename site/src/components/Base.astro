@@ -6,7 +6,6 @@ import Header from '@/components/Header.jsx'
 
 let {title="Lili's Game Engine", image, description, noHeader=false, class: className} = Astro.props
 const {favicons=[]} = siteConfig
-
 const maxDescriptionLength = 55
 if (typeof description == 'string') {
     description = description.trim()
@@ -34,7 +33,7 @@ if (typeof description == 'string') {
      })}
     </head>
     <body>
-        {noHeader ? null : <Header/>}
+        {noHeader ? null : <Header base={ Astro.url.origin + (Astro.url.origin.endsWith('/') ? '' : '/') }/>}
         <main class={className || null}>
             <slot/>
         </main>
