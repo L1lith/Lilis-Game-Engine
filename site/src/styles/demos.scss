@@ -17,7 +17,7 @@
             position: relative;
             flex-grow: 0;
             flex-shrink: 0;
-            flex-basis: 40%;
+            flex-basis: min(40vmax, 50vmin);
             @media (max-aspect-ratio: 1/1) { // Mobile 
                 flex-basis: calc(80vw - 4vmin - 4vmax);
             }
@@ -37,6 +37,7 @@
                 display: contents;
             }
             .preview {
+                pointer-events: all;
                 margin-top: 2vmin;
                 max-width: min(100%, 40vmin);
             }
