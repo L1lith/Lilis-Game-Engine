@@ -20,7 +20,7 @@ export default function BackgroundAnimation() {
             const heightRatio = Math.max(window.innerHeight / window.innerWidth, 1)
             bubbles.get().forEach(bubble => {
                 bubble.width = bubble.size * heightRatio
-                bubbly.height = bubble.size * widthRatio
+                bubble.height = bubble.size * widthRatio
             })
         };
         window.addEventListener("resize", autoResize);
