@@ -1,4 +1,5 @@
 import { EntityList, Entity, createGameLoop, createGameCore, RenderSettings } from 'lilis-engine'
+import lilisEnginePackage from '../../node_modules/lilis-engine/package.json' with {type: 'json'}
 import { onMount } from "solid-js"
 import { isServer } from 'solid-js/web'
 import createPixiRenderer from 'lilis-engine/pixi'
@@ -32,6 +33,7 @@ export default function BackgroundAnimation() {
     let canvas, unmountGameEngine
     onMount(async ()=>{
         if (isServer) return
+        console.log("Current Engine Version: " + lilisEnginePackage.version)
         const renderSettings = new RenderSettings({canvas/*, appOptions: {backgroundAlpha: 0}*/})
         const entities = EntityList()
         const pixiRenderer = createPixiRenderer(entities, renderSettings)
