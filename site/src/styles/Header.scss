@@ -4,6 +4,7 @@
     margin-bottom: 5vmin;
     align-items: center;
     padding-top: 5vmin;
+    justify-content: center;
     @media (min-aspect-ratio: 1/1) { // Desktop only
         padding-left: 5vmin;
     }
@@ -20,7 +21,7 @@
         }
     }
     .site-nav {
-        flex-grow: 1;
+        //flex-grow: 1;
         align-self: stretch;
         ul {
             filter: hue-rotate(486deg);
