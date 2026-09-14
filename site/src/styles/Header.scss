@@ -44,6 +44,11 @@
                     font-size: 1.25em;
                     margin: 1vmin;
                 }
+                svg {
+                    width: fit-content;
+                    height: 3em;
+                    margin: auto;   
+                }
             }
         }
     }
