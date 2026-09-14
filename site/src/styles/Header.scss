@@ -23,6 +23,7 @@
         flex-grow: 1;
         align-self: stretch;
         ul {
+            filter: hue-rotate(486deg);
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -39,14 +40,8 @@
                     margin-bottom: 2.5vmin;
                 }
                 a {
-                    background-color: black;
-                    border-radius: 100vmax;
                     display: inline-block;
                     font-size: 1.25em;
-                    color: lime;
-                    border: 1px solid white;
-                    box-sizing: border-box;
-                    padding: 2vmin 4vmin;
                     margin: 1vmin;
                 }
             }
