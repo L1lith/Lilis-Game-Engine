@@ -8,7 +8,7 @@ import { Code } from 'astro:components';
 ---
 
 <Base class="docs">
-	<Expandable startExpanded title="Getting Started" class="engine-overview" client:load>
+	<Expandable startExpanded title="Getting Started" class="getting-started" client:load>
 		<!-- <span id="beginners-note" class="beginners-note"><span class="close" onClick="document.getElementById('beginners-note').parentNode.removeChild(document.getElementById('beginners-note')); localStorage.beginner = 'false'">x</span><span class="italic">Note for beginners to coding:</span> these instructions expect that you know basic terminal usage (particularly the `cd` command), as well as have <a href="https://nodejs.org/en">Node.js</a> installed. To learn how to use the terminal please <a href="https://www.marktechpost.com/2025/04/01/the-complete-beginners-guide-to-terminal-command-prompt/">see this tutorial</a>.</span> -->
 		<p>To get started find a <a target="_blank" href={import.meta.env.BASE_URL + "demos"}>demo</a> that you would like to use, then click "View Source Code" to see the corresponding directory name. Then use the following command in the command line (with the command line located in the directory you would like to create your project in), replacing "example-name" with the name of the example directory you'd like to use as your basis:</p>
 		<code class="cli">npx lilis-engine create example-name destination-dir</code>
@@ -67,10 +67,37 @@ await gameCore.mount()
 	<br/>
 	<p>Finally we call gameCore.mount() which automatically tells the gameLoop to start running (and the game loop calls the rest of our plugins each frame). Plugins usually need other context on a case-by-case basis, like renderers will usually need a canvas or some other way to render to the screen. To learn more about the basic building blocks of the game engine see the "Core Exports" section below.</p>
 	</Expandable>
-	<Expandable title="Core Exports" class="engine-overview" client:load>
-
+	<Expandable title="Core Exports" class="core-exports" client:load>
+		<div class="entity export">
+			<h2>Entity</h2>
+			<span class="type"><a href="https://github.com/l1lith/jabr#store-basics">Jabr Type: Store</a></span>
+			<p>An Entity is an object (a Jabr store specifically) that is usually part of a <a href="https://en.wikipedia.org/wiki/Scene_graph#mwHw">scene graph</a>. Basically your game is made up of all kinds of objects like characters, bushes, interactive elements like switches. These types of things are each represented by an entity, and the thing that holds them is the EntityList (a.k.a. this game's version of a scene graph).<br/><br/>An Entity may have any number of properties, however it tends to have a few standard set of properties which plugins tend to expect. These include position and sizing properties like x, y (and z for 3d games), and width and height, (and depth for 3d games). Other properties may include renderPriority (which determines the order that things are drawn) or plugin specific methods.<br/><br/>It may also have the .children property. This property contains an array that functions identically to the EntityList, meaning you can have Entity objects nested inside of each other (allowing it to function as both an Entity and an EntityList).</p>
+		</div>
+		<div class="entity-list export">
+			<h2>EntityList</h2>
+			<span class="type"><a href="https://github.com/L1lith/Jabr#signal-basics">Jabr Type: Signal</a></span>
+			<p>The EntityList is a Jabr Signal which contains an array of Entity objects. We can read and write the current list of entities by using the .get() and .set() methods. Here is a basic example of using an EntityList</p>
+			<Code lang="js" code={`import {EntityList, Entity} from 'lilis-engine'
+const entities = EntityList() // Defaults to an empty array
+const character = Entity({x: 0, y: 0, width: 5, height: 5, imageURL: '/player.png'})
+entities.set([character]) // Add the character to our entity list
+console.log(entities.get()) // Now returns an array with a single Entity inside`}/>
+			<p>As you can see, our core library exports really aren't very complicated. Also, because Jabr provides methods to listen to changes in Signal values plugins can automatically listen to our EntityList to know when Entity objects have been added or removed. We can even use it ourselves if we wish, for example:</p>
+			<Code lang="js" code={`import {EntityList, Entity} from 'lilis-engine'
+const entityList = EntityList()
+entityList.addListener(newEntities =>{
+	console.log(newEntities)
+}) // Add a debug listener so we can listen for changes
+entityList.set([Entity({x: 12, y: 12})]) // Ta-daa, our debug listener is immediately called with our new entity array.`}/>
+			<p>Constantly assigning a new array each time our EntityList's value changes can get annoying. That's why the game engine adds a few helper methods to the EntityList, specifically .addChild, .removeChild, and .hasChild. They abstract away the need to manually do array manipulation. If you've used other game engines this might look familiar:</p>
+			<Code lang="js" code={`import {Entity, EntityList} from 'lilis-engine'
+const entityList = EntityList()
+const character = entityList.addChild(Entity({x: 0, y: 0, width: 5, height: 5, imageURL: '/player.png'}))
+console.log(entityList.get())`}/>
+			<p>We now have the same entityList value as doing this: <Code lang="js" code="entityList.set([character])"/>Plus if there were other entities on there already we wouldn't have to do this (because setting a new array as the EntityList value overwrites the old array entirely):<Code lang="js" code="entityList.set(entityList.get().concat(entity))"/></p>
+		</div>
 	</Expandable>
-	<Expandable title="Plugin System" class="engine-overview" client:load>
+	<Expandable title="Plugin System" class="plugin-system" client:load>
 		<p class="intro">Adding functionality to the game engine is done through the plugin system. While the game engine has a few core plugins (like the game loop) most plugins are integrations for third party game development libraries.</p>
 		<div class="plugin-list">
 			<h2>Official Plugins & Integrations:</h2>
@@ -87,7 +114,7 @@ await gameCore.mount()
 			<tr>
 				<td>Pixi</td>
 				<td>2D Renderer</td>
-				<td></td>
+				<td>WIP</td>
 				<td>lilis-engine/pixi</td>
 				<td><a href="https://pixijs.com/">pixijs.com</a></td>
 				<td>pixi.js</td>
@@ -95,7 +122,7 @@ await gameCore.mount()
 			<tr>
 				<td>p5</td>
 				<td>2D Renderer</td>
-				<td></td>
+				<td>WIP</td>
 				<td>lilis-engine/p5</td>
 				<td><a href="https://p5js.org/">p5js.org</a></td>
 				<td>p5</td>
@@ -103,7 +130,7 @@ await gameCore.mount()
 			<tr>
 				<td>Solid</td>
 				<td>Interactive HTML</td>
-				<td></td>
+				<td>WIP</td>
 				<td>lilis-engine/solid</td>
 				<td><a href="https://www.solidjs.com/">solidjs.com</a></td>
 				<td>solid-js</td>
@@ -111,7 +138,7 @@ await gameCore.mount()
 			<tr>
 				<td>Matter</td>
 				<td>Physics Simulation</td>
-				<td></td>
+				<td>WIP</td>
 				<td>lilis-engine/matter</td>
 				<td><a href="https://www.brm.io/matter-js/">brm.io/matter-js/</a></td>
 				<td>matter-js</td>
@@ -119,7 +146,7 @@ await gameCore.mount()
 			<tr>
 				<td>Pixi-Tiled</td>
 				<td>Tiled Support for Pixi Plugin</td>
-				<td></td>
+				<td>WIP</td>
 				<td>lilis-engine/pixi-tiled</td>
 				<td><a href="https://www.mapeditor.org/">mapeditor.org</a></td>
 				<td>pixi.js, pixi-tiledmap, lilis-engine/pixi</td>
@@ -127,7 +154,7 @@ await gameCore.mount()
 			<tr>
 				<td>Pixi-Tiled-Matter</td>
 				<td>Physics support for the Pixi-Tiled plugin</td>
-				<td></td>
+				<td>WIP</td>
 				<td>lilis-engine/pixi-tiled-matter</td>
 				<td>See Above</td>
 				<td>pixi.js, pixi-tiledmap, lilis-engine/pixi, lilis-engine/pixi-tiled, matter.js</td>

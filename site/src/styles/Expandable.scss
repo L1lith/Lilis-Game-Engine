@@ -21,6 +21,13 @@
             align-items: center;
             font-size: 1.25em;
             margin-left: auto;
+            position: relative;
+            .text-icon {
+                transform: translate(-50%, -50%);
+                position: absolute;
+                top: 41%;
+                left: 50%;
+            }
         }
     }
     .content {
