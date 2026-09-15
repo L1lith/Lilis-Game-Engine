@@ -51,3 +51,13 @@ p a {
 ul, li {
     list-style: none;
 }
+
+code {
+    padding: 1em 2em;
+    margin: 2em 0;
+    width: calc(100% - 4em);
+    display: inline-block;
+    background-color: rgb(45, 45, 45);
+    &.cli {
+    }
+}

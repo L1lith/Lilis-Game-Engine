@@ -3,9 +3,15 @@ import Base from '@/components/Base.astro';
 import '@/styles/docs.scss'
 import OverviewFlowchart from '@/svgs/overview-flowchart.svg'
 import Expandable from '@/components/Expandable';
+//an example project in the <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory</a> 
 ---
 
 <Base class="docs">
+	<Expandable startExpanded title="Getting Started" class="engine-overview" client:load>
+		<p>To get started find a <a target="_blank" href={import.meta.env.BASE_URL + "demos"}>demo</a> that you would like to use, then click "View Source Code" to see the corresponding directory name. Then use the following command in the command line (with the command line located in the directory you would like to create your project in), replacing "example-name" with the name of the example directory you'd like to use as your basis:</p>
+		<code class="cli">npx lilis-engine create example-name</code>
+		<p>There are also more example projects available that are not listed in the demo page, you can find them by visiting the <a target="_blank" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory in the engine's source code</a>.</p>
+	</Expandable>
 	<Expandable title="Game Engine Overview" class="engine-overview" client:load>
 		<h2>Overview Flowchart:</h2>
 		<OverviewFlowchart class="overview-flowchart"/>
@@ -13,9 +19,6 @@ import Expandable from '@/components/Expandable';
 	<Expandable title="Plugin System" class="engine-overview" client:load>
 	</Expandable>
 	<Expandable title="Core Exports" class="engine-overview" client:load>
-		
-	</Expandable>
-	<Expandable title="Getting Started" class="engine-overview" client:load>
 		
 	</Expandable>
 </Base>

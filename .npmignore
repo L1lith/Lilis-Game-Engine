@@ -3,3 +3,6 @@ examples/
 site/
 .github/
 .gitignore
+cli/
+tests/
+CONTRIBUTING.md
