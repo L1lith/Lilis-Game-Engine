@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210.52144mm"
+   height="254.94807mm"
+   viewBox="0 0 210.52144 254.94807"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter32"
+       x="-0.069636778"
+       y="-0.22512673"
+       width="1.1392736"
+       height="1.4502535">
+      <feGaussianBlur
+         stdDeviation="1.8702682"
+         id="feGaussianBlur32" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter32-6"
+       x="-0.069636778"
+       y="-0.22512673"
+       width="1.1392736"
+       height="1.4502535">
+      <feGaussianBlur
+         stdDeviation="1.8702682"
+         id="feGaussianBlur32-3" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter32-6-2"
+       x="-0.069636778"
+       y="-0.22512673"
+       width="1.1392736"
+       height="1.4502535">
+      <feGaussianBlur
+         stdDeviation="1.8702682"
+         id="feGaussianBlur32-3-0" />
+    </filter>
+  </defs>
+  <g
+     id="g28"
+     style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:4;stroke-dasharray:none;stroke-opacity:1"
+     transform="translate(4.1807971,27.235631)">
+    <rect
+       style="fill:#000000;fill-opacity:0.334884;stroke:none;stroke-width:4.36045;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;filter:url(#filter32)"
+       id="rect32"
+       width="64.457947"
+       height="19.938297"
+       x="69.066856"
+       y="-23.981649"
+       rx="8.295393"
+       ry="0" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect28"
+       width="206.52144"
+       height="226.36668"
+       x="-2.1807971"
+       y="-0.65423757"
+       rx="0.94997501" />
+    <text
+       xml:space="preserve"
+       style="font-size:9.26042px;line-height:1;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+       x="105.26337"
+       y="10.805925"
+       id="text28"
+       transform="translate(-4.1807971,-27.235631)"><tspan
+         style="line-height:1;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+         x="105.26337"
+         y="10.805925"
+         id="tspan29">Game Core</tspan><tspan
+         style="font-size:5.29167px;line-height:1;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+         x="105.26337"
+         y="20.066345"
+         id="tspan31">(Holds Everything)</tspan></text>
+  </g>
+  <g
+     id="layer1"
+     transform="translate(4.1807971,27.235631)">
+    <g
+       id="g16">
+      <g
+         id="layer2">
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 147.85801,33.911388 c 0,0 -30.53115,0.327118 -30.31307,21.262766 0.21808,20.935646 0,49.504086 0,49.504086 0,0 1.06167,13.35738 -7.85087,13.35738"
+           id="path19" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 117.60008,66.462615 c 0,0 -1.71362,-20.937753 29.04945,-20.937753"
+           id="path20" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 117.60105,74.943924 c 0,0 -1.48423,-8.978133 31.36157,-8.978133"
+           id="path21" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 117.63242,88.668224 c 0,0 -2.28663,-9.98141 29.17132,-9.98141"
+           id="path22" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 110.02183,117.97584 c 0,0 -10.559215,1.99612 -10.559215,-8.95248"
+           id="path23" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 109.82593,118.00818 -24.280372,1.26985"
+           id="path24" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 110.0849,118.02956 c 0,0 -9.85126,-0.21647 -9.85126,11.04054 0,8.09695 -9.059575,7.47896 -13.531538,7.47896"
+           id="path25" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 84.928737,103.39486 c 0,0 14.56969,-2.92055 14.56969,5.63786"
+           id="path26" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#ff3b3b;stroke-width:1.765;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 84.233269,152.11056 c 0,0 15.987961,5.85172 15.987961,-22.43495"
+           id="path27" />
+        <path
+           style="fill:#ff3b3b;fill-opacity:1;stroke:#b80000;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="matrix(0.91803814,0,0,0.91803814,9.9290258,11.458894)" />
+        <path
+           style="fill:#ff3b3b;fill-opacity:1;stroke:#b80000;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-1"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="matrix(0,0.49228066,-0.49228066,0,132.58279,45.752888)" />
+        <path
+           style="fill:#ff3b3b;fill-opacity:1;stroke:#b80000;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-1-8"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="matrix(0,0.49228066,-0.49228066,0,132.64889,61.543984)" />
+        <path
+           style="fill:#ff3b3b;fill-opacity:1;stroke:#b80000;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-1-8-3"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="matrix(0,0.49228066,-0.49228066,0,132.92591,78.586793)" />
+        <path
+           style="fill:#ff3b3b;fill-opacity:1;stroke:#b80000;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-1-8-3-4"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="matrix(0,0.49228066,-0.49228066,0,132.74371,94.570128)" />
+      </g>
+      <g
+         id="g19">
+        <path
+           style="fill:#ffffff;fill-opacity:1;stroke:#00ff00;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="M 77.411215,39.476635 146.31682,30.091897"
+           id="path9" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:1.0923;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 177.76271,30.650564 c 0,0 9.03982,5.017801 8.8624,8.991177 -0.19434,4.352738 -3.57606,5.327482 -8.70692,8.352551"
+           id="path10" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:1.0923;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 178.70324,64.810812 c 0,0 9.03982,5.017801 8.8624,8.991177 -0.19434,4.352738 -3.57606,5.327482 -8.70692,8.352551"
+           id="path10-3" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:1.12719;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 146.97379,48.991027 c 0,0 -9.00424,2.747663 -8.82752,6.995668 0.19357,4.653589 3.56198,3.732987 8.67264,6.967141"
+           id="path10-2" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:1.12719;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 147.76927,82.60397 c 0,0 -8.82752,-1.169026 -8.82752,8.631266 0,4.657613 -0.11708,81.085084 -0.11708,86.633894"
+           id="path10-2-6" />
+        <path
+           style="fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           d="m 19.627169,62.806942 c -1.090398,-0.21808 0,93.494218 0,117.108778 0,11.80728 9.558235,14.85265 17.528153,14.85265 9.595034,0 12.021641,-0.0232 42.007595,-0.0232"
+           id="path16" />
+        <path
+           style="fill:#00ff00;fill-opacity:1;stroke:#008c00;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-0"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="matrix(-0.14569161,-0.90640387,0.90640387,-0.14569161,33.94613,156.08168)" />
+        <path
+           style="fill:#00ff00;fill-opacity:1;stroke:#008c00;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-0-6"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="translate(21.897196,29.453271)" />
+        <path
+           style="fill:#00ff00;fill-opacity:1;stroke:#008c00;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-0-6-6"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="rotate(60,84.748893,2.6168982)" />
+        <path
+           style="fill:#00ff00;fill-opacity:1;stroke:#008c00;stroke-width:1.76475;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+           id="path28-8-0-6-9"
+           d="m 122.24472,94.113189 -5.12556,8.877731 -5.12556,-8.877731 z"
+           transform="rotate(90,35.512024,113.32418)" />
+      </g>
+    </g>
+    <g
+       id="g9">
+      <rect
+         style="fill:#ffe6aa;fill-opacity:1;stroke:#ffffff;stroke-width:0.407115;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="rect1"
+         width="69.604599"
+         height="44.469105"
+         x="12.615916"
+         y="18.78414"
+         rx="0.89894193"
+         ry="0" />
+      <text
+         xml:space="preserve"
+         style="font-size:10.5833px;line-height:1.05;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.141839"
+         x="47.576969"
+         y="33.097092"
+         id="text2"><tspan
+           id="tspan2"
+           style="font-size:10.5833px;line-height:1.05;stroke-width:0.141839"
+           x="47.576969"
+           y="33.097092">Start: </tspan><tspan
+           style="font-size:10.5833px;line-height:1.05;stroke-width:0.141839"
+           x="47.576969"
+           y="44.209557"
+           id="tspan3">Game Loop</tspan><tspan
+           style="font-size:5.29167px;line-height:1.05;stroke-width:0.141839"
+           x="47.576969"
+           y="55.322021"
+           id="tspan10">(also a plugin)</tspan></text>
+    </g>
+    <g
+       id="g8"
+       transform="translate(4.3759901,-1.0903983)">
+      <rect
+         style="fill:#000000;fill-opacity:0.334884;stroke:none;stroke-width:4.36045;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;filter:url(#filter32-6)"
+         id="rect32-1"
+         width="64.457947"
+         height="19.938297"
+         x="33.684166"
+         y="78.69062"
+         rx="8.295393"
+         ry="0"
+         transform="matrix(0.80146874,0,0,0.48714795,8.709828,44.378947)" />
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.764607;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="rect5"
+         width="52.830303"
+         height="72.160927"
+         x="34.033443"
+         y="92.815987"
+         rx="0.62348294" />
+      <text
+         xml:space="preserve"
+         style="font-size:6.94598px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.17365"
+         x="60.48333"
+         y="90.083389"
+         id="text5"><tspan
+           id="tspan5"
+           style="font-size:6.94598px;fill:#ffffff;fill-opacity:1;stroke-width:0.17365"
+           x="60.48333"
+           y="90.083389">EntityList</tspan></text>
+      <g
+         id="g7"
+         transform="matrix(0.65631513,0,0,0.65631513,11.160558,31.71996)">
+        <rect
+           style="fill:#c283ff;fill-opacity:1;stroke:none;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7"><tspan
+             id="tspan7"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">EntityA</tspan></text>
+      </g>
+      <g
+         id="g7-2"
+         transform="matrix(0.65631513,0,0,0.65631513,10.90966,47.57608)">
+        <rect
+           style="fill:#c283ff;fill-opacity:1;stroke:none;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-4"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-5"><tspan
+             id="tspan7-5"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">EntityB</tspan></text>
+      </g>
+      <g
+         id="g7-2-1"
+         transform="matrix(0.65631513,0,0,0.65631513,11.411455,64.328536)">
+        <rect
+           style="fill:#c283ff;fill-opacity:1;stroke:none;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-4-5"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-5-2"><tspan
+             id="tspan7-5-7"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">EntityC</tspan></text>
+      </g>
+      <g
+         id="g7-2-1-2"
+         transform="matrix(0.65631513,0,0,0.65631513,11.262328,80.637786)">
+        <rect
+           style="fill:#c283ff;fill-opacity:1;stroke:none;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-4-5-3"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-5-2-2"><tspan
+             id="tspan7-5-7-2"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">EntityD</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g10">
+      <rect
+         style="fill:#000000;fill-opacity:0.334884;stroke:none;stroke-width:4.36045;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers;filter:url(#filter32-6-2)"
+         id="rect32-1-7"
+         width="64.457947"
+         height="19.938297"
+         x="33.684166"
+         y="78.69062"
+         rx="8.295393"
+         ry="0"
+         transform="matrix(0.85343828,0,0,0.48714795,106.26137,-27.971744)" />
+      <rect
+         style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.764607;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="rect5-5"
+         width="52.830303"
+         height="72.160927"
+         x="136.2421"
+         y="20.131737"
+         rx="0.62348294" />
+      <text
+         xml:space="preserve"
+         style="font-size:6.94598px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.17365"
+         x="162.69199"
+         y="17.399147"
+         id="text5-7"><tspan
+           id="tspan5-6"
+           style="font-size:6.94598px;fill:#ffffff;fill-opacity:1;stroke-width:0.17365"
+           x="162.69199"
+           y="17.399147">Plugin List</tspan></text>
+      <g
+         id="g7-1"
+         transform="matrix(0.65631513,0,0,0.65631513,113.36921,-40.964284)">
+        <rect
+           style="fill:#ffe6aa;fill-opacity:1;stroke:#ffffff;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-8"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-9"><tspan
+             id="tspan7-2"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">PluginA</tspan></text>
+      </g>
+      <g
+         id="g7-2-7"
+         transform="matrix(0.65631513,0,0,0.65631513,113.11831,-25.108164)">
+        <rect
+           style="fill:#ffe6aa;fill-opacity:1;stroke:#ffffff;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-4-9"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-5-5"><tspan
+             id="tspan7-5-4"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">PluginB</tspan></text>
+      </g>
+      <g
+         id="g7-2-1-3"
+         transform="matrix(0.65631513,0,0,0.65631513,113.62011,-8.3557082)">
+        <rect
+           style="fill:#ffe6aa;fill-opacity:1;stroke:#ffffff;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-4-5-1"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-5-2-23"><tspan
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215"
+             id="tspan8">PluginC</tspan></text>
+      </g>
+      <g
+         id="g7-2-1-2-4"
+         transform="matrix(0.65631513,0,0,0.65631513,113.47098,7.9535418)">
+        <rect
+           style="fill:#ffe6aa;fill-opacity:1;stroke:#ffffff;stroke-width:1.165;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+           id="rect6-4-5-3-1"
+           width="49.654205"
+           height="17.116823"
+           x="50.271027"
+           y="102.23832"
+           rx="0.94997501" />
+        <text
+           xml:space="preserve"
+           style="font-size:9.26042px;line-height:1.25;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="74.943924"
+           y="114.11215"
+           id="text7-5-2-2-1"><tspan
+             id="tspan7-5-7-2-3"
+             style="stroke-width:0.264583"
+             x="74.943924"
+             y="114.11215">PluginD</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g15"
+       transform="translate(-13.570094,51.504673)">
+      <rect
+         style="fill:#aac3ff;fill-opacity:1;stroke:none;stroke-width:1.45074;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+         id="rect11"
+         width="110.78447"
+         height="37.186024"
+         x="88.755768"
+         y="123.67734"
+         rx="11.083558" />
+      <text
+         xml:space="preserve"
+         style="font-size:8.88022px;line-height:0;font-family:'Comic Mono';-inkscape-font-specification:'Comic Mono';font-variant-ligatures:none;text-align:center;text-anchor:middle;stroke-width:0.25372"
+         x="144.15054"
+         y="135.77107"
+         id="text11"><tspan
+           id="tspan11"
+           style="line-height:1.25;stroke-width:0.25372"
+           x="144.15054"
+           y="135.77107">Game loop Waits</tspan><tspan
+           style="line-height:1.25;stroke-width:0.25372"
+           x="144.15054"
+           y="146.87135"
+           id="tspan12">for next frame</tspan><tspan
+           style="font-size:5.07441px;line-height:1.15;stroke-width:0.25372"
+           x="144.15054"
+           y="154.19753"
+           id="tspan14">(via window.requestAnimationFrame)</tspan></text>
+    </g>
+  </g>
+</svg>

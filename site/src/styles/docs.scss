@@ -1,0 +1,9 @@
+.docs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10vmin;
+    .overview-flowchart {
+        width: min(80vw, 60vmin)
+    }
+}

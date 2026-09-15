@@ -1,8 +1,18 @@
 ---
-import Base from '../components/Base.astro';
+import Base from '@/components/Base.astro';
 import '@/styles/docs.scss'
+import OverviewFlowchart from '@/svgs/overview-flowchart.svg'
+import Expandable from '@/components/Expandable';
 ---
 
-<Base>
-	<span>The docs are still in progress. In the mean time try looking at the source code of the demos!</span>
+<Base class="docs">
+	<Expandable title="Game Engine Overview" class="engine-overview" client:load>
+		<h2>Overview Flowchart:</h2>
+		<OverviewFlowchart class="overview-flowchart"/>
+	</Expandable>
+	<Expandable title="Plugin System" class="engine-overview" client:load>
+	</Expandable>
+	<Expandable title="Core Exports" class="engine-overview" client:load>
+		
+	</Expandable>
 </Base>

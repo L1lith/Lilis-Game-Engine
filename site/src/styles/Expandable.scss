@@ -1,0 +1,31 @@
+.expandable {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1vmin solid rgb(180, 180, 180);
+    .title {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        padding: 1vmin;
+        button {
+            user-select: none;
+            cursor: pointer;
+            border: 0.5vmin solid rgb(180, 180, 180);
+            background: none;
+            color: white;
+            width: 1em;
+            height: 1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.25em;
+            margin-left: auto;
+        }
+    }
+    .content {
+        border-top: 1vmin solid rgb(180, 180, 180);
+        padding: 5vmin;
+    }
+
+}
