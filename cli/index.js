@@ -51,11 +51,23 @@ function run(cmd, args, cwd) {
   });
 }
 
+async function listExamples() {
+  try {
+    const entries = await readdir(EXAMPLES_DIR, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory() && !SKIP_SEGMENTS.has(e.name))
+      .map((e) => e.name)
+      .sort();
+  } catch {
+    return null;
+  }
+}
+
 yargs(hideBin(process.argv))
   .scriptName("lilis-engine")
   .usage("$0 <command> [options]")
   .command(
-    "create <example> <projectName>",
+    "create [example] [projectName]",
     "Create a new project from an example template",
     (y) =>
       y
@@ -69,14 +81,36 @@ yargs(hideBin(process.argv))
         }),
     async (argv) => {
       const { example, projectName } = argv;
+
+      // 0. No args? Enumerate available examples and exit.
+      if (!example) {
+        const available = await listExamples();
+        if (available === null) {
+          console.error(
+            `Error: examples directory is missing from the package.`,
+          );
+          process.exit(1);
+        }
+        console.log(`Usage: lilis-engine create <example> <projectName>\n`);
+        console.log(`Available examples:`);
+        for (const name of available) console.log(`  ${name}`);
+        console.log(`\nExample:`);
+        console.log(`  lilis-engine create ${available[0] ?? "basic"} my-app`);
+        return;
+      }
+
+      if (!projectName) {
+        console.error(`Error: Missing <projectName>.`);
+        console.error(`Usage: lilis-engine create <example> <projectName>`);
+        process.exit(1);
+      }
+
       const source = join(EXAMPLES_DIR, example);
       const destination = resolve(process.cwd(), projectName);
 
       // 1. Validate the example exists
-      let available;
-      try {
-        available = await readdir(EXAMPLES_DIR);
-      } catch {
+      const available = await listExamples();
+      if (available === null) {
         console.error(`Error: examples directory is missing from the package.`);
         process.exit(1);
       }
@@ -151,7 +185,6 @@ yargs(hideBin(process.argv))
           cloneConfigContents = await readFile(cloneConfigInSource, "utf8");
         } catch (err) {
           if (err.code === "ENOENT") {
-            // No clone config in this example — keep the normal astro.config.mjs
             cloneConfigContents = null;
           } else {
             throw err;
