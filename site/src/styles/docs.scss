@@ -3,7 +3,11 @@
     flex-direction: column;
     align-items: center;
     padding: 10vmin;
+    padding-top: 0;
     .overview-flowchart {
         width: min(80vw, 60vmin)
+    }
+    .expandable {
+        margin-bottom: 2vmin;
     }
 }

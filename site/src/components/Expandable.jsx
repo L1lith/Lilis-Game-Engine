@@ -9,7 +9,7 @@ export default function Expandable(props) {
         setExpanded(!expanded())
         console.log(expanded())
     }
-    return <div class="expandable">
+    return <div class={"expandable" + (typeof className == 'string' ? ' ' + className : '')}>
         <h2 class="title">{title}<button onClick={toggleExpanded}>{!expanded() ? '+' : '-'}</button></h2>
         <div style={expanded() ? {display: 'initial'} : {display: 'none'}} class="content">{children || null}</div>
     </div>
