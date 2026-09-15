@@ -9,6 +9,15 @@
         height: auto;
         display: block;
         margin: auto;
+        margin-bottom: 2vmin;
+    }
+    .astro-code {
+        margin: 2vmin 0;
+        font-size: 0.8em;
+        code {
+            margin: 0;
+            width: auto;
+        }
     }
     .expandable {
         margin-bottom: 2vmin;
