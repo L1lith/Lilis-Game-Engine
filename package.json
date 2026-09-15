@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "type": "module",
   "source": "src/index.js",
-  "license": "MESMV (see LICENSE.md)",
+  "license": "ESMIT",
   "exports": {
     ".": "./src/index.js",
     "./utility": "./src/utility/index.js",
@@ -15,6 +15,9 @@
     "./solid": "./src/plugins/solid.js",
     "./resize-observer": "./src/plugins/resize-observer.js",
     "./music-player": "./src/plugins/music-player.js"
+  },
+  "bin": {
+    "lilis-engine": "./cli/index.js"
   },
   "files": [
     "src"
@@ -29,14 +32,14 @@
   },
   "keywords": [],
   "author": "L1lith",
-  "license": "ESMIT",
   "bugs": {
     "url": "https://github.com/L1lith/Lilis-Game-Engine/issues"
   },
   "homepage": "https://github.com/L1lith/Lilis-Game-Engine#readme",
   "description": "",
   "dependencies": {
-    "jabr": "^0.4.5"
+    "jabr": "^0.4.5",
+    "yargs": "^18.1.0"
   },
   "devDependencies": {
     "chai": "^6.2.2",
