@@ -19,6 +19,72 @@ import Expandable from '@/components/Expandable';
 		<OverviewFlowchart class="overview-flowchart"/>
 	</Expandable>
 	<Expandable title="Plugin System" class="engine-overview" client:load>
+		<p class="intro">Adding functionality to the game engine is done through the plugin system. While the game engine has a few core plugins (like the game loop) most plugins are integrations for third party game development libraries.</p>
+		<div class="plugin-list">
+			<h2>Official Plugins & Integrations:</h2>
+			<table>	<thead>
+			<tr>
+				<th>Name</th>
+				<th>Purpose</th>
+				<th>Plugin Docs</th>
+				<th>Import Path</th>
+				<th>Library Home Page</th>
+				<th>NPM Dependencies</th>
+			</tr></thead>
+			<tbody>
+			<tr>
+				<td>Pixi</td>
+				<td>2D Renderer</td>
+				<td></td>
+				<td>lilis-engine/pixi</td>
+				<td><a href="https://pixijs.com/">pixijs.com</a></td>
+				<td>pixi.js</td>
+			</tr>
+			<tr>
+				<td>p5</td>
+				<td>2D Renderer</td>
+				<td></td>
+				<td>lilis-engine/p5</td>
+				<td><a href="https://p5js.org/">p5js.org</a></td>
+				<td>p5</td>
+			</tr>
+			<tr>
+				<td>Solid</td>
+				<td>Interactive HTML</td>
+				<td></td>
+				<td>lilis-engine/solid</td>
+				<td><a href="https://www.solidjs.com/">solidjs.com</a></td>
+				<td>solid-js</td>
+			</tr>
+			<tr>
+				<td>Matter</td>
+				<td>Physics Simulation</td>
+				<td></td>
+				<td>lilis-engine/matter</td>
+				<td><a href="https://www.brm.io/matter-js/">brm.io/matter-js/</a></td>
+				<td>matter-js</td>
+			</tr>
+			<tr>
+				<td>Pixi-Tiled</td>
+				<td>Tiled Support for Pixi Plugin</td>
+				<td></td>
+				<td>lilis-engine/pixi-tiled</td>
+				<td><a href="https://www.mapeditor.org/">mapeditor.org</a></td>
+				<td>pixi.js, pixi-tiledmap, lilis-engine/pixi</td>
+			</tr>
+			<tr>
+				<td>Pixi-Tiled-Matter</td>
+				<td>Physics support for the Pixi-Tiled plugin</td>
+				<td></td>
+				<td>lilis-engine/pixi-tiled-matter</td>
+				<td>See Above</td>
+				<td>pixi.js, pixi-tiledmap, lilis-engine/pixi, lilis-engine/pixi-tiled, matter.js</td>
+			</tr>
+			</tbody></table>
+		</div>
+		<p>It's recommended that you learn how to use these plugins by cloning an example project rather than trying to implement them from scratch. The source code for all official plugins can be found <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/src/plugins">here</a>. The game engine is designed to support you making your own plugins.</p>
+		<br/>
+		<p>All instantiated plugins return an object that defines it's methods and properties. The primary methods are "tick" and "render", with tick always being called first. You can change the order that plugins execute by modifying their tickPriority and renderPriority properties which correspond to the similarly named methods. Plugins are sorted by their priorities when being executed, and plugins with the same priority will be executed simultaneously. The default priority value is 0.</p>
 	</Expandable>
 	<Expandable title="Core Exports" class="engine-overview" client:load>
 		

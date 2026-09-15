@@ -7,8 +7,26 @@
     .overview-flowchart {
         width: min(80vw, 60vmin);
         height: auto;
+        display: block;
+        margin: auto;
     }
     .expandable {
         margin-bottom: 2vmin;
+    }
+    .plugin-list {
+        margin: 2vmin 0;
+        h2 {
+            text-align: center;
+            font-family: 'Comic Mono Bold';
+        }
+        thead {
+            font-family: 'Comic Mono Bold';
+        }
+        table {
+            margin-top: 1vmin;
+        }
+        thead, tr:nth-child(even) {
+            background-color: #00000057;
+        }
     }
 }

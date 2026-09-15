@@ -13,6 +13,7 @@
 
 
 @include font('Comic Mono', '/fonts/ComicMono');
+@include font('Comic Mono Bold', '/fonts/ComicMono-Bold');
 
 * {
     margin: 0;
@@ -43,7 +44,7 @@ a {
     text-decoration: inherit;
 }
 
-p a {
+p a, table a, .standard-link {
     text-decoration: underline;
     color: #bdabef;
 }
