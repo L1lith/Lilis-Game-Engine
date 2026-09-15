@@ -4,6 +4,27 @@
     align-items: center;
     padding: 10vmin;
     padding-top: 0;
+    .beginners-note {
+        position: relative;
+        display: block;
+        margin-bottom: 2vmin;
+        padding: 2vmin;
+        border: 2px solid grey;
+        background-color: rgba(0, 0, 0, 0.401);
+        .italic {
+            color: yellow;
+            display: block;
+        }
+        .close {
+            position: absolute;
+            top: 2vmin;
+            font-size: 1.5em;
+            right: 0vmin;
+            cursor: pointer;
+            color: red;
+            transform: translate(-50%, -50%);
+        }
+    }
     .overview-flowchart {
         width: min(80vw, 60vmin);
         height: auto;

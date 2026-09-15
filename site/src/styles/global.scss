@@ -44,9 +44,13 @@ a {
     text-decoration: inherit;
 }
 
-p a, table a, .standard-link {
+p a, table a, span a, .standard-link {
     text-decoration: underline;
     color: #bdabef;
+}
+
+.italic {
+    font-style: italic;
 }
 
 ul, li {
