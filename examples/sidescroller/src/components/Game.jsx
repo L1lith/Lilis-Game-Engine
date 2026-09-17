@@ -43,12 +43,9 @@ export default function Game() {
             tick: () => {
                 if (!player.matterBody) return
                 const xForce = inputs.right.get() ? (inputs.left.get() ? 0 : 1) : inputs.left.get() ? -1 : 0
-                //console.log(inputs.right, inputs.right.get())
                 const isTouchingSurface = (player.collisions || []).length > 0
                 const isJumping = inputs.up.get() && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
-                console.log(player.collisions, inputs.up.get(), isTouchingSurface, isJumping)
                 Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: isJumping ? jumpForce * -1 : player.matterBody.velocity.y})
-                //console.log({xForce})
             }
         }
         const background = entities.addChild(Entity({
