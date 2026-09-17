@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="1">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="3">
  <tileset firstgid="1" source="grassy-plains.tsx"/>
  <layer id="3" name="background layer 1" width="20" height="10">
   <data encoding="csv">
@@ -16,6 +16,9 @@
 </data>
  </layer>
  <layer id="1" name="standard-collision" width="20" height="10">
+  <properties>
+   <property name="collision" type="bool" value="true"/>
+  </properties>
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -43,4 +46,15 @@
 0,0,0,0,62,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="4" name="custom collision">
+  <properties>
+   <property name="collision" type="bool" value="true"/>
+  </properties>
+  <object id="1" x="130.5" y="288.5">
+   <polygon points="-16.5,7.5 130.5,-63.75 158.75,13"/>
+  </object>
+  <object id="2" x="258.25" y="227">
+   <polygon points="0,0 62.5,-66.25 98.0833,-4.33333 15.75,29.3333"/>
+  </object>
+ </objectgroup>
 </map>

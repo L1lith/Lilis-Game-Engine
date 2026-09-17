@@ -7,7 +7,7 @@ export default {
     const map = await createPixiTiledmap("hills.tmx");
     const mapCollision = pixiTiledToMatter(map);
     const boundaries = createMatterBoundaries();
-    entityList.set(map, mapCollision, boundaries);
+    entityList.set([map, mapCollision, boundaries]);
     return { map };
   },
 };

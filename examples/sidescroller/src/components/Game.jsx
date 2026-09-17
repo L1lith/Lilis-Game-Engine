@@ -6,6 +6,8 @@ import { LevelLoader } from "lilis-engine"
 import createSolidRenderer from 'lilis-engine/solid'
 import levels from '@/levels/index.js'
 import '@/styles/Game.scss'
+import createMatterPlugin from 'lilis-engine/matter'
+import { detectKeys } from "lilis-engine/utility"
 
 export default function Game() {
     const [solidGameContents, setSolidGameContents] = createSignal(null)
@@ -21,9 +23,12 @@ export default function Game() {
         };
         window.addEventListener("resize", autoResize);
         autoResize();
-        const playerCam = renderSettings.camera = Camera({width: 100, height: 100})
+        const playerCam = renderSettings.camera = Camera({width: 60, height: 60})
         window.cam = playerCam
         const entities = EntityList([])
+        const player = window.player = entities.addChild({renderPriority: 3, x: -5, y:0, width: 5, height: 5, matter: {shape: 'circle'}, imageURL: 'chicken by Diarandor.png'})
+        player.on('x', x => playerCam.x = x)
+        player.on('y', y => playerCam.y = y)
         const background = entities.addChild(Entity({
             imageURL: 'BackgroundGradient.png',
             x: 0,
@@ -39,7 +44,7 @@ export default function Game() {
         const adjustCameraBounds = ()=>{
             const map = levelLoader.activeLevel.get()?.exports?.map;
             if (!map) {
-                playerCam.bounds = null
+                playerCam.bounds = {left: -50, right: 50, top: -50, bottom: 50}
                 return
             }
             playerCam.bounds = {
@@ -54,7 +59,8 @@ export default function Game() {
         const pixiRenderer = createPixiRenderer(entities, renderSettings)
         renderSettings.solidSetter = setSolidGameContents
         const solidRenderer = createSolidRenderer(entities, renderSettings)
-        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer]})
+        const matterPhysics = createMatterPlugin(entities)
+        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer, matterPhysics]})
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
