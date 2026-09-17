@@ -1,5 +1,6 @@
 import { convertFunctionToConstructor } from "jabr";
 import { Signal, isSignal, isStore } from "jabr";
+import Entity from "./createEntity";
 
 function deepFlat(entityListOrEntity) {
   const outputSignal = Signal([]);
@@ -49,6 +50,15 @@ function createEntityList(initialList = []) {
 
   const methods = {
     addChild: (child) => {
+      if (
+        typeof child === "object" &&
+        child !== null &&
+        !isStore(child) &&
+        !isSignal(child)
+      ) {
+        // Got a regular object, convert it to an Entity
+        child = Entity(child);
+      }
       const currentContent = output.get();
       if (currentContent.includes(child)) {
       } else {

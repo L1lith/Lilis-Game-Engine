@@ -25,6 +25,52 @@ export function inverseCameraSizeTransform(screenValue, cameraSize) {
   return screenValue / zoomFactor;
 }
 
+function createBoundsSizeListener(store, dimension = "width") {
+  return (newSize) => {
+    const { bounds } = store;
+    if (typeof bounds != "object" || bounds === null) return;
+    if (
+      dimension === "width"
+        ? !isFinite(bounds.left) || !isFinite(bounds.right)
+        : !isFinite(bounds.top) || !isFinite(bounds.bottom)
+    )
+      return; // Invalid bounds
+    const maxSize =
+      dimension === "width"
+        ? bounds.right - bounds.left
+        : bounds.bottom - bounds.top;
+    if (newSize > maxSize) store[dimension] = maxSize;
+  };
+}
+
+function createBoundsPositionListener(store, bound) {
+  if (bound === "x") {
+    return (newX) => {
+      let boundedX = newX;
+      const { bounds } = store;
+      if (typeof bounds != "object" || bounds === null) return;
+      if (isFinite(bounds.left))
+        boundedX = Math.max(boundedX, bounds.left + store.width / 2);
+      if (isFinite(bounds.right))
+        boundedX = Math.min(boundedX, bounds.right - store.width / 2);
+      store.x = boundedX;
+    };
+  } else if (bound === "y") {
+    return (newY) => {
+      let boundedY = newY;
+      const { bounds } = store;
+      if (typeof bounds != "object" || bounds === null) return;
+      if (isFinite(bounds.top))
+        boundedY = Math.max(boundedY, bounds.top + store.height / 2);
+      if (isFinite(bounds.bottom))
+        boundedY = Math.min(boundedY, bounds.bottom - store.height / 2);
+      store.y = boundedY;
+    };
+  } else {
+    throw new Error("internal error: invalid bound value");
+  }
+}
+
 function createCamera(state = {}) {
   const store = new Store({
     x: 0,
@@ -45,6 +91,18 @@ function createCamera(state = {}) {
       inverseCameraSizeTransform(screenHeight, store.height),
     ...state,
   });
+  const boundsPositionListenerX = createBoundsPositionListener(store, "x");
+  const boundsPositionListenerY = createBoundsPositionListener(store, "y");
+  const boundsWidthListener = createBoundsSizeListener(store, "width");
+  const boundsHeightListener = createBoundsSizeListener(store, "height");
+  store.addListener("x", boundsPositionListenerX);
+  store.addListener("y", boundsPositionListenerY);
+  store.addListener("width", boundsWidthListener);
+  store.addListener("height", boundsHeightListener);
+  boundsPositionListenerX(store.x); // Ensure bounds are enforced before returning
+  boundsPositionListenerY(store.y);
+  boundsWidthListener(store.width);
+  boundsHeightListener(store.height);
   return store;
 }
 

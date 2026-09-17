@@ -46,7 +46,7 @@ function createLevelLoader(entityList, levels, options = {}) {
       player.y = coords[1];
     }
     if (typeof level.load == "function") {
-      await level.load(globalContext, level);
+      await level.load(level, globalContext);
     }
     entityList.addChild(level.entityList);
   };

@@ -1,7 +1,51 @@
 import Matter from "matter-js";
 const { Engine, Bodies, Composite, Body, Events } = Matter;
 import { Signal } from "jabr";
+import Entity from "../createEntity";
+import EntityList from "../createEntityList";
 //import { translateToNewOrigin } from "lilis-engine/utility";
+
+export function createMatterBoundaries(options = {}) {
+  const { width = 100, height = 100, thickness = 20 } = options;
+  const halfThickness = thickness / 2;
+  const right = Entity({
+    x: width / 2 + halfThickness,
+    y: 0,
+    height: height + thickness,
+    width: thickness,
+    noRender: false,
+    matter: { shape: "rectangle", static: true },
+    boundaryType: "right",
+  });
+  const left = Entity({
+    x: width / -2 - halfThickness,
+    y: 0,
+    height: height + thickness,
+    width: thickness,
+    noRender: false,
+    matter: { shape: "rectangle", static: true },
+    boundaryType: "left",
+  });
+  const top = Entity({
+    x: 0,
+    y: height / -2 - halfThickness,
+    height: thickness,
+    width: 100 + thickness,
+    noRender: false,
+    matter: { shape: "rectangle", static: true },
+    boundaryType: "top",
+  });
+  const bottom = Entity({
+    x: 0,
+    y: 50 + halfThickness,
+    height: thickness,
+    width: 100 + thickness,
+    noRender: false,
+    matter: { shape: "rectangle", static: true },
+    boundaryType: "bottom",
+  });
+  return EntityList([top, bottom, left, right]);
+}
 
 const minimumUpdateThreshold = 0.0001;
 
