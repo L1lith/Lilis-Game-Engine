@@ -28,6 +28,15 @@ Please note that all of the example projects are made using [SolidJS](https://do
 ## Documentation
 You can learn how to use this engine by [visiting the documentation!](https://l1lith.github.io/Lilis-Game-Engine/docs/)
 
+## Integrations
+This game engine has a number of built in integrations for common game development libraries, for example:
+- [matter.js](https://www.brm.io/matter-js/) (physics)
+- [P5.js](https://p5js.org/) (rendering)
+- [PixiJS](https://pixijs.com/) (rendering)
+- [Tiled map editor](https://www.mapeditor.org/) (tile map support)
+
+One of the core features of this game engine is that adding support for new libraries is very easy. If there's a library you'd like to add support for consider making a pull request or opening an issue.
+
 ## More Links
 - [Website](https://l1lith.github.io/Lilis-Game-Engine/)
 - [Source Code](https://github.com/L1lith/Lilis-Game-Engine)

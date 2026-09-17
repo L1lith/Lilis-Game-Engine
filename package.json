@@ -1,6 +1,8 @@
 {
   "name": "lilis-engine",
   "version": "1.1.2",
+  "description": "Modern & moddable game engine for the web & beyond",
+  "keywords": ["game engine", "gaming", "web app", "2D", "game", "javascript", "engine", "browser", "sidescroller", "platformer", "tiled", "tileset"],
   "type": "module",
   "source": "src/index.js",
   "license": "ESMIT",
