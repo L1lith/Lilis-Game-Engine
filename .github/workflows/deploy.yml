@@ -125,6 +125,7 @@ jobs:
     needs: discover-examples
     if: needs.discover-examples.outputs.example_matrix != '[]'
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         example: ${{ fromJson(needs.discover-examples.outputs.example_matrix) }}
@@ -159,6 +160,8 @@ jobs:
           fi
       
       - name: Build example
+        id: build
+        continue-on-error: true
         run: |
           cd examples/${{ matrix.example }}
           # Remove lilis-engine from the example's package.json so npm install
@@ -181,6 +184,7 @@ jobs:
           cp -r examples/${{ matrix.example }}/dist/* combined_build/examples/${{ matrix.example }}/
       
       - name: Upload example artifact
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: example-${{ matrix.example }}-build
