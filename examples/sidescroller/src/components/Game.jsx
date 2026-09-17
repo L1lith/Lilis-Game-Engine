@@ -8,6 +8,8 @@ import levels from '@/levels/index.js'
 import '@/styles/Game.scss'
 import createMatterPlugin from 'lilis-engine/matter'
 import { detectKeys } from "lilis-engine/utility"
+import Matter from 'matter-js'
+const {Body} = Matter
 
 export default function Game() {
     const [solidGameContents, setSolidGameContents] = createSignal(null)
@@ -26,9 +28,27 @@ export default function Game() {
         const playerCam = renderSettings.camera = Camera({width: 60, height: 60})
         window.cam = playerCam
         const entities = EntityList([])
-        const player = window.player = entities.addChild({renderPriority: 3, x: -5, y:0, width: 5, height: 5, matter: {shape: 'circle'}, imageURL: 'chicken by Diarandor.png'})
+        const player = window.player = entities.addChild({renderPriority: 3, x: 10, y:-30, width: 5, height: 5, matter: {shape: 'circle'}, imageURL: 'chicken by Diarandor.png'})
         player.on('x', x => playerCam.x = x)
         player.on('y', y => playerCam.y = y)
+        const inputs = {
+            up: detectKeys('ArrowUp'),
+            down: detectKeys('ArrowDown'),
+            left: detectKeys('ArrowLeft'),
+            right: detectKeys('ArrowRight')
+        }
+        const walkForce = 1
+        const jumpForce = 1
+        const playerControlPlugin = {
+            tick: () => {
+                if (!player.matterBody) return
+                const xForce = inputs.right.get() ? (inputs.left.get() ? 0 : 1) : inputs.left.get() ? -1 : 0
+                //console.log(inputs.right, inputs.right.get())
+                const isJumping = inputs.up.get() && Body.getVelocity(player.matterBody).y < 0.001
+                if (xForce !== 0) Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: isJumping ? jumpForce * -1 : player.matterBody.velocity.y})
+                //console.log({xForce})
+            }
+        }
         const background = entities.addChild(Entity({
             imageURL: 'BackgroundGradient.png',
             x: 0,
@@ -60,7 +80,7 @@ export default function Game() {
         renderSettings.solidSetter = setSolidGameContents
         const solidRenderer = createSolidRenderer(entities, renderSettings)
         const matterPhysics = createMatterPlugin(entities)
-        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer, matterPhysics]})
+        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer, matterPhysics, playerControlPlugin]})
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
