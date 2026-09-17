@@ -1,6 +1,6 @@
 import { convertFunctionToConstructor } from "jabr";
 import { Signal, isSignal, isStore } from "jabr";
-import Entity from "./createEntity";
+import Entity from "./createEntity.js";
 
 function deepFlat(entityListOrEntity) {
   const outputSignal = Signal([]);
