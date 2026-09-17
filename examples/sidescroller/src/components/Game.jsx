@@ -38,14 +38,16 @@ export default function Game() {
             right: detectKeys('ArrowRight')
         }
         const walkForce = 1
-        const jumpForce = 1
+        const jumpForce = 3
         const playerControlPlugin = {
             tick: () => {
                 if (!player.matterBody) return
                 const xForce = inputs.right.get() ? (inputs.left.get() ? 0 : 1) : inputs.left.get() ? -1 : 0
                 //console.log(inputs.right, inputs.right.get())
-                const isJumping = inputs.up.get() && Body.getVelocity(player.matterBody).y < 0.001
-                if (xForce !== 0) Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: isJumping ? jumpForce * -1 : player.matterBody.velocity.y})
+                const isTouchingSurface = (player.collisions || []).length > 0
+                const isJumping = inputs.up.get() && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
+                console.log(player.collisions, inputs.up.get(), isTouchingSurface, isJumping)
+                Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: isJumping ? jumpForce * -1 : player.matterBody.velocity.y})
                 //console.log({xForce})
             }
         }
@@ -80,7 +82,7 @@ export default function Game() {
             tick: ()=> {            
                 const map = levelLoader.activeLevel.get()?.exports?.map;
                 if (!map) return
-                const isOutOfBounds = player.x + player.width / 2 > map.width / 2 || player.x - player.width / 2 < map.width / -2 || player.y - player.height / 2 < map.height / -2 || player.y + player.height / 2 > map.height / 2
+                const isOutOfBounds = player.x > map.width / 2 + player.width / 2 || player.x < map.width / -2  - player.width / 2 || player.y < map.height / -2 - player.height / 2 || player.y > map.height / 2 + player.height / 2 
                 if (isOutOfBounds) {
                     const respawnPoint = levelLoader.activeLevel.get()?.exports?.spawn || {x: 0, y: -30}
                     Body.setVelocity(player.matterBody, {x: 0, y: 0})
