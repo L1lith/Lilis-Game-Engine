@@ -56,12 +56,16 @@ export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
             Math.max(...object.polygon.map((obj) => obj.x)) - objectMinX;
           const objectHeight =
             Math.max(...object.polygon.map((obj) => obj.y)) - objectMinY;
-          const shapeWidth = (objectWidth / realWidth) * 100;
-          const shapeHeight = (objectHeight / realHeight) * 100;
+          const shapeWidth = (objectWidth / realWidth) * worldWidth;
+          const shapeHeight = (objectHeight / realHeight) * worldHeight;
           const centerX =
-            ((object.x + objectMinX) / realWidth) * 100 - 50 + shapeWidth / 2;
+            ((object.x + objectMinX) / realWidth) * worldWidth -
+            worldWidth / 2 +
+            shapeWidth / 2;
           const centerY =
-            ((object.y + objectMinY) / realHeight) * 100 - 50 + shapeHeight / 2;
+            ((object.y + objectMinY) / realHeight) * worldHeight -
+            worldHeight / 2 +
+            shapeHeight / 2;
           let points = object.polygon.map(({ x, y }) => {
             const relativeX = (x - objectMinX) / objectWidth;
             const relativeY = (y - objectMinY) / objectHeight;
@@ -79,10 +83,16 @@ export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
           console.warn("unsupported shape for matter body from tiled map");
         } else {
           // It's a rectangle by default
-          const shapeWidth = (object.width / realWidth) * 100;
-          const shapeHeight = (object.height / realHeight) * 100;
-          const centerX = (object.x / realWidth) * 100 - 50 + shapeWidth / 2;
-          const centerY = (object.y / realHeight) * 100 - 50 + shapeHeight / 2;
+          const shapeWidth = (object.width / realWidth) * worldWidth;
+          const shapeHeight = (object.height / realHeight) * worldHeight;
+          const centerX =
+            (object.x / realWidth) * worldWidth -
+            worldWidth / 2 +
+            shapeWidth / 2;
+          const centerY =
+            (object.y / realHeight) * worldHeight -
+            worldHeight / 2 +
+            shapeHeight / 2;
           body = Bodies.rectangle(centerX, centerY, shapeWidth, shapeHeight, {
             isStatic: true,
             isSensor: isSensorLayer,
@@ -94,8 +104,8 @@ export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
       }
     } else {
       // Dealing with a tile grid
-      const tileSizeX = 100 / gridWidth;
-      const tileSizeY = 100 / gridHeight;
+      const tileSizeX = worldWidth / gridWidth;
+      const tileSizeY = worldHeight / gridHeight;
 
       for (let y = 0; y < gridHeight; y++) {
         for (let x = 0; x < gridWidth; x++) {
@@ -141,9 +151,15 @@ export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
               calculatedTileYOffset = 0;
 
             const worldX =
-              x * tileSizeX - 50 + tileSizeX / 1.5 + calculatedTileXOffset; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
+              x * tileSizeX -
+              worldWidth / 2 +
+              tileSizeX / 1.5 +
+              calculatedTileXOffset; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
             const worldY =
-              y * tileSizeY - 50 + tileSizeY / 2 + calculatedTileYOffset; //(y - gridHeight / 2) * tileSizeY + tileSizeY / 2;
+              y * tileSizeY -
+              worldHeight / 2 +
+              tileSizeY / 2 +
+              calculatedTileYOffset; //(y - gridHeight / 2) * tileSizeY + tileSizeY / 2;
             //console.log({ worldX, worldY });
             const body = Bodies.rectangle(
               worldX,

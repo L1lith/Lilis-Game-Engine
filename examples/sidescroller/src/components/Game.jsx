@@ -76,11 +76,24 @@ export default function Game() {
         }
         levelLoader.activeLevel.addListener(adjustCameraBounds)
         adjustCameraBounds
+        const playerOutOfBoundsPlugin = {
+            tick: ()=> {            
+                const map = levelLoader.activeLevel.get()?.exports?.map;
+                if (!map) return
+                const isOutOfBounds = player.x + player.width / 2 > map.width / 2 || player.x - player.width / 2 < map.width / -2 || player.y - player.height / 2 < map.height / -2 || player.y + player.height / 2 > map.height / 2
+                if (isOutOfBounds) {
+                    const respawnPoint = levelLoader.activeLevel.get()?.exports?.spawn || {x: 0, y: -30}
+                    Body.setVelocity(player.matterBody, {x: 0, y: 0})
+                    player.x = respawnPoint.x
+                    player.y = respawnPoint.y
+                }
+            }
+        }
         const pixiRenderer = createPixiRenderer(entities, renderSettings)
         renderSettings.solidSetter = setSolidGameContents
         const solidRenderer = createSolidRenderer(entities, renderSettings)
         const matterPhysics = createMatterPlugin(entities)
-        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer, matterPhysics, playerControlPlugin]})
+        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer, matterPhysics, playerControlPlugin, playerOutOfBoundsPlugin]})
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
