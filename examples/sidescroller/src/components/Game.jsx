@@ -43,7 +43,7 @@ export default function Game() {
             tick: () => {
                 if (!player.matterBody) return
                 const xForce = inputs.right.get() ? (inputs.left.get() ? 0 : 1) : inputs.left.get() ? -1 : 0
-                const isTouchingSurface = (player.collisions || []).length > 0
+                const isTouchingSurface = (player.collisions || []).filter(event => event.colliderBody && event.colliderBody.position.y > player.y + player.height / 2 && (!event.colliderEntity || typeof event.colliderEntity.boundaryType != 'string')).length > 0
                 const isJumping = inputs.up.get() && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
                 Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: isJumping ? jumpForce * -1 : player.matterBody.velocity.y})
             }

@@ -6,45 +6,63 @@ import EntityList from "../createEntityList";
 //import { translateToNewOrigin } from "lilis-engine/utility";
 
 export function createMatterBoundaries(options = {}) {
-  const { width = 100, height = 100, thickness = 20 } = options;
+  const {
+    width = 100,
+    height = 100,
+    thickness = 20,
+    skipBoundaries = [],
+  } = options;
+  const output = EntityList();
   const halfThickness = thickness / 2;
-  const right = Entity({
-    x: width / 2 + halfThickness,
-    y: 0,
-    height: height + thickness,
-    width: thickness,
-    noRender: false,
-    matter: { shape: "rectangle", static: true },
-    boundaryType: "right",
-  });
-  const left = Entity({
-    x: width / -2 - halfThickness,
-    y: 0,
-    height: height + thickness,
-    width: thickness,
-    noRender: false,
-    matter: { shape: "rectangle", static: true },
-    boundaryType: "left",
-  });
-  const top = Entity({
-    x: 0,
-    y: height / -2 - halfThickness,
-    height: thickness,
-    width: width + thickness,
-    noRender: false,
-    matter: { shape: "rectangle", static: true },
-    boundaryType: "top",
-  });
-  const bottom = Entity({
-    x: 0,
-    y: 50 + halfThickness,
-    height: thickness,
-    width: width + thickness,
-    noRender: false,
-    matter: { shape: "rectangle", static: true },
-    boundaryType: "bottom",
-  });
-  return EntityList([top, bottom, left, right]);
+  if (!skipBoundaries.includes("right"))
+    output.addChild(
+      Entity({
+        x: width / 2 + halfThickness,
+        y: 0,
+        height: height + thickness,
+        width: thickness,
+        noRender: false,
+        matter: { shape: "rectangle", static: true },
+        boundaryType: "right",
+      }),
+    );
+  if (!skipBoundaries.includes("left"))
+    output.addChild(
+      Entity({
+        x: width / -2 - halfThickness,
+        y: 0,
+        height: height + thickness,
+        width: thickness,
+        noRender: false,
+        matter: { shape: "rectangle", static: true },
+        boundaryType: "left",
+      }),
+    );
+  if (!skipBoundaries.includes("top") && !skipBoundaries.includes("up"))
+    output.addChild(
+      Entity({
+        x: 0,
+        y: height / -2 - halfThickness,
+        height: thickness,
+        width: width + thickness,
+        noRender: false,
+        matter: { shape: "rectangle", static: true },
+        boundaryType: "top",
+      }),
+    );
+  if (!skipBoundaries.includes("bottom") && !skipBoundaries.includes("down"))
+    output.addChild(
+      Entity({
+        x: 0,
+        y: 50 + halfThickness,
+        height: thickness,
+        width: width + thickness,
+        noRender: false,
+        matter: { shape: "rectangle", static: true },
+        boundaryType: "bottom",
+      }),
+    );
+  return output;
 }
 
 const minimumUpdateThreshold = 0.0001;
