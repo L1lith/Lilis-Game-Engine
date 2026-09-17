@@ -1,8 +1,8 @@
 import Matter from "matter-js";
 const { Engine, Bodies, Composite, Body, Events } = Matter;
 import { Signal } from "jabr";
-import Entity from "../createEntity";
-import EntityList from "../createEntityList";
+import Entity from "../createEntity.js";
+import EntityList from "../createEntityList.js";
 //import { translateToNewOrigin } from "lilis-engine/utility";
 
 export function createMatterBoundaries(options = {}) {
