@@ -1,26 +1,45 @@
 ---
 import Base from '../components/Base.astro';
-import '@/styles/demos.scss'
+import '@/styles/demos.scss';
 import GithubLogo from '@/svgs/github.svg'
+import Carousel3D from '@/components/Carousel3D';
+
+const base = import.meta.env.BASE_URL;
+
+const panels = [
+  {
+    title: "Pong",
+    preview: base + "pong-preview.png",
+    href: base + "examples/pong",
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/pong",
+  },
+  {
+    title: "Angry Birds Knockoff",
+    preview: base + "angry-birds-preview.png",
+    href: base + "examples/spike-vs-space",
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/spike-vs-space",
+  },
+  {title: "Sidescroller",
+    preview: base + 'sidescroller-preview.png',
+    href: base + 'examples/sidescroller',
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/sidescroller"
+  }
+  // ...as many as you want
+];
 ---
 
 <Base>
-	<nav class="demo-list">
+  <Carousel3D panels={panels} cardWidth={320} cardHeight={420} zoom={1.15} client:load />
+	<nav class="demo-list sr-only">
 		<ul>
-			<li>
-                <a class="demo-link" href={import.meta.env.BASE_URL + "examples/pong"}>
+      {panels.map(panel => (
+        <li>
+<a class="demo-link" href={import.meta.env.BASE_URL + "examples/pong"}>
                     <h3>Pong</h3>
-                    <img class="preview" src={import.meta.env.BASE_URL + "pong-preview.png"}/>
                 </a>
                 <a class="source" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/pong"><GithubLogo/>View Source Code</a>
             </li>
-			<li>
-                <a class="demo-link" href={import.meta.env.BASE_URL + "examples/spike-vs-space"}>
-                    <h3>Angry Birds Knockoff</h3>
-                    <img class="preview" src={import.meta.env.BASE_URL + "angry-birds-preview.png"}/>
-                    <a class="source" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/spike-vs-space"><GithubLogo/>View Source Code</a>
-                </a>
-            </li>
+      ))}
 		</ul>
 	</nav>
 </Base>
