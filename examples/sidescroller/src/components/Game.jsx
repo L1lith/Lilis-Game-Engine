@@ -8,7 +8,9 @@ import levels from '@/levels/index.js'
 import '@/styles/Game.scss'
 import createMatterPlugin from 'lilis-engine/matter'
 import { detectKeys } from "lilis-engine/utility"
+import TouchControls from "./TouchControls"
 import Matter from 'matter-js'
+import { input } from "astro:schema"
 const {Body} = Matter
 
 export default function Game() {
@@ -28,6 +30,9 @@ export default function Game() {
         const playerCam = renderSettings.camera = Camera({width: 60, height: 60})
         window.cam = playerCam
         const entities = EntityList([])
+        // GUI Stuff
+        const touchControls = entities.addChild({solid: TouchControls})
+        // End GUI Stuff
         const player = window.player = entities.addChild({renderPriority: 3, x: 10, y:-30, width: 5, height: 5, matter: {shape: 'circle'}, imageURL: 'chicken by Diarandor.png'})
         player.on('x', x => playerCam.x = x)
         player.on('y', y => playerCam.y = y)
@@ -37,16 +42,17 @@ export default function Game() {
             up: detectKeys('ArrowUp'),
             down: detectKeys('ArrowDown'),
             left: detectKeys('ArrowLeft'),
-            right: detectKeys('ArrowRight')
+            right: detectKeys('ArrowRight'),
+            space: detectKeys(' ')
         }
         const walkForce = 1
         const jumpForce = 3
         const playerControlPlugin = {
             tick: () => {
                 if (!player.matterBody) return
-                const xForce = inputs.right.get() ? (inputs.left.get() ? 0 : 1) : inputs.left.get() ? -1 : 0
+                const xForce = inputs.right.get() || touchControls.direction === "right" ? (inputs.left.get() || touchControls.direction === "left" ? 0 : 1) : inputs.left.get() || touchControls.direction === "left" ? -1 : 0
                 const isTouchingSurface = (player.collisions || []).filter(event => event.colliderBody && event.colliderBody.position.y + event.colliderBody.bounds.max.y / 2 > player.y + player.height / 2 && (!event.colliderEntity || typeof event.colliderEntity.boundaryType != 'string')).length > 0
-                const isJumping = inputs.up.get() && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
+                const isJumping = (inputs.up.get() || touchControls.jumping || inputs.space.get()) && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
                 Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: isJumping ? jumpForce * -1 : player.matterBody.velocity.y})
             }
         }
