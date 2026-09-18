@@ -160,6 +160,38 @@ async function downloadExamplesToStaging(stagingDir) {
   return wanted.length;
 }
 
+async function refreshExamplesCache() {
+  await mkdir(CACHE_ROOT, { recursive: true });
+
+  // Download into a sibling staging dir, then atomically swap.
+  const staging = await mkdtemp(join(CACHE_ROOT, "staging-"));
+  try {
+    await downloadExamplesToStaging(staging);
+
+    // Swap: remove old examples dir, rename staging -> examples
+    await rm(CACHE_EXAMPLES_DIR, { recursive: true, force: true });
+    await rename(staging, CACHE_EXAMPLES_DIR);
+
+    await writeCacheMeta({
+      lastFetched: Date.now(),
+      version: PACKAGE_VERSION,
+      owner: GITHUB_OWNER,
+      repo: GITHUB_REPO,
+      branch: GITHUB_BRANCH,
+    });
+  } catch (err) {
+    // Clean up staging on failure so we don't accumulate junk.
+    await rm(staging, { recursive: true, force: true }).catch(() => {});
+    throw err;
+  }
+}
+
+/**
+ * Ensure the examples directory is available locally.
+ * Refreshes from GitHub if the cache is missing, stale (>60min),
+ * was built from a different package version, or if `force` is set.
+ * Falls back to a stale cache if the network is unreachable (unless forced).
+ */
 async function ensureExamples({ force = false } = {}) {
   if (!force) {
     const fresh = await cacheIsFresh();
@@ -181,42 +213,6 @@ async function ensureExamples({ force = false } = {}) {
     return CACHE_EXAMPLES_DIR;
   } catch (err) {
     if (haveCache && !force) {
-      console.warn(
-        `Warning: could not refresh examples (${err.message}). Using cached copy.`,
-      );
-      return CACHE_EXAMPLES_DIR;
-    }
-    console.error(`Failed to download examples: ${err.message}`);
-    console.error(
-      `You can also clone the repository manually: git clone https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git`,
-    );
-    process.exit(1);
-  }
-}
-
-/**
- * Ensure the examples directory is available locally.
- * Refreshes from GitHub if the cache is missing, stale (>60min),
- * or was built from a different package version.
- * Falls back to a stale cache if the network is unreachable.
- */
-async function ensureExamples() {
-  const fresh = await cacheIsFresh();
-  if (fresh) return CACHE_EXAMPLES_DIR;
-
-  const haveCache = await cacheExists();
-
-  if (!haveCache) {
-    console.log("Downloading example templates...");
-  } else {
-    console.log("Checking for updated example templates...");
-  }
-
-  try {
-    await refreshExamplesCache();
-    return CACHE_EXAMPLES_DIR;
-  } catch (err) {
-    if (haveCache) {
       console.warn(
         `Warning: could not refresh examples (${err.message}). Using cached copy.`,
       );
@@ -292,8 +288,6 @@ yargs(hideBin(process.argv))
       const examplesDir = await ensureExamples({ force: refresh });
       const source = join(examplesDir, example);
       const destination = resolve(process.cwd(), projectName);
-
-      // ... rest unchanged
 
       // 1. Validate the example exists
       const available = await listExamples(examplesDir);
