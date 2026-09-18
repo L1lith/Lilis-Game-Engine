@@ -31,6 +31,8 @@ export default function Game() {
         const player = window.player = entities.addChild({renderPriority: 3, x: 10, y:-30, width: 5, height: 5, matter: {shape: 'circle'}, imageURL: 'chicken by Diarandor.png'})
         player.on('x', x => playerCam.x = x)
         player.on('y', y => playerCam.y = y)
+        playerCam.x = player.x
+        playerCam.y = player.y
         const inputs = {
             up: detectKeys('ArrowUp'),
             down: detectKeys('ArrowDown'),
