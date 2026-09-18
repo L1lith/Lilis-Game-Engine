@@ -15,8 +15,12 @@
         cursor: pointer;
         height: 10vmin;
         svg {
+            pointer-events: none;
             height: 100%;
             width: auto;
+        }
+        img {
+            pointer-events: none;
         }
     }
     .jump {
