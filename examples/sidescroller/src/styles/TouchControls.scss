@@ -5,6 +5,7 @@
     flex-direction: row;
     width: 100vmin;
     justify-content: space-around;
+    user-select: none;    
     button {
         &.held {
             filter: brightness(80%);

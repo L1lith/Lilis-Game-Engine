@@ -39,7 +39,7 @@ export default function JumpButton({entity}) {
         entity.jumping = false
     }
     return <div onContextMenu={e => e.preventDefault()} class="touchControls">
-        <button ref={movementButton} onMouseDown={movementButtonDown} onMouseMove={movementButtonMoved} onMouseUp={movementButtonUp} class={"move" + (movementButtonHeld() ? ' held' : '')}><img src="left-right.png" alt="left and right movement icon"/></button>
-        <button onTouchStart={jumpButtonDown} onTouchEnd={jumpButtonUp} onTouchCancel={jumpButtonUp} onMouseDown={jumpButtonDown} onMouseUp={jumpButtonUp} class={"jump" + (jumpButtonHeld() ? ' held' : '')}><img src="jump-button.png" alt="jump icon"/></button>
+        <button ref={movementButton} onMouseDown={movementButtonDown} onMouseMove={movementButtonMoved} onMouseUp={movementButtonUp} class={"move" + (movementButtonHeld() ? ' held' : '')}><img draggable={false} src="left-right.png" alt="left and right movement icon"/></button>
+        <button onTouchStart={jumpButtonDown} onTouchEnd={jumpButtonUp} onTouchCancel={jumpButtonUp} onMouseDown={jumpButtonDown} onMouseUp={jumpButtonUp} class={"jump" + (jumpButtonHeld() ? ' held' : '')}><img draggable={false} src="jump-button.png" alt="jump icon"/></button>
     </div>
 }
