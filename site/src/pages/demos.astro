@@ -28,8 +28,8 @@ const panels = [
 ];
 ---
 
-<Base>
-  <Carousel3D panels={panels} cardWidth={320} cardHeight={420} zoom={1.15} client:load />
+<Base class="demo-page">
+  <Carousel3D panels={panels} width="90vw" zoom={1.15} client:load />
 	<nav class="demo-list sr-only">
 		<ul>
       {panels.map(panel => (

@@ -3,31 +3,38 @@ import * as THREE from "three";
 import "@/styles/Carousel3D.scss";
 
 /**
- * panels: Array<{
- *   title: string,
- *   preview: string,   // image URL
- *   href: string,      // demo link
- *   source: string,    // source link
- * }>
+ * panels: Array<{ title, preview, href, source }>
+ *
+ * width / height / minHeight: any CSS measurement string
+ *   e.g. "80vw", "50vh", "600px", "100%", "calc(100vh - 80px)"
+ *
+ * cardWidth / cardHeight: optional base sizes in px. If omitted, the
+ *   component picks a base size from the canvas and then fits the ring
+ *   to the canvas numerically.
  */
 export default function Carousel3D(props) {
   const panels = () => props.panels ?? [];
-  const cardWidth = () => props.cardWidth ?? 320;   // px
-  const cardHeight = () => props.cardHeight ?? 420; // px
-  const spinDuration = () => props.spinDuration ?? 25; // seconds per revolution
+  const explicitCardWidth = () => props.cardWidth ?? null;
+  const explicitCardHeight = () => props.cardHeight ?? null;
+  const spinDuration = () => props.spinDuration ?? 25;
   const idleDelay = () => props.idleDelay ?? 2500;
   const minScale = () => props.minScale ?? 0.72;
   const cameraFov = () => props.cameraFov ?? 38;
-  const zoom = () => props.zoom ?? 1.0;
+  const fitPadding = () => props.fitPadding ?? 0.9;
 
-  // World units: 1 unit = 100 px, purely for readable numbers.
-  const worldWidth = () => cardWidth() / 100;
-  const worldHeight = () => cardHeight() / 100;
+  const width = () => props.width ?? "100%";
+  const height = () => props.height ?? "100%";
+  const minHeight = () => props.minHeight ?? "400px";
 
   let mountRef;
   let renderer, scene, camera, group;
   let rafId = null;
   let isMounted = true;
+
+  // These are resolved at mount (and kept stable afterwards) so texture
+  // resolution and geometry don't have to be rebuilt on every resize.
+  let cardW = 0;
+  let cardH = 0;
 
   let rotationY = 0;
   let targetRotationY = null;
@@ -36,7 +43,7 @@ export default function Carousel3D(props) {
   let dragStartX = 0;
   let dragStartRotation = 0;
   let lastMoveTime = 0;
-  let velocity = 0; // rad/sec
+  let velocity = 0;
   let lastFrameTime = 0;
   let idleTimer = null;
 
@@ -48,11 +55,12 @@ export default function Carousel3D(props) {
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
 
-  // ---------- Geometry helpers ----------
   const count = () => Math.max(panels().length, 1);
   const anglePerCard = () => (Math.PI * 2) / count();
 
-  // Radius so cards don't overlap: half-width + gap, over sin(half angle).
+  const worldWidth = () => cardW / 100;
+  const worldHeight = () => cardH / 100;
+
   const radius = () => {
     const n = count();
     if (n <= 1) return 0;
@@ -61,16 +69,27 @@ export default function Carousel3D(props) {
     return (worldWidth() / 2 + pad) / Math.sin(halfAngle);
   };
 
-  // Camera distance so the front card fills `zoom` fraction of the vertical FOV,
-  // plus the ring radius so the back of the ring stays in front of the camera.
-  const cameraDistance = () => {
-    const fovRad = (cameraFov() * Math.PI) / 180;
-    const fill = 0.62 * zoom();
-    const dist = worldHeight() / 2 / Math.tan(fovRad / 2) / fill;
-    return dist + radius();
+  // Choose base card dimensions. If the user gave explicit sizes, use those.
+  // Otherwise, pick a base that's roughly proportional to the canvas and
+  // the panel count. The numerical fit below will scale the group to the
+  // canvas, so this just decides the texture resolution / geometry density.
+  const chooseBaseCardSize = (canvasW, canvasH) => {
+    const ew = explicitCardWidth();
+    const eh = explicitCardHeight();
+    if (ew && eh) return { w: ew, h: eh };
+    if (ew && !eh) return { w: ew, h: ew * (4 / 3) };
+    if (!ew && eh) return { w: eh * (3 / 4), h: eh };
+
+    // Auto: aim for a card that's ~55% of the smaller canvas dimension,
+    // capped so a 3-panel and a 12-panel carousel both look reasonable.
+    const n = count();
+    const sizeFactor = n <= 3 ? 0.7 : n <= 6 ? 0.55 : n <= 10 ? 0.45 : 0.38;
+    const targetH = Math.min(canvasH * sizeFactor, canvasW * 0.9);
+    const targetW = targetH * 0.76;
+    return { w: Math.round(targetW), h: Math.round(targetH) };
   };
 
-  // ---------- Interaction state ----------
+  // ---------- Interaction ----------
   const stopAutoSpin = () => {
     spinning = false;
     if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
@@ -84,7 +103,6 @@ export default function Carousel3D(props) {
     targetRotationY = Math.round(rotationY / step) * step;
   };
 
-  // ---------- Panel canvas ----------
   const loadImage = (src) =>
     new Promise((resolve, reject) => {
       const img = new Image();
@@ -94,20 +112,19 @@ export default function Carousel3D(props) {
       img.src = src;
     });
 
+  // ---------- Panel drawing ----------
   const drawPanel = (ctx, panel, image) => {
-    const w = cardWidth();
-    const h = cardHeight();
+    const w = cardW;
+    const h = cardH;
     const pad = 20;
     const innerW = w - pad * 2;
 
-    // Background + border
     ctx.fillStyle = "#0e1a16";
     ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = "rgba(120, 220, 180, 0.7)";
     ctx.lineWidth = 4;
     ctx.strokeRect(2, 2, w - 4, h - 4);
 
-    // Title (wrapped)
     ctx.fillStyle = "#b8ffd9";
     ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
     ctx.textAlign = "center";
@@ -131,7 +148,6 @@ export default function Carousel3D(props) {
     lines.forEach((line, i) => ctx.fillText(line, w / 2, titleY + i * 28));
     const titleHeight = Math.max(lines.length, 1) * 28;
 
-    // Preview
     const sourceBtnH = panel.source ? 40 : 0;
     const sourceBtnGap = panel.source ? 12 : 0;
     const imgTop = titleY + titleHeight + 14;
@@ -140,7 +156,6 @@ export default function Carousel3D(props) {
 
     if (imgH > 0) {
       if (image) {
-        // object-fit: cover
         const imgAspect = image.width / image.height;
         const boxAspect = innerW / imgH;
         let sx, sy, sw, sh;
@@ -172,7 +187,6 @@ export default function Carousel3D(props) {
       }
     }
 
-    // Source button
     if (panel.source) {
       const btnY = h - pad - sourceBtnH;
       ctx.fillStyle = "#0b1a12";
@@ -191,17 +205,72 @@ export default function Carousel3D(props) {
   const makePanelCanvas = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const canvas = document.createElement("canvas");
-    canvas.width = cardWidth() * dpr;
-    canvas.height = cardHeight() * dpr;
+    canvas.width = cardW * dpr;
+    canvas.height = cardH * dpr;
     const ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     return { canvas, ctx };
   };
 
-  // ---------- Scene ----------
+  // ---------- Fit-to-canvas ----------
+  // Project every card corner to NDC, then iterate a group scale until the
+  // largest |x_ndc| or |y_ndc| equals the target. Accounts for perspective
+  // nonlinearity via a few Newton-style iterations.
+  const projectedExtent = () => {
+    const v = new THREE.Vector3();
+    const p = new THREE.Vector3();
+    let max = 0;
+    for (const holder of group.children) {
+      for (const mesh of holder.children) {
+        if (!mesh.isMesh || !mesh.geometry) continue;
+        const pos = mesh.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          v.fromBufferAttribute(pos, i);
+          v.applyMatrix4(mesh.matrixWorld);
+          p.copy(v).project(camera);
+          const m = Math.max(Math.abs(p.x), Math.abs(p.y));
+          if (m > max) max = m;
+        }
+      }
+    }
+    return max;
+  };
+
+  const computeFitScale = () => {
+    if (!group || !camera) return 1;
+    camera.updateMatrixWorld(true);
+    let s = group.scale.x || 1;
+    for (let iter = 0; iter < 8; iter++) {
+      group.scale.set(s, s, s);
+      group.updateMatrixWorld(true);
+      const extent = projectedExtent();
+      if (!isFinite(extent) || extent < 1e-5) break;
+      const factor = fitPadding() / extent;
+      if (Math.abs(factor - 1) < 0.003) break;
+      s *= factor;
+    }
+    group.scale.set(s, s, s);
+    group.updateMatrixWorld(true);
+    return s;
+  };
+
+  // Camera distance chosen to match the depth feel of the original CSS
+  // carousel: camDist / radius ≈ 2.67. Plus a bit of headroom based on
+  // the card height so the front card has space.
+  const computeCameraDistance = () => {
+    const r = radius();
+    return r * 2.67 + worldHeight() * 0.6;
+  };
+
+  // ---------- Scene build ----------
   const buildScene = () => {
     const w = Math.max(mountRef.clientWidth, 1);
     const h = Math.max(mountRef.clientHeight, 1);
+
+    // Decide card size once, based on initial canvas.
+    const { w: cw, h: ch } = chooseBaseCardSize(w, h);
+    cardW = cw;
+    cardH = ch;
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -216,8 +285,8 @@ export default function Carousel3D(props) {
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera(cameraFov(), w / h, 0.1, 200);
-    camera.position.set(0, 0, cameraDistance());
+    camera = new THREE.PerspectiveCamera(cameraFov(), w / h, 0.01, 1000);
+    camera.position.set(0, 0, computeCameraDistance());
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 
@@ -266,16 +335,15 @@ export default function Carousel3D(props) {
             drawPanel(ctx, panel, img);
             texture.needsUpdate = true;
           })
-          .catch((err) => {
-            console.warn("[Carousel3D] preview failed:", err);
-          });
+          .catch((err) => console.warn("[Carousel3D] preview failed:", err));
       }
     }
 
+    computeFitScale();
     renderer.render(scene, camera);
   };
 
-  // ---------- Frame loop ----------
+  // ---------- Render loop ----------
   const update = (time) => {
     if (!isMounted) return;
 
@@ -284,12 +352,10 @@ export default function Carousel3D(props) {
     lastFrameTime = time;
     if (dt > 0.1) dt = 0.1;
 
-    // Auto-spin
     if (spinning && !isDragging && targetRotationY === null) {
       rotationY += ((Math.PI * 2) / spinDuration()) * dt;
     }
 
-    // Snap tween
     if (targetRotationY !== null) {
       const delta = targetRotationY - rotationY;
       rotationY += delta * Math.min(1, dt * 12);
@@ -300,7 +366,6 @@ export default function Carousel3D(props) {
       }
     }
 
-    // Momentum
     if (!isDragging && targetRotationY === null && Math.abs(velocity) > 0.02) {
       velocity *= 0.94;
       rotationY += velocity * dt;
@@ -312,11 +377,9 @@ export default function Carousel3D(props) {
 
     group.rotation.y = rotationY;
 
-    // Per-card scale based on angular distance from the front.
     for (const holder of group.children) {
       const mesh = holder.children[0];
       if (!mesh) continue;
-
       let effective = holder.rotation.y + group.rotation.y;
       effective = ((effective % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const diff = effective > Math.PI ? Math.PI * 2 - effective : effective;
@@ -343,7 +406,9 @@ export default function Carousel3D(props) {
       if (w === 0 || h === 0) return;
       renderer.setSize(w, h);
       camera.aspect = w / h;
+      camera.position.z = computeCameraDistance();
       camera.updateProjectionMatrix();
+      computeFitScale();
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(mountRef);
@@ -353,9 +418,7 @@ export default function Carousel3D(props) {
       if (rafId) cancelAnimationFrame(rafId);
       ro.disconnect();
       if (idleTimer) clearTimeout(idleTimer);
-
       raycastTargets.length = 0;
-
       if (scene) {
         scene.traverse((obj) => {
           if (obj.geometry) obj.geometry.dispose();
@@ -374,7 +437,7 @@ export default function Carousel3D(props) {
     });
   });
 
-  // ---------- Pointer ----------
+  // ---------- Pointer / raycast ----------
   const hitTest = (clientX, clientY) => {
     if (!renderer || !camera) return null;
     const rect = renderer.domElement.getBoundingClientRect();
@@ -395,19 +458,16 @@ export default function Carousel3D(props) {
     lastMoveTime = performance.now();
     targetRotationY = null;
     isDragging = false;
-
     e.currentTarget.setPointerCapture(e.pointerId);
     e.currentTarget.style.cursor = "grabbing";
   };
 
   const onPointerMove = (e) => {
-    // Hover (no button) → cursor feedback only
     if (e.buttons === 0 && !isDragging) {
       const hit = hitTest(e.clientX, e.clientY);
       e.currentTarget.style.cursor = hit ? "pointer" : "grab";
       return;
     }
-
     const totalDx = e.clientX - pointerDownX;
     if (!isDragging && Math.abs(totalDx) > 5) {
       isDragging = true;
@@ -420,7 +480,6 @@ export default function Carousel3D(props) {
     const dx = e.clientX - dragStartX;
     const degPerPx = 0.4;
     const newRotation = dragStartRotation + (dx * degPerPx * Math.PI) / 180;
-
     if (dt > 0) velocity = ((newRotation - rotationY) / dt) * 1000;
     lastMoveTime = now;
     rotationY = newRotation;
@@ -446,9 +505,7 @@ export default function Carousel3D(props) {
       const hit = hitTest(e.clientX, e.clientY);
       if (hit) {
         const panel = hit.object.userData.panel;
-        // UV (0,0) is bottom-left of the plane in three.js.
-        // The source button is drawn in the bottom ~13% of the canvas.
-        const sourceThreshold = (40 + 20) / cardHeight();
+        const sourceThreshold = (40 + 20) / cardH;
         if (panel.source && hit.uv.y < sourceThreshold) {
           window.open(panel.source, "_blank", "noopener,noreferrer");
         } else if (panel.href) {
@@ -464,16 +521,19 @@ export default function Carousel3D(props) {
         velocity = 0;
         snapToNearest();
       }
-      // Otherwise momentum branch in `update` will slow it and then snap.
     }
     isDragging = false;
   };
 
   return (
     <div
-      aria-hidden 
       class="carousel3d-wrapper"
-      style={{ cursor: "grab" }}
+      style={{
+        width: width(),
+        height: height(),
+        "min-height": minHeight(),
+        cursor: "grab",
+      }}
       ref={mountRef}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
