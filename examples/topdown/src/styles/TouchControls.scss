@@ -1,0 +1,28 @@
+.touchControls {
+    position: absolute;
+    bottom: 5vmin;
+    display: flex;
+    flex-direction: row;
+    width: 100vmin;
+    justify-content: space-around;
+    user-select: none;    
+    button {
+        &.held {
+            filter: brightness(80%);
+        }
+        background: none;
+        border: none;
+        cursor: pointer;
+        height: 10vmin;
+        svg {
+            pointer-events: none;
+            height: 100%;
+            width: auto;
+        }
+        img {
+            pointer-events: none;
+        }
+    }
+    .jump {
+    }
+}
