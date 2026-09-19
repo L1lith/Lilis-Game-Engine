@@ -55,8 +55,10 @@ function createGameCore(initialData = null) {
     },
     unmount: async () => {
       await Promise.all(
-        gameStore.plugins.map(
-          async (plugin) => await plugin?.unmount(gameCore),
+        gameStore.plugins.map(async (plugin) =>
+          typeof plugin?.unmount == "function"
+            ? await plugin?.unmount(gameCore)
+            : null,
         ),
       );
       return true;
