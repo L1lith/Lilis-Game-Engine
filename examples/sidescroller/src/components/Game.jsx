@@ -11,6 +11,7 @@ import { detectKeys } from "lilis-engine/utility"
 import TouchControls from "./TouchControls"
 import Matter from 'matter-js'
 import { input } from "astro:schema"
+import {isSignal} from 'jabr'
 const {Body} = Matter
 
 export default function Game() {
@@ -69,7 +70,8 @@ export default function Game() {
             defaultLevel: 'levelOne'
         })
         const adjustCameraBounds = ()=>{
-            const map = levelLoader.activeLevel.get()?.exports?.map;
+            let map = levelLoader.activeLevel.get()?.exports?.map;
+            if (isSignal(map) && map.get() instanceof Array) map = map.get()[0]
             if (!map) {
                 playerCam.bounds = {left: -50, right: 50, top: -50, bottom: 50}
                 return
@@ -82,11 +84,13 @@ export default function Game() {
             }
         }
         levelLoader.activeLevel.addListener(adjustCameraBounds)
-        adjustCameraBounds
+        adjustCameraBounds()
         const playerOutOfBoundsPlugin = {
             tick: ()=> {            
-                const map = levelLoader.activeLevel.get()?.exports?.map;
+                let map = levelLoader.activeLevel.get()?.exports?.map;
+                if (isSignal(map) && map.get() instanceof Array) map = map.get()[0]
                 if (!map) return
+
                 const isOutOfBounds = player.x > map.width / 2 + player.width / 2 || player.x < map.width / -2  - player.width / 2 || player.y < map.height / -2 - player.height / 2 || player.y > map.height / 2 + player.height / 2 
                 if (isOutOfBounds) {
                     const respawnPoint = levelLoader.activeLevel.get()?.exports?.spawn || {x: 0, y: -30}
