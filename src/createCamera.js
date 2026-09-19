@@ -99,10 +99,14 @@ function createCamera(state = {}) {
   store.addListener("y", boundsPositionListenerY);
   store.addListener("width", boundsWidthListener);
   store.addListener("height", boundsHeightListener);
-  boundsPositionListenerX(store.x); // Ensure bounds are enforced before returning
-  boundsPositionListenerY(store.y);
-  boundsWidthListener(store.width);
-  boundsHeightListener(store.height);
+  const updateAllBounds = () => {
+    boundsPositionListenerX(store.x); // Ensure bounds are enforced before returning
+    boundsPositionListenerY(store.y);
+    boundsWidthListener(store.width);
+    boundsHeightListener(store.height);
+  };
+  store.addListener("bounds", updateAllBounds);
+  updateAllBounds();
   return store;
 }
 

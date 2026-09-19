@@ -73,6 +73,7 @@ export default function Game() {
                 bottom: map.height / 2
             }
         }
+        adjustCameraBounds()
         levelLoader.activeLevel.addListener(adjustCameraBounds)
         adjustCameraBounds
         const playerOutOfBoundsPlugin = {
