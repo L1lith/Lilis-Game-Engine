@@ -1,0 +1,16 @@
+// The widest viewport that should still be allowed to show the mobile layout.
+// Bigger than the widest real phone in CSS px (iPhone Pro Max ≈ 430px,
+// most Android flagships ≈ 412px) so we have a little headroom, but small
+// enough that a tall/narrow desktop window won't be treated as mobile.
+$mobile-max-width: 600px;
+
+// The condition that defines "mobile":
+//   vertical (or square) viewport  AND  narrow enough to actually be a phone.
+$is-mobile: "(max-aspect-ratio: 1/1) and (max-width: #{$mobile-max-width})";
+
+// The exact negation: everything that is NOT the mobile layout.
+// The leading `not all and` is required — `not` needs a media type to attach to.
+$is-desktop: "not all and #{$is-mobile}";
+
+@mixin mobile  { @media #{$is-mobile}  { @content; } }
+@mixin desktop { @media #{$is-desktop} { @content; } }
