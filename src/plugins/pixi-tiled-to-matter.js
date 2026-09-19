@@ -1,6 +1,7 @@
 import decomp from "poly-decomp";
 import Matter from "matter-js";
 import { Entity } from "lilis-engine";
+import { isSignal } from "jabr";
 const { Bodies, Composite, Common } = Matter;
 Common.setDecomp(decomp);
 
@@ -15,6 +16,8 @@ const getLayerProperty = (layer, propertySearch) => {
 };
 
 export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
+  if (isSignal(pixiTiledMap) && Array.isArray(pixiTiledMap.get()))
+    pixiTiledMap = pixiTiledMap.get().find((entity) => entity.mainMap === true);
   const { layerFilter, calculateTileXOffset, calculateTileYOffset } = options;
   let targetLayers =
     typeof layerFilter == "function"

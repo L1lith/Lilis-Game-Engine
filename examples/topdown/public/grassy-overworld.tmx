@@ -97,6 +97,7 @@
  <objectgroup id="7" name="collision shapes">
   <properties>
    <property name="collision" type="bool" value="true"/>
+   <property name="noRender" type="bool" value="true"/>
   </properties>
   <object id="1" x="185.75" y="-16.75" width="30" height="52"/>
   <object id="2" x="201.5" y="4.75" width="37" height="80.75"/>
