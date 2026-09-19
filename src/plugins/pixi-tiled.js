@@ -30,6 +30,10 @@ async function createPixiTiledmap(mapURL, entitySettings = {}) {
       layer.layerData.properties.find(
         (property) =>
           property?.name === "renderPriority" && isFinite(property?.value),
+      ) &&
+      !layer.layerData.properties.find(
+        // ignore renderPriority if it's a noRender layer
+        (property) => property?.name === "noRender" && property?.value === true,
       ),
   );
 
