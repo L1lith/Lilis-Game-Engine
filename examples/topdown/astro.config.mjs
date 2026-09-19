@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import solidJs from "@astrojs/solid-js";
 import solidSvg from "vite-plugin-solid-svg";
+import svgoConfig from "./svgo.config.mjs";
 
 // Check if we're running in GitHub Actions
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
@@ -10,7 +11,12 @@ const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
 const config = {
   integrations: [solidJs()],
   vite: {
-    plugins: [solidSvg({ defaultAsComponent: false })],
+    plugins: [
+      solidSvg({
+        defaultAsComponent: false,
+        svgo: { enabled: true, svgoConfig },
+      }),
+    ],
   },
 };
 

@@ -58,10 +58,10 @@ export default function Game() {
         const playerControlPlugin = {
             tick: () => {
                 if (!player.matterBody) return
-                const xForce = inputs.right.get() || touchControls.xDirection === "right" ? (inputs.left.get() || touchControls.xDirection === "left" ? 0 : 1) : inputs.left.get() || touchControls.direction === "left" ? -1 : 0
-                const yForce = inputs.down.get() || touchControls.yDirection === "down" ? (inputs.up.get() || touchControls.yDirection === "up" ? 0 : 1) : inputs.up.get() || touchControls.direction === "up" ? -1 : 0
+                //const xForce = inputs.right.get() || touchControls.xDirection === "right" ? (inputs.left.get() || touchControls.xDirection === "left" ? 0 : 1) : inputs.left.get() || touchControls.direction === "left" ? -1 : 0
+                //const yForce = inputs.down.get() || touchControls.yDirection === "down" ? (inputs.up.get() || touchControls.yDirection === "up" ? 0 : 1) : inputs.up.get() || touchControls.direction === "up" ? -1 : 0
                 //const isJumping = (inputs.up.get() || touchControls.jumping || inputs.space.get()) && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
-                Body.setVelocity(player.matterBody, {x: xForce * walkForce, y: yForce * walkForce})
+                Body.setVelocity(player.matterBody, {x: touchControls.xDirection * walkForce, y: touchControls.yDirection * walkForce})
             }
         }
         window.entities = entities

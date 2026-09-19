@@ -1,28 +1,48 @@
-.touchControls {
-    position: absolute;
-    bottom: 5vmin;
-    display: flex;
-    flex-direction: row;
-    width: 100vmin;
-    justify-content: space-around;
-    user-select: none;    
-    button {
-        &.held {
-            filter: brightness(80%);
-        }
-        background: none;
-        border: none;
-        cursor: pointer;
-        height: 10vmin;
-        svg {
-            pointer-events: none;
-            height: 100%;
-            width: auto;
-        }
-        img {
-            pointer-events: none;
-        }
-    }
-    .jump {
+// .touchControls {
+//     position: absolute;
+//     bottom: 5vmin;
+//     display: flex;
+//     flex-direction: row;
+//     width: 100vmin;
+//     justify-content: space-around;
+//     user-select: none;    
+//     button {
+//         &.held {
+//             filter: brightness(80%);
+//         }
+//         background: none;
+//         border: none;
+//         cursor: pointer;
+//         height: 10vmin;
+//         svg {
+//             pointer-events: none;
+//             height: 100%;
+//             width: auto;
+//         }
+//         img {
+//             pointer-events: none;
+//         }
+//     }
+//     .jump {
+//     }
+// }
+.touchControls.joystick {
+    cursor: pointer;
+        height: 20vmin;
+        width: 20vmin;
+        position: absolute;
+        left: 10vmin;
+        bottom: 10vmin;
+    touch-action: none;              // critical for mobile
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+
+    .joystick-icon {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;        // let the container be the event target
+        -webkit-user-drag: none;
     }
 }
