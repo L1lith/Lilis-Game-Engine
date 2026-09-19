@@ -79,6 +79,7 @@
  <layer id="5" name="overhead" width="20" height="10">
   <properties>
    <property name="overhead" type="bool" value="true"/>
+   <property name="renderPriority" type="int" value="1000"/>
   </properties>
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

@@ -11,7 +11,6 @@ export default {
     const boundaries = createMatterBoundaries({
       width: map.width,
       height: map.height,
-      skipBoundaries: ["bottom"],
     });
     entityList.set([map, mapCollision, boundaries]);
     return { map };
