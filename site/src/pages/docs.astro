@@ -4,6 +4,7 @@ import '@/styles/docs.scss'
 import OverviewFlowchart from '@/svgs/overview-flowchart.svg'
 import Expandable from '@/components/Expandable';
 import { Code } from 'astro:components';
+import GridLayoutVisualization from '@/svgs/grid-layout-visualization.svg'
 //an example project in the <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory</a> 
 ---
 
@@ -12,7 +13,7 @@ import { Code } from 'astro:components';
 		<!-- <span id="beginners-note" class="beginners-note"><span class="close" onClick="document.getElementById('beginners-note').parentNode.removeChild(document.getElementById('beginners-note')); localStorage.beginner = 'false'">x</span><span class="italic">Note for beginners to coding:</span> these instructions expect that you know basic terminal usage (particularly the `cd` command), as well as have <a href="https://nodejs.org/en">Node.js</a> installed. To learn how to use the terminal please <a href="https://www.marktechpost.com/2025/04/01/the-complete-beginners-guide-to-terminal-command-prompt/">see this tutorial</a>.</span> -->
 		<p>To get started find a <a target="_blank" href={import.meta.env.BASE_URL + "demos"}>demo</a> that you would like to use, then click "View Source Code" to see the corresponding directory name. Then use the following command in the command line (with the command line located in the directory you would like to create your project in), replacing "example-name" with the name of the example directory you'd like to use as your basis:</p>
 		<code class="cli">npx lilis-engine create example-name destination-dir</code>
-		So for example if we want to make a flappy bird type game in the "my-first-flappy-game" directory we'd use:
+		<p>So for example if we want to make a flappy bird type game in the "my-first-flappy-game" directory we'd use:</p>
 		<code class="cli">npx lilis-engine create spike-vs-space my-first-flappy-game</code>
 		<p>There are also more example projects available that are not listed in the demo page, you can find them by visiting the <a target="_blank" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory in the engine's source code</a>.<!--  Or you can list all of the available examples by using the create command without further arguments: --></p>
 		<!-- <code class="cli">npx lilis-engine create</code> -->
@@ -20,52 +21,59 @@ import { Code } from 'astro:components';
 		<p>Please note that all of the example projects are made using <a href="https://docs.solidjs.com/">SolidJS</a> for interactive HTML and <a href="https://docs.astro.build/en/getting-started/">Astro</a> as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards.</p>
 	</Expandable>
 	<Expandable title="Game Engine Overview" class="engine-overview" client:load>
-		<h2>Flowchart Overview:</h2>
-		<OverviewFlowchart class="overview-flowchart"/>
-		<p>The above flowchart shows how the game engine works. The green lines represent the order that the program executes (a.k.a. the "control flow), and the red lines represent the plugins reading and writing data from the Entity objects in the EntityList that represents the main scene. The plugins typically don't just do static reads from the Entity objects, usually they leverage the abilities of the underlying <a href="https://github.com/L1lith/Jabr">Jabr</a> objects to provide change listeners so that they can run code only exactly when needed (as opposed to doing static reads every frame which is very slow because they require constant read operations).</p>
+		<section id="architecture" class="architecture-overview">
+			<h2>Architecture Overview:</h2>
+			<OverviewFlowchart class="overview-flowchart"/>
+			<p>The above flowchart shows how the game engine works. The green lines represent the order that the program executes (a.k.a. the "control flow), and the red lines represent the plugins reading and writing data from the Entity objects in the EntityList that represents the main scene. The plugins typically don't just do static reads from the Entity objects, usually they leverage the abilities of the underlying <a href="https://github.com/L1lith/Jabr">Jabr</a> objects to provide change listeners so that they can run code only exactly when needed (as opposed to doing static reads every frame which is very slow because they require constant read operations).</p>
+			<br/>
+			<p>We can see a basic example of this in practice by looking at the source code for the level loader demo:</p>
+			<a style="display: block; margin: 1vmin 0;" class="standard-link" href="https://github.com/L1lith/Lilis-Game-Engine/blob/master/examples/level-loader-demo/src/components/Game.jsx">examples/level-loader-demo/src/components/Game.jsx</a>
+			<Code class="basic-usage-code" lang="js" code={`import { onMount, onCleanup, createSignal} from "solid-js"
+	import { isServer } from 'solid-js/web'
+	import {createGameCore, Entity, EntityList, RenderSettings, createGameLoop} from 'lilis-engine'
+	import createPixiRenderer from 'lilis-engine/pixi'
+	import { LevelLoader } from "lilis-engine"
+	import createSolidRenderer from 'lilis-engine/solid'
+	// ...
+	// ... inside our SolidJS component mount
+	const renderSettings = RenderSettings({canvas})
+	const entities = EntityList([])
+	window.entities = entities
+	const levelLoader = LevelLoader(entities, {
+		levelA: {
+			mount: (_, {entityList})=>{
+				entityList.addChild(Entity({imageURL: 'chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50}))
+			}
+		},
+		levelB: {
+			mount: (_, {entityList})=>{
+				entityList.addChild(Entity({imageURL: 'warrior.png', x: 0, y: 0, width: 50, height: 50}))
+			}
+		}
+	}, {
+		defaultLevel: 'levelA'
+	})
+	const levelSwitcher = Entity({solid: function LevelSwitcher(){
+		return <button onClick={()=>{
+			levelLoader.loadLevel(levelLoader.activeLevel.get().name === "levelA" ? 'levelB' : 'levelA')
+		}}>Switch Levels</button>
+	}})
+	entities.addChild(levelSwitcher)
+	const pixiRenderer = createPixiRenderer(entities, renderSettings)
+	renderSettings.solidSetter = setSolidGameContents
+	const solidRenderer = createSolidRenderer(entities, renderSettings)
+	const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer]})
+	await gameCore.mount()
+	// SolidJS component boilerplate continues below`}/>
+		<p>So what's happening here? Basically we are assembling our game and our game engine by creating each of our objects and providing them with the context that they need. Entity objects are the basic units of our game scene, and EntityList is our container to hold them. "entities" is our main game scene, so we pass it our plugins so that they can do their jobs. The gameCore just needs to know the list of plugins including at least one plugin to run our game loop.  For more about plugins see the "Plugin System" tab below.</p>
 		<br/>
-		<p>We can see a basic example of this in practice by looking at the source code for the level loader demo:</p>
-		<a style="display: block; margin: 1vmin 0;" class="standard-link" href="https://github.com/L1lith/Lilis-Game-Engine/blob/master/examples/level-loader-demo/src/components/Game.jsx">examples/level-loader-demo/src/components/Game.jsx</a>
-		<Code class="basic-usage-code" lang="js" code={`import { onMount, onCleanup, createSignal} from "solid-js"
-import { isServer } from 'solid-js/web'
-import {createGameCore, Entity, EntityList, RenderSettings, createGameLoop} from 'lilis-engine'
-import createPixiRenderer from 'lilis-engine/pixi'
-import { LevelLoader } from "lilis-engine"
-import createSolidRenderer from 'lilis-engine/solid'
-// ...
-// ... inside our SolidJS component mount
-const renderSettings = RenderSettings({canvas})
-const entities = EntityList([])
-window.entities = entities
-const levelLoader = LevelLoader(entities, {
-	levelA: {
-		mount: (_, {entityList})=>{
-			entityList.addChild(Entity({imageURL: 'chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50}))
-		}
-	},
-	levelB: {
-		mount: (_, {entityList})=>{
-			entityList.addChild(Entity({imageURL: 'warrior.png', x: 0, y: 0, width: 50, height: 50}))
-		}
-	}
-}, {
-	defaultLevel: 'levelA'
-})
-const levelSwitcher = Entity({solid: function LevelSwitcher(){
-	return <button onClick={()=>{
-		levelLoader.loadLevel(levelLoader.activeLevel.get().name === "levelA" ? 'levelB' : 'levelA')
-	}}>Switch Levels</button>
-}})
-entities.addChild(levelSwitcher)
-const pixiRenderer = createPixiRenderer(entities, renderSettings)
-renderSettings.solidSetter = setSolidGameContents
-const solidRenderer = createSolidRenderer(entities, renderSettings)
-const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer]})
-await gameCore.mount()
-// SolidJS component boilerplate continues below`}/>
-	<p>So what's happening here? Basically we are assembling our game and our game engine by creating each of our objects and providing them with the context that they need. Entity objects are the basic units of our game scene, and EntityList is our container to hold them. "entities" is our main game scene, so we pass it our plugins so that they can do their jobs. The gameCore just needs to know the list of plugins including at least one plugin to run our game loop.  For more about plugins see the "Plugin System" tab below.</p>
-	<br/>
-	<p>Finally we call gameCore.mount() which automatically tells the gameLoop to start running (and the game loop calls the rest of our plugins each frame). Plugins usually need other context on a case-by-case basis, like renderers will usually need a canvas or some other way to render to the screen. To learn more about the basic building blocks of the game engine see the "Core Exports" section below.</p>
+		<p>Finally we call gameCore.mount() which automatically tells the gameLoop to start running (and the game loop calls the rest of our plugins each frame). Plugins usually need other context on a case-by-case basis, like renderers will usually need a canvas or some other way to render to the screen. To learn more about the basic building blocks of the game engine see the "Core Exports" section below.</p>
+		</section>
+		<section id="virtual-coordinates" class="virtual-coords">
+			<h2>Virtual Coordinate Space</h2>
+			<GridLayoutVisualization/>
+			<p>The game engine uses a virtual coordinate space that isn't dependant on the screen size. The negative directions are the top and the left, and the positive directions are down and to the right. The center of the screen (a.k.a. the origin) is always at (0,0). Entity object's position and sizing properties (x, y, width, height, etc) use this space to easily position themselves in your world without needing to adjust themselves to the screen dimensions. The virtual screen coordinates typically range from -50 to +50 on each axis for on-screen content though that can vary on a game-by-game basis. Entity objects coordinates also represent their center.</p>
+		</section>
 	</Expandable>
 	<Expandable title="Core Exports" class="core-exports" client:load>
 		<div class="entity export">

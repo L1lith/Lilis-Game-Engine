@@ -4,6 +4,32 @@
     align-items: center;
     padding: 10vmin;
     padding-top: 0;
+    
+
+    h2:not(.title) {
+        margin-bottom: 2vmin;
+        text-decoration: underline;
+    }
+    p {
+        max-width: 80vmin;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    svg:not(.icon) {
+        margin-top: 5vmin;
+        margin-bottom: 5vmin;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        height: auto;
+    }
+        
+    section {
+        &:not(:nth-of-type(1)) {
+            margin-top: 5vmin;
+        }
+    }
     .core-exports {
         .export:not(:last-child) {
             margin-bottom: 5vmin;
@@ -38,8 +64,7 @@
         width: min(80vw, 60vmin);
         height: auto;
         display: block;
-        margin: auto;
-        margin-bottom: 2vmin;
+        margin-top: 2vmin;
     }
     pre.astro-code {
         margin: 2vmin 0;
@@ -60,6 +85,7 @@
     }
     .expandable {
         margin-bottom: 2vmin;
+        max-width: 100vmin;
     }
     .plugin-list {
         margin: 2vmin 0;
