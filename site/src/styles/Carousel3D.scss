@@ -3,7 +3,10 @@
   overflow: hidden;
   touch-action: none;
   user-select: none;
+  flex-grow: 1;
   cursor: grab;
+  // Layout comes from inline styles (flex / aspect-ratio / min-height)
+  // so it can respond to props and the computed ring aspect.
 
   canvas {
     display: block;

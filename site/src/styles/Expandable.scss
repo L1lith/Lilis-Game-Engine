@@ -3,6 +3,12 @@
     flex-direction: column;
     width: 100%;
     border: 1vmin solid rgb(180, 180, 180);
+    margin-bottom: 2vmin;
+    max-width: 100vmin;
+    p {
+        margin-left: auto;
+        margin-right: auto;
+    }
     .title {
         display: flex;
         align-items: center;
