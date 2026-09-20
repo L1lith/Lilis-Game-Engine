@@ -1,5 +1,10 @@
 <img src="https://github.com/L1lith/Lilis-Game-Engine/blob/master/site/public/lilis-game-engine-logo.png?raw=true" alt="Graffiti style logo reading &quot;Lili's Game Engine&quot;" height="200"/>
 
+## Play with the demos!
+If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://l1lith.github.io/Lilis-Game-Engine/demos)
+
+## Technical Explanation
+
 I made this game engine by combining the best in modern web technology. This game engine is highly moddable, meaning it is really easy to combine different libraries together and to add support for new libraries. State management is handled using my own [universal state management library Jabr](https://github.com/L1lith/Jabr) which is very simple to use and has no ecosystem lock-in unlike most state libraries.
 
 This game engine strongly leverages the benefits of being written in a Functional Programming (FP) style instead of Objected Oriented Programming (OOP) while still having some resemblance to OOP by using an [Entity Component System (ECS)](https://www.daydreamsoft.com/blog/ecs-vs-oop-in-large-scale-games-choosing-the-right-architecture-for-performance-and-scalability). In line with Functional Programming ethos every part of my game engine was built to maximize separations of concerns.
@@ -8,20 +13,23 @@ If any of these technical details aren't making sense to you don't worry! I sugg
 
 ## Getting Started
 
-To get started find a [demo](https://l1lith.github.io/Lilis-Game-Engine/demos/) that you would like to use, then click "View Source Code" to see the corresponding directory name. Then use the following command in the command line (with the command line located in the directory you would like to create your project in), replacing "example-name" with the name of the example directory you'd like to use as your basis:
-```bash
-npx lilis-engine create example-name destination-dir
-```
-So for example if we want to make a flappy bird type game in the "my-first-flappy-game" directory we'd use:
-```bash
-npx lilis-engine create spike-vs-space my-first-flappy-game
-```
+To begin using the game engine it is recommended you install the command line tool (though not mandatory):
 
-There are also more example projects available that are not listed in the demo page, you can find them by visiting the [examples directory](https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples) in the engine's source code or you can list their names by using the create command without additional arguments:
+`npm install -g lilis-engine`
 
-```bash
-npx liis-engine create
-```
+Once that's done there are a variety of demo projects for you to toy around with. To view the list of available demos use the "create" command without additional arguments:
+
+`lilis-engine create`
+
+To learn more about any of the available demos use the "info" command with the demo name as the first argument, like this:
+
+`lilis-engine info topdown`
+
+Once you've decided on which demo you'd like to try out you can use the "create" command, with the demo name as the first argument and your project name (no spaces) as the second command:
+
+`lilis-engine create topdown my-zelda-game`
+
+If you'd like to view the full list of demos in your web browser as well as view their source code try visiting the [examples directory in the engine's source code](https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples).
 
 Please note that all of the example projects are made using [SolidJS](https://docs.solidjs.com/) for interactive HTML and [Astro](https://docs.astro.build/en/getting-started/) as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards.
 
