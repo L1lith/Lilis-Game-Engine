@@ -663,7 +663,7 @@ yargs(hideBin(process.argv))
       }
 
       console.log("");
-      console.log(`  ${c.heading(example)}`);
+      console.log(`  Demo: ${c.heading(example)}`);
       console.log(`  ${c.dim(SEP)}`);
 
       if (description) {

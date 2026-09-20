@@ -10,14 +10,13 @@ import GridLayoutVisualization from '@/svgs/grid-layout-visualization.svg'
 
 <Base class="docs">
 	<Expandable startExpanded title="Getting Started" class="getting-started" client:load>
-		<!-- <span id="beginners-note" class="beginners-note"><span class="close" onClick="document.getElementById('beginners-note').parentNode.removeChild(document.getElementById('beginners-note')); localStorage.beginner = 'false'">x</span><span class="italic">Note for beginners to coding:</span> these instructions expect that you know basic terminal usage (particularly the `cd` command), as well as have <a href="https://nodejs.org/en">Node.js</a> installed. To learn how to use the terminal please <a href="https://www.marktechpost.com/2025/04/01/the-complete-beginners-guide-to-terminal-command-prompt/">see this tutorial</a>.</span> -->
-		<p>To get started find a <a target="_blank" href={import.meta.env.BASE_URL + "demos"}>demo</a> that you would like to use, then click "View Source Code" to see the corresponding directory name. Then use the following command in the command line (with the command line located in the directory you would like to create your project in), replacing "example-name" with the name of the example directory you'd like to use as your basis:</p>
-		<code class="cli">npx lilis-engine create example-name destination-dir</code>
-		<p>So for example if we want to make a flappy bird type game in the "my-first-flappy-game" directory we'd use:</p>
-		<code class="cli">npx lilis-engine create spike-vs-space my-first-flappy-game</code>
-		<p>There are also more example projects available that are not listed in the demo page, you can find them by visiting the <a target="_blank" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory in the engine's source code</a>.<!--  Or you can list all of the available examples by using the create command without further arguments: --></p>
-		<!-- <code class="cli">npx lilis-engine create</code> -->
-		<br/>
+		<p>There are a variety of demo projects for you to toy around with. To view the list of available demos use the "create" command without additional arguments:</p>
+		<code class="cli">npx lilis-engine create</code>
+		<p>To learn more about any of the available demos use the "info" command with the demo name as the first argument, like this:</p>
+		<code class="cli">npx lilis-engine info sidescroller</code>
+		<p>Once you've decided on which demo you'd like to try out you can use the "create" command, with the demo name as the first argument and your project name (no spaces) as the second command:</p>
+		<code class="cli">npx lilis-engine create topdown my-zelda-game</code>
+		<p>If you'd like to view the full list of demos in your web browser as well as view their source code try visiting the <a target="_blank" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory in the engine's source code</a>.</p>
 		<p>Please note that all of the example projects are made using <a href="https://docs.solidjs.com/">SolidJS</a> for interactive HTML and <a href="https://docs.astro.build/en/getting-started/">Astro</a> as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards.</p>
 	</Expandable>
 	<Expandable title="Game Engine Overview" class="engine-overview" client:load>
