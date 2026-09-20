@@ -1,6 +1,12 @@
-import { onMount, onCleanup, createSignal } from "solid-js";
+import { onMount, onCleanup } from "solid-js";
 import * as THREE from "three";
 import "@/styles/Carousel3D.scss";
+
+const MAX_TITLE_SIZE = 22;
+const MIN_TITLE_SIZE = 12;
+const MARQUEE_START_PAUSE_MS = 1200;
+const MARQUEE_END_PAUSE_MS = 1200;
+const MARQUEE_SPEED_PX_PER_SEC = 35;
 
 export default function Carousel3D(props) {
   const panels = () => props.panels ?? [];
@@ -12,27 +18,9 @@ export default function Carousel3D(props) {
   const cameraFov = () => props.cameraFov ?? 38;
   const fitPadding = () => props.fitPadding ?? 0.9;
 
-  // Layout props
-  const width = () => props.width ?? "auto";
-  const height = () => props.height ?? "auto";
+  const width = () => props.width ?? "100%";
+  const height = () => props.height ?? "100%";
   const minHeight = () => props.minHeight ?? "400px";
-  const maxWidth = () => props.maxWidth ?? "100vw";
-  const flex = () => props.flex ?? "1 1 0";
-  const alignSelf = () => props.alignSelf ?? "center";
-
-  const count = () => Math.max(panels().length, 1);
-
-  // Estimate ring aspect ratio from a nominal card size. Used as the initial
-  // wrapper aspect-ratio so the very first layout pass is close to correct.
-  const estimateAspect = (nominalW = 320, nominalH = 420) => {
-    const worldW = nominalW / 100;
-    const worldH = nominalH / 100;
-    const n = count();
-    const r = n > 1 ? (worldW / 2 + 0.15) / Math.sin(Math.PI / n) : 0;
-    return (r * 2 + worldW) / worldH;
-  };
-
-  const [aspectRatio, setAspectRatio] = createSignal(estimateAspect());
 
   let mountRef;
   let renderer, scene, camera, group;
@@ -61,7 +49,9 @@ export default function Carousel3D(props) {
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
 
+  const count = () => Math.max(panels().length, 1);
   const anglePerCard = () => (Math.PI * 2) / count();
+
   const worldWidth = () => cardW / 100;
   const worldHeight = () => cardH / 100;
 
@@ -83,7 +73,7 @@ export default function Carousel3D(props) {
     const n = count();
     const sizeFactor = n <= 3 ? 0.7 : n <= 6 ? 0.55 : n <= 10 ? 0.45 : 0.38;
     const targetH = Math.min(canvasH * sizeFactor, canvasW * 0.9);
-    const targetW = targetH * 0.76;
+    const targetW = targetH * 0.72;
     return { w: Math.round(targetW), h: Math.round(targetH) };
   };
 
@@ -109,92 +99,111 @@ export default function Carousel3D(props) {
       img.src = src;
     });
 
-  const drawPanel = (ctx, panel, image) => {
+  // ---------- Panel drawing ----------
+  // titleOffset: 0 = title's left edge at innerW's left edge (marquee start).
+  //              Negative values slide the title leftward.
+  // For non-marquee panels, titleOffset is ignored and the title is centered.
+  const drawPanel = (ctx, panel, image, titleOffset = 0) => {
     const w = cardW;
     const h = cardH;
     const pad = 20;
     const innerW = w - pad * 2;
 
+    // Background + border
     ctx.fillStyle = "#0e1a16";
     ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = "rgba(120, 220, 180, 0.7)";
     ctx.lineWidth = 4;
     ctx.strokeRect(2, 2, w - 4, h - 4);
 
-    ctx.fillStyle = "#b8ffd9";
-    ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
-    ctx.textAlign = "center";
+    // ---- Title: single line, shrinks to fit, marquees if still too long ----
+    const titleText = panel.title || "";
     ctx.textBaseline = "top";
 
-    const words = (panel.title || "").split(/\s+/).filter(Boolean);
-    const lines = [];
-    let cur = "";
-    for (const word of words) {
-      const test = cur ? cur + " " + word : word;
-      if (ctx.measureText(test).width > innerW && cur) {
-        lines.push(cur);
-        cur = word;
-      } else {
-        cur = test;
-      }
+    let titleSize = MAX_TITLE_SIZE;
+    ctx.font = `bold ${titleSize}px system-ui, -apple-system, sans-serif`;
+    while (titleSize > MIN_TITLE_SIZE && ctx.measureText(titleText).width > innerW) {
+      titleSize -= 1;
+      ctx.font = `bold ${titleSize}px system-ui, -apple-system, sans-serif`;
     }
-    if (cur) lines.push(cur);
+    const textWidth = ctx.measureText(titleText).width;
+    const needsMarquee = textWidth > innerW;
 
-    const titleY = pad + 6;
-    lines.forEach((line, i) => ctx.fillText(line, w / 2, titleY + i * 28));
-    const titleHeight = Math.max(lines.length, 1) * 28;
+    const titleLineHeight = Math.round(titleSize * 1.2);
+    const titleY = pad + 4;
 
-    const sourceBtnH = panel.source ? 40 : 0;
+    ctx.fillStyle = "#b8ffd9";
+    if (needsMarquee) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad, titleY, innerW, titleLineHeight);
+      ctx.clip();
+      ctx.textAlign = "left";
+      ctx.fillText(titleText, pad + titleOffset, titleY);
+      ctx.restore();
+    } else {
+      ctx.textAlign = "center";
+      ctx.fillText(titleText, w / 2, titleY);
+    }
+    const titleBlockH = titleLineHeight;
+
+    // ---- Source button reserved height ----
+    const sourceBtnH = panel.source ? 34 : 0;
     const sourceBtnGap = panel.source ? 12 : 0;
-    const imgTop = titleY + titleHeight + 14;
-    const imgBottom = h - pad - sourceBtnH - sourceBtnGap;
-    const imgH = Math.max(0, imgBottom - imgTop);
+    const sourceBtnY = h - pad - sourceBtnH;
 
-    if (imgH > 0) {
+    // ---- Preview area ----
+    const imgTop = titleY + titleBlockH + 10;
+    const imgBottom = sourceBtnY - sourceBtnGap;
+    const imgAreaX = pad;
+    const imgAreaY = imgTop;
+    const imgAreaW = innerW;
+    const imgAreaH = Math.max(0, imgBottom - imgTop);
+
+    if (imgAreaH > 0) {
       if (image) {
         const imgAspect = image.width / image.height;
-        const boxAspect = innerW / imgH;
-        let sx, sy, sw, sh;
+        const boxAspect = imgAreaW / imgAreaH;
+        let dw, dh;
         if (imgAspect > boxAspect) {
-          sh = image.height;
-          sw = sh * boxAspect;
-          sx = (image.width - sw) / 2;
-          sy = 0;
+          dw = imgAreaW;
+          dh = dw / imgAspect;
         } else {
-          sw = image.width;
-          sh = sw / boxAspect;
-          sx = 0;
-          sy = (image.height - sh) / 2;
+          dh = imgAreaH;
+          dw = dh * imgAspect;
         }
+        const dx = imgAreaX + (imgAreaW - dw) / 2;
+        const dy = imgAreaY + (imgAreaH - dh) / 2;
+
         ctx.save();
         ctx.beginPath();
-        ctx.rect(pad, imgTop, innerW, imgH);
+        ctx.rect(imgAreaX, imgAreaY, imgAreaW, imgAreaH);
         ctx.clip();
-        ctx.drawImage(image, sx, sy, sw, sh, pad, imgTop, innerW, imgH);
+        ctx.drawImage(image, dx, dy, dw, dh);
         ctx.restore();
       } else {
         ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
-        ctx.fillRect(pad, imgTop, innerW, imgH);
+        ctx.fillRect(imgAreaX, imgAreaY, imgAreaW, imgAreaH);
         ctx.fillStyle = "rgba(120, 220, 180, 0.5)";
         ctx.font = "14px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("Loading preview…", w / 2, imgTop + imgH / 2);
+        ctx.fillText("Loading preview…", imgAreaX + imgAreaW / 2, imgAreaY + imgAreaH / 2);
       }
     }
 
+    // ---- Source button ----
     if (panel.source) {
-      const btnY = h - pad - sourceBtnH;
       ctx.fillStyle = "#0b1a12";
-      ctx.fillRect(pad, btnY, innerW, sourceBtnH);
+      ctx.fillRect(pad, sourceBtnY, innerW, sourceBtnH);
       ctx.strokeStyle = "rgba(120, 220, 180, 0.5)";
       ctx.lineWidth = 2;
-      ctx.strokeRect(pad + 1, btnY + 1, innerW - 2, sourceBtnH - 2);
+      ctx.strokeRect(pad + 1, sourceBtnY + 1, innerW - 2, sourceBtnH - 2);
       ctx.fillStyle = "#b8ffd9";
-      ctx.font = "15px system-ui, -apple-system, sans-serif";
+      ctx.font = "12px system-ui, -apple-system, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("View Source Code", w / 2, btnY + sourceBtnH / 2);
+      ctx.fillText("View Source Code", w / 2, sourceBtnY + sourceBtnH / 2);
     }
   };
 
@@ -208,6 +217,7 @@ export default function Carousel3D(props) {
     return { canvas, ctx };
   };
 
+  // ---------- Fit-to-canvas ----------
   const projectedExtent = () => {
     const v = new THREE.Vector3();
     const p = new THREE.Vector3();
@@ -246,8 +256,12 @@ export default function Carousel3D(props) {
     return s;
   };
 
-  const computeCameraDistance = () => radius() * 2.67 + worldHeight() * 0.6;
+  const computeCameraDistance = () => {
+    const r = radius();
+    return r * 2.67 + worldHeight() * 0.6;
+  };
 
+  // ---------- Scene build ----------
   const buildScene = () => {
     const w = Math.max(mountRef.clientWidth, 1);
     const h = Math.max(mountRef.clientHeight, 1);
@@ -255,9 +269,6 @@ export default function Carousel3D(props) {
     const { w: cw, h: ch } = chooseBaseCardSize(w, h);
     cardW = cw;
     cardH = ch;
-
-    // Refine the wrapper aspect-ratio now that we know the real card size.
-    setAspectRatio((radius() * 2 + worldWidth()) / worldHeight());
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -271,6 +282,7 @@ export default function Carousel3D(props) {
     mountRef.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
+
     camera = new THREE.PerspectiveCamera(cameraFov(), w / h, 0.01, 1000);
     camera.position.set(0, 0, computeCameraDistance());
     camera.lookAt(0, 0, 0);
@@ -291,7 +303,29 @@ export default function Carousel3D(props) {
       holder.rotation.y = i * step;
 
       const { canvas, ctx } = makePanelCanvas();
-      drawPanel(ctx, panel, null);
+      drawPanel(ctx, panel, null, 0);
+
+      // Determine if this panel's title needs a marquee, and precompute
+      // the scroll geometry. We do this once from the initial measurement.
+      const innerW = cardW - 40;
+      let measureSize = MAX_TITLE_SIZE;
+      ctx.font = `bold ${measureSize}px system-ui, -apple-system, sans-serif`;
+      while (measureSize > MIN_TITLE_SIZE && ctx.measureText(panel.title || "").width > innerW) {
+        measureSize -= 1;
+        ctx.font = `bold ${measureSize}px system-ui, -apple-system, sans-serif`;
+      }
+      const textWidth = ctx.measureText(panel.title || "").width;
+      const overflow = Math.max(0, textWidth - innerW);
+      const marquee = overflow > 0
+        ? {
+            textWidth,
+            innerW,
+            overflow,
+            scrollDur: overflow / MARQUEE_SPEED_PX_PER_SEC, // seconds
+            startPause: MARQUEE_START_PAUSE_MS / 1000,
+            endPause: MARQUEE_END_PAUSE_MS / 1000,
+          }
+        : null;
 
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
@@ -308,7 +342,16 @@ export default function Carousel3D(props) {
       });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.set(0, 0, r);
-      mesh.userData = { index: i, panel, texture };
+      mesh.userData = {
+        index: i,
+        panel,
+        texture,
+        ctx,
+        image: null,
+        marquee,
+        marqueeTime: 0,
+        titleOffset: 0,
+      };
 
       holder.add(mesh);
       group.add(holder);
@@ -318,7 +361,8 @@ export default function Carousel3D(props) {
         loadImage(panel.preview)
           .then((img) => {
             if (!isMounted) return;
-            drawPanel(ctx, panel, img);
+            mesh.userData.image = img;
+            drawPanel(ctx, panel, img, mesh.userData.titleOffset);
             texture.needsUpdate = true;
           })
           .catch((err) => console.warn("[Carousel3D] preview failed:", err));
@@ -329,6 +373,7 @@ export default function Carousel3D(props) {
     renderer.render(scene, camera);
   };
 
+  // ---------- Render loop ----------
   const update = (time) => {
     if (!isMounted) return;
 
@@ -365,6 +410,9 @@ export default function Carousel3D(props) {
     for (const holder of group.children) {
       const mesh = holder.children[0];
       if (!mesh) continue;
+      const ud = mesh.userData;
+
+      // Per-card scale based on angular distance from the front.
       let effective = holder.rotation.y + group.rotation.y;
       effective = ((effective % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const diff = effective > Math.PI ? Math.PI * 2 - effective : effective;
@@ -372,12 +420,39 @@ export default function Carousel3D(props) {
       const eased = t * t;
       const s = 1 - eased * (1 - minScale());
       mesh.scale.set(s, s, 1);
+
+      // Advance marquee if this panel's title overflows.
+      if (ud.marquee) {
+        ud.marqueeTime += dt;
+        const m = ud.marquee;
+        const cycle = m.startPause + m.scrollDur + m.endPause;
+        const tCycle = ud.marqueeTime % cycle;
+
+        let newOffset;
+        if (tCycle < m.startPause) {
+          newOffset = 0;
+        } else if (tCycle < m.startPause + m.scrollDur) {
+          const p = (tCycle - m.startPause) / m.scrollDur;
+          newOffset = -m.overflow * p;
+        } else {
+          newOffset = -m.overflow;
+        }
+
+        // Only redraw when the offset actually changed (i.e. during scroll
+        // phase). Skips redundant draws during the pauses.
+        if (Math.abs(newOffset - ud.titleOffset) > 0.5) {
+          ud.titleOffset = newOffset;
+          drawPanel(ud.ctx, ud.panel, ud.image, newOffset);
+          ud.texture.needsUpdate = true;
+        }
+      }
     }
 
     renderer.render(scene, camera);
     rafId = requestAnimationFrame(update);
   };
 
+  // ---------- Lifecycle ----------
   onMount(() => {
     isMounted = true;
     buildScene();
@@ -421,6 +496,7 @@ export default function Carousel3D(props) {
     });
   });
 
+  // ---------- Pointer / raycast ----------
   const hitTest = (clientX, clientY) => {
     if (!renderer || !camera) return null;
     const rect = renderer.domElement.getBoundingClientRect();
@@ -488,7 +564,7 @@ export default function Carousel3D(props) {
       const hit = hitTest(e.clientX, e.clientY);
       if (hit) {
         const panel = hit.object.userData.panel;
-        const sourceThreshold = (40 + 20) / cardH;
+        const sourceThreshold = (34 + 20) / cardH;
         if (panel.source && hit.uv.y < sourceThreshold) {
           window.open(panel.source, "_blank", "noopener,noreferrer");
         } else if (panel.href) {
@@ -512,13 +588,9 @@ export default function Carousel3D(props) {
     <div
       class="carousel3d-wrapper"
       style={{
-        flex: flex(),
-        "min-height": minHeight(),
-        "aspect-ratio": aspectRatio(),
         width: width(),
         height: height(),
-        "max-width": maxWidth(),
-        "align-self": alignSelf(),
+        "min-height": minHeight(),
         cursor: "grab",
       }}
       ref={mountRef}
