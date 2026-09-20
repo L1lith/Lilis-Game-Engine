@@ -7,6 +7,7 @@ footer.main-footer {
     margin-top: auto;
     text-align: center;
     text-wrap: balance;
+    font-size: 1.5em;
     .top-divider {
         position: absolute;
         bottom: calc(100% + 2vmin);
@@ -32,4 +33,5 @@ footer.main-footer {
             border-color: rgb(0, 99, 0);
         }
     }
+    
 }
