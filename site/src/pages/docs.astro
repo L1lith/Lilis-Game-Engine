@@ -10,12 +10,14 @@ import GridLayoutVisualization from '@/svgs/grid-layout-visualization.svg'
 
 <Base class="docs">
 	<Expandable startExpanded title="Getting Started" class="getting-started" client:load>
-		<p>There are a variety of demo projects for you to toy around with. To view the list of available demos use the "create" command without additional arguments:</p>
-		<code class="cli">npx lilis-engine create</code>
+		<p>To begin using the game engine it is recommended you install the command line tool (though not mandatory):</p>
+		<code class="cli">npm install -g lilis-engine</code>
+		<p>Once that's done there are a variety of demo projects for you to toy around with. To view the list of available demos use the "create" command without additional arguments:</p>
+		<code class="cli">lilis-engine create</code>
 		<p>To learn more about any of the available demos use the "info" command with the demo name as the first argument, like this:</p>
-		<code class="cli">npx lilis-engine info sidescroller</code>
+		<code class="cli">lilis-engine info topdown</code>
 		<p>Once you've decided on which demo you'd like to try out you can use the "create" command, with the demo name as the first argument and your project name (no spaces) as the second command:</p>
-		<code class="cli">npx lilis-engine create topdown my-zelda-game</code>
+		<code class="cli">lilis-engine create topdown my-zelda-game</code>
 		<p>If you'd like to view the full list of demos in your web browser as well as view their source code try visiting the <a target="_blank" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory in the engine's source code</a>.</p>
 		<p>Please note that all of the example projects are made using <a href="https://docs.solidjs.com/">SolidJS</a> for interactive HTML and <a href="https://docs.astro.build/en/getting-started/">Astro</a> as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards.</p>
 	</Expandable>
