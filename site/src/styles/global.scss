@@ -34,6 +34,10 @@ body {
     padding-bottom: 2vmin;
 }
 
+.main-content {
+    margin-bottom: 4vmin;
+}
+
 img {
     pointer-events: none;
     user-select: none;
@@ -51,6 +55,9 @@ p a, table a, span a, .standard-link {
 
 .italic {
     font-style: italic;
+}
+.bold {
+    font-weight: bold;
 }
 
 ul, li {

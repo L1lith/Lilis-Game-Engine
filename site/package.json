@@ -13,9 +13,11 @@
   },
   "dependencies": {
     "@astrojs/solid-js": "^7.0.2",
+    "@nanostores/solid": "^1.1.1",
     "astro": "^7.3.1",
     "lilis-engine": "file:..",
     "mime": "^4.1.0",
+    "nanostores": "^1.5.3",
     "pixi-filters": "^6.1.5",
     "pixi.js": "^8.20.1",
     "sass": "^1.104.0",

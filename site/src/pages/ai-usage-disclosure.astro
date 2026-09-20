@@ -1,0 +1,12 @@
+---
+import Base from '../components/Base.astro';
+import '@/styles/ai-usage-disclosure.scss'
+---
+<Base class="ai-usage-disclosure">
+    <p>I, Lili (the primary author of this project) primarily coded this project by hand. I did use some assistance from LLM models, but I stuck to environmentally mindful models and my usage was as sparse as possible. What do I mean by "environmentally mindful LLMs"? While all LLMs have significant power consumption, I mainly use Deepseek. As <a href="https://grainger.illinois.edu/news/stories/73489">Dr. Deming Chen discusses</a>, Deepseek uses less energy as a side effect of the US embargo on China's access to advanced computing chips.</p>
+    <quote>"In DeepSeek's technical paper, they said that to train their large language model, they only used about 2,000 Nvidia H800 GPUs and the training only took two months. Think of H800 as a discount GPU because in order to honor the export control policy set by the US, Nvidia made some GPUs specifically for China."</quote>
+    <p>Being forced to rely on the H800 GPUs ended up creating a LLM with similar performance to competitors while <a href="https://www.cell.com/the-innovation/fulltext/S2666-6758(25)00147-X">using less power according to scientific research.</a></p>
+    <quote>"DeepSeek achieves high performance through algorithmic and architectural innovations, enabling comparable performance with fewer high-end servers and lower energy consumption. This effectively reduces reliance on large centralized DCs and alleviates overall electricity demand. Traditional centralized DCs typically require power supplies of nearly hundreds of megawatts. In contrast, highly efficient models decrease the computing power demands for both training and inference. Consequently, even small-scale edge DCs can operate with power requirements of only tens of kilowatts."</quote>
+    <p>I still care about the non-trivial environmental footprint of all LLMs including DeepSeek, however I think the combination of limiting my personal usage & engaging in harm reduction through choosing the most environmentally friendly option dramatically reduces my personal environmental impact while still providing me tangible benefits while I develop software.</p>
+    <span class="bold">None of the game engine core has machine learning AI built into it, so you do not need to use AI to use this game engine.</span>
+</Base>

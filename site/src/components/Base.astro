@@ -3,10 +3,11 @@ import '@/styles/global.scss'
 import siteConfig from '@/configs/siteConfig.js'
 import mime from 'mime/lite';
 import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
 import BackgroundAnimation from './BackgroundAnimation';
 import { ClientRouter } from "astro:transitions";
 
-let {title="Lili's Game Engine", image, description, noHeader=false, class: className} = Astro.props
+let {title="Lili's Game Engine", image, description, noHeader=false, noFooter=false, class: className} = Astro.props
 const {favicons=[]} = siteConfig
 const maxDescriptionLength = 55
 if (typeof description == 'string') {
@@ -38,9 +39,10 @@ if (typeof description == 'string') {
     </head>
     <body>
         <BackgroundAnimation transition:persist transition:name="background-animation" client:load/>
-        {noHeader ? null : <Header/>}
-        <main class={className || null}>
+        {noHeader ? null : <Header transition:persist/>}
+        <main class={"main-content " + (typeof className == 'string' ? className : "")}>
             <slot/>
         </main>
+        {noFooter ? null : <Footer transition:persist/>}
     </body>
 </html>

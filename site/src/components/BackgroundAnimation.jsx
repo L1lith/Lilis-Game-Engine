@@ -8,6 +8,8 @@ import '@/styles/BackgroundAnimation.scss'
 import {Signal} from 'jabr'
 import { Assets, Texture, DisplacementFilter, Sprite} from 'pixi.js'
 import { GodrayFilter, AsciiFilter, AdjustmentFilter, CRTFilter} from 'pixi-filters'
+import { useStore } from '@nanostores/solid';
+import isBackgroundActive from '@/state/isBackgroundActive';
 
 function createBackgroundTexture() {
   // adjust it if somehow you need better quality for very very big images
@@ -31,9 +33,11 @@ function createBackgroundTexture() {
 }
 
 export default function BackgroundAnimation() {
+    const $isBackgroundActive = useStore(isBackgroundActive);
     let canvas, unmountGameEngine
     onMount(async ()=>{
         if (isServer) return
+        isBackgroundActive.set(localStorage.bubbles !== 'false')
         console.log("Current Engine Version: " + lilisEnginePackage.version)
         const renderSettings = new RenderSettings({canvas/*, appOptions: {backgroundAlpha: 0}*/})
         const entities = EntityList()
@@ -80,6 +84,7 @@ export default function BackgroundAnimation() {
         }))
         window.bubbleTextures = bubbleTextures
         const createRandomBubble = (entityOptions={})=>{
+            if (!$isBackgroundActive()) return
             const wiggleSpeed = randomBetween(200, 1000)
             const spawnX = isFinite(entityOptions.x) && entityOptions.x !== null ? entityOptions.x : randomBetween(-50, 50)
             const size = Math.random() * 5 + 2
@@ -166,5 +171,5 @@ export default function BackgroundAnimation() {
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
-    return <canvas class="background-animation" ref={canvas} style="z-index: -1;"/>
+    return <canvas class={$isBackgroundActive() ? "background-animation active" : "background-animation inactive"} ref={canvas} style="z-index: -1;"/>
 }
