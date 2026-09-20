@@ -22,7 +22,7 @@
 
 body {
     font-family: 'Comic Mono';
-    font-size: calc(1vmin + 0.5vmax);
+    font-size: max(calc(1vmin + 0.5vmax), 12px);
     background-color: rgb(16, 0, 52);
     background: linear-gradient(to bottom, rgb(16, 0, 52), #004600);
     background-size: cover;
