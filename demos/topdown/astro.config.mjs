@@ -23,7 +23,7 @@ const config = {
 // Add GitHub Pages specific settings only when in GitHub Actions
 if (isGitHubActions) {
   config.site = "https://l1lith.github.io";
-  config.base = "/Lilis-Game-Engine/examples/topdown";
+  config.base = "/Lilis-Game-Engine/demos/topdown";
   config.output = "static";
 }
 
