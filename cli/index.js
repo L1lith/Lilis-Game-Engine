@@ -46,16 +46,16 @@ const c = {
 const SEP = "─".repeat(60);
 
 // ---------------------------------------------------------------------------
-// Remote examples cache (lazy-downloaded from GitHub)
+// Remote demos cache (lazy-downloaded from GitHub)
 // ---------------------------------------------------------------------------
 
 const GITHUB_OWNER = "L1lith";
 const GITHUB_REPO = "Lilis-Game-Engine";
 const GITHUB_BRANCH = "master";
 
-const CACHE_ROOT = join(tmpdir(), "lilis-engine-examples");
-const CACHE_EXAMPLES_DIR = join(CACHE_ROOT, "examples");
-const CACHE_LIST_PATH = join(CACHE_ROOT, "example-list.json");
+const CACHE_ROOT = join(tmpdir(), "lilis-engine-demos-cache");
+const CACHE_DEMOS_DIR = join(CACHE_ROOT, "demos");
+const CACHE_LIST_PATH = join(CACHE_ROOT, "demo-list.json");
 const CACHE_CODE_META_PATH = join(CACHE_ROOT, "code-meta.json");
 const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes
 
@@ -84,7 +84,7 @@ const ENGINE_PACKAGE = "lilis-engine";
 const GITHUB_TREE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${GITHUB_BRANCH}?recursive=1`;
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}`;
 const GITHUB_TREE_BASE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/tree/${GITHUB_BRANCH}`;
-const DEMOS_BASE = `https://l1lith.github.io/Lilis-Game-Engine/examples`;
+const DEMOS_BASE = `https://l1lith.github.io/Lilis-Game-Engine/demos`;
 
 function slugify(name) {
   return name
@@ -168,24 +168,24 @@ async function tryFetchRawText(remotePath) {
 }
 
 // ---------------------------------------------------------------------------
-// Example list (cheap — just names, no code)
+// Demo list (cheap — just names, no code)
 // ---------------------------------------------------------------------------
 
-async function ensureExampleList({ force = false } = {}) {
+async function ensureDemoList({ force = false } = {}) {
   const cached = await readJson(CACHE_LIST_PATH);
 
-  if (!force && isFresh(cached) && Array.isArray(cached.examples)) {
-    return cached.examples;
+  if (!force && isFresh(cached) && Array.isArray(cached.demos)) {
+    return cached.demos;
   }
 
-  const haveCache = Array.isArray(cached?.examples);
+  const haveCache = Array.isArray(cached?.demos);
 
   if (force) {
-    console.log(c.info("Refreshing example list (--refresh)..."));
+    console.log(c.info("Refreshing demo list (--refresh)..."));
   } else if (!haveCache) {
-    console.log(c.info("Fetching example list..."));
+    console.log(c.info("Fetching demo list..."));
   } else {
-    console.log(c.info("Checking for updated example list..."));
+    console.log(c.info("Checking for updated demo list..."));
   }
 
   try {
@@ -194,16 +194,16 @@ async function ensureExampleList({ force = false } = {}) {
     const names = new Set();
     for (const entry of tree) {
       if (entry.type !== "blob" && entry.type !== "tree") continue;
-      if (!entry.path.startsWith("examples/")) continue;
-      const rest = entry.path.slice("examples/".length);
+      if (!entry.path.startsWith("demos/")) continue;
+      const rest = entry.path.slice("demos/".length);
       if (!rest) continue;
       const first = rest.split("/")[0];
       if (first && !SKIP_SEGMENTS.has(first)) names.add(first);
     }
 
-    const examples = [...names].sort();
-    if (examples.length === 0) {
-      throw new Error("No examples found in repository.");
+    const demos = [...names].sort();
+    if (demos.length === 0) {
+      throw new Error("No demos found in repository.");
     }
 
     await mkdir(CACHE_ROOT, { recursive: true });
@@ -213,73 +213,73 @@ async function ensureExampleList({ force = false } = {}) {
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
       branch: GITHUB_BRANCH,
-      examples,
+      demos,
     });
 
-    return examples;
+    return demos;
   } catch (err) {
     if (haveCache && !force) {
       console.warn(
         c.warn(
-          `Warning: could not refresh example list (${err.message}). Using cached list.`,
+          `Warning: could not refresh demo list (${err.message}). Using cached list.`,
         ),
       );
-      return cached.examples;
+      return cached.demos;
     }
-    console.error(c.errorBold(`Failed to fetch example list: ${err.message}`));
+    console.error(c.errorBold(`Failed to fetch demo list: ${err.message}`));
     console.error(
-      `You can also browse the repository directly: ${c.url(`${GITHUB_TREE_BASE}/examples`)}`,
+      `You can also browse the repository directly: ${c.url(`${GITHUB_TREE_BASE}/demos`)}`,
     );
     process.exit(1);
   }
 }
 
 // ---------------------------------------------------------------------------
-// Example code (heavy — only downloaded for the requested example)
+// Demo code (heavy — only downloaded for the requested demo)
 // ---------------------------------------------------------------------------
 
 async function readCodeMeta() {
   return (await readJson(CACHE_CODE_META_PATH)) ?? {};
 }
 
-async function writeCodeMetaEntry(example, meta) {
+async function writeCodeMetaEntry(demo, meta) {
   const all = await readCodeMeta();
-  all[example] = meta;
+  all[demo] = meta;
   await mkdir(CACHE_ROOT, { recursive: true });
   await writeJson(CACHE_CODE_META_PATH, all);
 }
 
-async function exampleCodeExists(example) {
+async function demoCodeExists(demo) {
   try {
-    const s = await stat(join(CACHE_EXAMPLES_DIR, example));
+    const s = await stat(join(CACHE_DEMOS_DIR, demo));
     return s.isDirectory();
   } catch {
     return false;
   }
 }
 
-async function ensureExampleCode(example, { force = false } = {}) {
-  const destDir = join(CACHE_EXAMPLES_DIR, example);
+async function ensureDemoCode(demo, { force = false } = {}) {
+  const destDir = join(CACHE_DEMOS_DIR, demo);
 
   if (!force) {
-    const meta = (await readCodeMeta())[example];
-    const exists = await exampleCodeExists(example);
+    const meta = (await readCodeMeta())[demo];
+    const exists = await demoCodeExists(demo);
     if (exists && isFresh(meta)) {
       return destDir;
     }
   }
 
-  const haveCache = await exampleCodeExists(example);
+  const haveCache = await demoCodeExists(demo);
 
   if (force) {
-    console.log(c.info(`Refreshing example "${example}" (--refresh)...`));
+    console.log(c.info(`Refreshing demo "${demo}" (--refresh)...`));
   } else if (!haveCache) {
-    console.log(c.info(`Downloading example "${example}"...`));
+    console.log(c.info(`Downloading demo "${demo}"...`));
   } else {
-    console.log(c.info(`Checking for updates to example "${example}"...`));
+    console.log(c.info(`Checking for updates to demo "${demo}"...`));
   }
 
-  const prefix = `examples/${example}/`;
+  const prefix = `demos/${demo}/`;
 
   try {
     const tree = await fetchRepoTree();
@@ -288,7 +288,7 @@ async function ensureExampleCode(example, { force = false } = {}) {
       (entry) => entry.type === "blob" && entry.path.startsWith(prefix),
     );
     if (files.length === 0) {
-      throw new Error(`Example "${example}" has no files in the repository.`);
+      throw new Error(`Demo "${demo}" has no files in the repository.`);
     }
 
     const wanted = files.filter((entry) => {
@@ -296,10 +296,8 @@ async function ensureExampleCode(example, { force = false } = {}) {
       return !rel.split("/").some((seg) => SKIP_SEGMENTS.has(seg));
     });
 
-    await mkdir(CACHE_EXAMPLES_DIR, { recursive: true });
-    const staging = await mkdtemp(
-      join(CACHE_EXAMPLES_DIR, `staging-${example}-`),
-    );
+    await mkdir(CACHE_DEMOS_DIR, { recursive: true });
+    const staging = await mkdtemp(join(CACHE_DEMOS_DIR, `staging-${demo}-`));
 
     try {
       for (const file of wanted) {
@@ -312,7 +310,7 @@ async function ensureExampleCode(example, { force = false } = {}) {
       await rm(destDir, { recursive: true, force: true });
       await rename(staging, destDir);
 
-      await writeCodeMetaEntry(example, {
+      await writeCodeMetaEntry(demo, {
         lastFetched: Date.now(),
         version: PACKAGE_VERSION,
         owner: GITHUB_OWNER,
@@ -329,13 +327,13 @@ async function ensureExampleCode(example, { force = false } = {}) {
     if (haveCache && !force) {
       console.warn(
         c.warn(
-          `Warning: could not refresh example "${example}" (${err.message}). Using cached copy.`,
+          `Warning: could not refresh demo "${demo}" (${err.message}). Using cached copy.`,
         ),
       );
       return destDir;
     }
     console.error(
-      c.errorBold(`Failed to download example "${example}": ${err.message}`),
+      c.errorBold(`Failed to download demo "${demo}": ${err.message}`),
     );
     console.error(
       `You can also clone the repository manually: ${c.url(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}.git`)}`,
@@ -412,12 +410,12 @@ yargs(hideBin(process.argv))
   .scriptName("lilis-engine")
   .usage("$0 <command> [options]")
   .command(
-    "create [example] [projectName]",
-    "Create a new project from an example template",
+    "create [demo] [projectName]",
+    "Create a new project from an demo template",
     (y) =>
       y
-        .positional("example", {
-          describe: "Name of the example template to use",
+        .positional("demo", {
+          describe: "Name of the demo template to use",
           type: "string",
         })
         .positional("projectName", {
@@ -426,35 +424,33 @@ yargs(hideBin(process.argv))
         })
         .option("refresh", {
           describe:
-            "Force re-download of example list and code, ignoring the cache",
+            "Force re-download of demo list and code, ignoring the cache",
           type: "boolean",
           default: false,
         }),
     async (argv) => {
-      const { example, projectName, refresh } = argv;
+      const { demo, projectName, refresh } = argv;
 
-      // 0. No args? Enumerate available examples and exit.
-      if (!example) {
-        const available = await ensureExampleList({ force: refresh });
+      // 0. No args? Enumerate available demos and exit.
+      if (!demo) {
+        const available = await ensureDemoList({ force: refresh });
         console.log("");
         console.log(
-          `  ${c.bold("Usage:")} lilis-engine create <example> <projectName>`,
+          `  ${c.bold("Usage:")} lilis-engine create <demo> <projectName>`,
         );
         console.log("");
-        console.log(`  ${c.bold("Available examples:")}`);
+        console.log(`  ${c.bold("Available demos:")}`);
         for (const name of available) console.log(`    ${c.name(name)}`);
         console.log("");
-        console.log(`  ${c.bold("Example:")}`);
+        console.log(`  ${c.bold("Demo:")}`);
         console.log(
           `    ${c.success(`lilis-engine create ${available[0] ?? "basic"} my-app`)}`,
         );
         console.log("");
-        console.log(`  ${c.bold("Learn more about an example:")}`);
-        console.log(`    ${c.info("lilis-engine info <example>")}`);
+        console.log(`  ${c.bold("Learn more about an demo:")}`);
+        console.log(`    ${c.info("lilis-engine info <demo>")}`);
         console.log("");
-        console.log(
-          `  See full source: ${c.url(`${GITHUB_TREE_BASE}/examples`)}`,
-        );
+        console.log(`  See full source: ${c.url(`${GITHUB_TREE_BASE}/demos`)}`);
         console.log(
           `  Play in browser: ${c.url("https://l1lith.github.io/Lilis-Game-Engine/demos/")}`,
         );
@@ -464,22 +460,20 @@ yargs(hideBin(process.argv))
 
       if (!projectName) {
         console.error(c.errorBold("Error: Missing <projectName>."));
-        console.error(`Usage: lilis-engine create <example> <projectName>`);
+        console.error(`Usage: lilis-engine create <demo> <projectName>`);
         process.exit(1);
       }
 
-      // 1. Validate the example name against the (cheap) list
-      const available = await ensureExampleList({ force: refresh });
-      if (!available.includes(example)) {
-        console.error(c.errorBold(`Error: Example "${example}" not found.`));
-        console.error(
-          `Available examples: ${available.map(c.name).join(", ")}`,
-        );
+      // 1. Validate the demo name against the (cheap) list
+      const available = await ensureDemoList({ force: refresh });
+      if (!available.includes(demo)) {
+        console.error(c.errorBold(`Error: Demo "${demo}" not found.`));
+        console.error(`Available demos: ${available.map(c.name).join(", ")}`);
         process.exit(1);
       }
 
-      // 2. Now fetch just this example's code
-      const source = await ensureExampleCode(example, { force: refresh });
+      // 2. Now fetch just this demo's code
+      const source = await ensureDemoCode(demo, { force: refresh });
       const destination = resolve(process.cwd(), projectName);
 
       // 3. Prevent accidental overwrite
@@ -601,7 +595,7 @@ yargs(hideBin(process.argv))
 
       console.log("");
       console.log(
-        `${c.success("✔")} Created project ${c.bold(projectName)} from ${c.name(example)}`,
+        `${c.success("✔")} Created project ${c.bold(projectName)} from ${c.name(demo)}`,
       );
       console.log("");
       console.log(c.bold("Next steps:"));
@@ -611,41 +605,41 @@ yargs(hideBin(process.argv))
     },
   )
   .command(
-    "info <example>",
-    "Show details about an example template (description, source, README)",
+    "info <demo>",
+    "Show details about an demo template (description, source, README)",
     (y) =>
       y
-        .positional("example", {
-          describe: "Name of the example template",
+        .positional("demo", {
+          describe: "Name of the demo template",
           type: "string",
         })
         .option("refresh", {
-          describe: "Force refresh of the cached example list",
+          describe: "Force refresh of the cached demo list",
           type: "boolean",
           default: false,
         }),
     async (argv) => {
-      const { example, refresh } = argv;
+      const { demo, refresh } = argv;
 
-      const available = await ensureExampleList({ force: refresh });
-      if (!available.includes(example)) {
-        console.error(c.errorBold(`Error: Example "${example}" not found.`));
+      const available = await ensureDemoList({ force: refresh });
+      if (!available.includes(demo)) {
+        console.error(c.errorBold(`Error: Demo "${demo}" not found.`));
         console.error("");
-        console.error(c.bold("Available examples:"));
+        console.error(c.bold("Available demos:"));
         for (const name of available) console.error(`  ${c.name(name)}`);
         process.exit(1);
       }
 
-      const sourceUrl = `${GITHUB_TREE_BASE}/examples/${example}`;
-      const playUrl = `${DEMOS_BASE}/${example}`;
+      const sourceUrl = `${GITHUB_TREE_BASE}/demos/${demo}`;
+      const playUrl = `${DEMOS_BASE}/${demo}`;
 
-      // Fetch just the two files we need — no need to pull the whole example.
+      // Fetch just the two files we need — no need to pull the whole demo.
       let description = null;
       let readme = null;
       try {
         const [pkgRaw, readmeRaw] = await Promise.all([
-          tryFetchRawText(`examples/${example}/package.json`),
-          tryFetchRawText(`examples/${example}/README.md`),
+          tryFetchRawText(`demos/${demo}/package.json`),
+          tryFetchRawText(`demos/${demo}/README.md`),
         ]);
         if (pkgRaw) {
           try {
@@ -656,14 +650,12 @@ yargs(hideBin(process.argv))
         }
         readme = readmeRaw;
       } catch (err) {
-        console.error(
-          c.errorBold(`Failed to fetch example info: ${err.message}`),
-        );
+        console.error(c.errorBold(`Failed to fetch demo info: ${err.message}`));
         process.exit(1);
       }
 
       console.log("");
-      console.log(`  Demo: ${c.heading(example)}`);
+      console.log(`  Demo: ${c.heading(demo)}`);
       console.log(`  ${c.dim(SEP)}`);
 
       if (description) {
@@ -689,16 +681,14 @@ yargs(hideBin(process.argv))
         }
       } else {
         console.log("");
-        console.log(`  ${c.dim("(No README found for this example.)")}`);
+        console.log(`  ${c.dim("(No README found for this demo.)")}`);
       }
 
       console.log("");
       console.log(`  ${c.dim(SEP)}`);
-      console.log(`  ${c.bold("Create a project from this example:")}`);
+      console.log(`  ${c.bold("Create a project from this demo:")}`);
       console.log("");
-      console.log(
-        `    ${c.success(`lilis-engine create ${example} my-project`)}`,
-      );
+      console.log(`    ${c.success(`lilis-engine create ${demo} my-project`)}`);
       console.log("");
     },
   )

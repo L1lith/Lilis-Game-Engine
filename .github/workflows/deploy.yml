@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
     # paths:
     #   - 'site/**'
-    #   - 'examples/**'
+    #   - 'demos/**'
     #   - '.github/workflows/*'
   workflow_dispatch:
 
@@ -19,47 +19,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  discover-examples:
+  discover-demos:
     runs-on: ubuntu-latest
     outputs:
-      example_matrix: ${{ steps.set-matrix.outputs.example_matrix }}
+      demo_matrix: ${{ steps.set-matrix.outputs.demo_matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Discover example projects
+      - name: Discover demo projects
         id: set-matrix
         run: |
-          # Find all directories in examples/ that contain package.json and astro.config.*
-          EXAMPLES=""
-          for example in examples/*/; do
-            if [ -d "$example" ]; then
-              example_name=$(basename "$example")
+          # Find all directories in demos/ that contain package.json and astro.config.*
+          DEMOS=""
+          for demo in demos/*/; do
+            if [ -d "$demo" ]; then
+              demo_name=$(basename "$demo")
               # Check if it's a valid Astro project (has package.json and astro config)
-              if [ -f "examples/$example_name/package.json" ] && \
-                 ( [ -f "examples/$example_name/astro.config.js" ] || \
-                   [ -f "examples/$example_name/astro.config.mjs" ] || \
-                   [ -f "examples/$example_name/astro.config.ts" ] ); then
-                if [ -z "$EXAMPLES" ]; then
-                  EXAMPLES="\"$example_name\""
+              if [ -f "demos/$demo_name/package.json" ] && \
+                 ( [ -f "demos/$demo_name/astro.config.js" ] || \
+                   [ -f "demos/$demo_name/astro.config.mjs" ] || \
+                   [ -f "demos/$demo_name/astro.config.ts" ] ); then
+                if [ -z "$DEMOS" ]; then
+                  DEMOS="\"$demo_name\""
                 else
-                  EXAMPLES="$EXAMPLES, \"$example_name\""
+                  DEMOS="$DEMOS, \"$demo_name\""
                 fi
               else
-                echo "⚠️ Skipping $example_name - not an Astro project"
+                echo "⚠️ Skipping $demo_name - not an Astro project"
               fi
             fi
           done
           
           # Create JSON array
-          if [ -n "$EXAMPLES" ]; then
-            JSON_EXAMPLES="[$EXAMPLES]"
+          if [ -n "$DEMOS" ]; then
+            JSON_DEMOS="[$DEMOS]"
           else
-            JSON_EXAMPLES="[]"
+            JSON_DEMOS="[]"
           fi
           
-          echo "example_matrix=$JSON_EXAMPLES" >> $GITHUB_OUTPUT
-          echo "Found examples: $JSON_EXAMPLES"
+          echo "demo_matrix=$JSON_DEMOS" >> $GITHUB_OUTPUT
+          echo "Found demos: $JSON_DEMOS"
 
   build-site:
     runs-on: ubuntu-latest
@@ -121,14 +121,14 @@ jobs:
           path: combined_build/
           retention-days: 1
 
-  build-examples:
-    needs: discover-examples
-    if: needs.discover-examples.outputs.example_matrix != '[]'
+  build-demos:
+    needs: discover-demos
+    if: needs.discover-demos.outputs.demo_matrix != '[]'
     runs-on: ubuntu-latest
     continue-on-error: true
     strategy:
       matrix:
-        example: ${{ fromJson(needs.discover-examples.outputs.example_matrix) }}
+        demo: ${{ fromJson(needs.discover-demos.outputs.demo_matrix) }}
       fail-fast: false
     steps:
       - name: Checkout
@@ -145,10 +145,10 @@ jobs:
         with:
           path: |
             ~/.npm
-            examples/${{ matrix.example }}/node_modules
-          key: ${{ runner.os }}-example-${{ matrix.example }}-${{ hashFiles('examples/${{ matrix.example }}/package-lock.json') }}
+            demos/${{ matrix.demo }}/node_modules
+          key: ${{ runner.os }}-demo-${{ matrix.demo }}-${{ hashFiles('demos/${{ matrix.demo }}/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-example-${{ matrix.example }}-
+            ${{ runner.os }}-demo-${{ matrix.demo }}-
       
       - name: Install optional dependencies
         run: |
@@ -159,12 +159,12 @@ jobs:
             fi
           fi
       
-      - name: Build example
+      - name: Build demo
         id: build
         continue-on-error: true
         run: |
-          cd examples/${{ matrix.example }}
-          # Remove lilis-engine from the example's package.json so npm install
+          cd demos/${{ matrix.demo }}
+          # Remove lilis-engine from the demo's package.json so npm install
           # doesn't try to resolve the file:../.. path (which doesn't exist in CI
           # outside the checkout root and can behave differently in production).
           node -e "
@@ -180,23 +180,23 @@ jobs:
           npm install lilis-engine@latest --no-audit --no-fund
           npm run build
           cd ../..
-          mkdir -p combined_build/examples/${{ matrix.example }}
-          cp -r examples/${{ matrix.example }}/dist/* combined_build/examples/${{ matrix.example }}/
+          mkdir -p combined_build/demos/${{ matrix.demo }}
+          cp -r demos/${{ matrix.demo }}/dist/* combined_build/demos/${{ matrix.demo }}/
       
-      - name: Upload example artifact
+      - name: Upload demo artifact
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: example-${{ matrix.example }}-build
+          name: demo-${{ matrix.demo }}-build
           path: combined_build/
           retention-days: 1
 
   combine-and-deploy:
-    needs: [build-site, build-examples]
+    needs: [build-site, build-demos]
     if: |
       always() && 
       (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
-      (needs.build-examples.result == 'success' || needs.build-examples.result == 'skipped')
+      (needs.build-demos.result == 'success' || needs.build-demos.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
@@ -213,18 +213,18 @@ jobs:
             cp -r artifacts/site-build/* final_build/
           fi
           
-          # Copy all example builds
-          for example_dir in artifacts/example-*-build/; do
-            if [ -d "$example_dir" ]; then
-              cp -r "$example_dir"/* final_build/
+          # Copy all demo builds
+          for demo_dir in artifacts/demo-*-build/; do
+            if [ -d "$demo_dir" ]; then
+              cp -r "$demo_dir"/* final_build/
             fi
           done
           
           echo "Final build contents:"
           ls -la final_build/
-          if [ -d "final_build/examples" ]; then
-            echo "Examples:"
-            ls -la final_build/examples/
+          if [ -d "final_build/demos" ]; then
+            echo "Demos:"
+            ls -la final_build/demos/
           fi
       
       - name: Upload final artifact
