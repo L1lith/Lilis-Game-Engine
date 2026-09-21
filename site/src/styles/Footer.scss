@@ -8,6 +8,14 @@ footer.main-footer {
     text-align: center;
     text-wrap: balance;
     font-size: 1.5em;
+    & > * {
+        &:not(:first-child) {
+            margin-left: 2vmin;
+        }
+        &:not(:last-child) {
+            margin-right: 2vmin;
+        }
+    }
     .top-divider {
         position: absolute;
         bottom: calc(100% + 2vmin);
