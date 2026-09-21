@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Discover demo projects
         id: set-matrix
         run: |
@@ -50,39 +50,48 @@ jobs:
               fi
             fi
           done
-          
+
           # Create JSON array
           if [ -n "$DEMOS" ]; then
             JSON_DEMOS="[$DEMOS]"
           else
             JSON_DEMOS="[]"
           fi
-          
+
           echo "demo_matrix=$JSON_DEMOS" >> $GITHUB_OUTPUT
           echo "Found demos: $JSON_DEMOS"
+
+          # Sanity check: warn if a stale examples/ dir still exists
+          if [ -d "examples" ]; then
+            echo "::warning::An 'examples/' directory still exists in the repo. Consider removing it to avoid confusion and bloat."
+          fi
 
   build-site:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'npm'
-      
+          cache-dependency-path: site/package-lock.json
+
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.npm
             site/node_modules
-          key: ${{ runner.os }}-site-${{ hashFiles('site/package-lock.json') }}
+          # v2 suffix: bump this to force a clean cache if the site's
+          # dependency graph changes in a way hashFiles can't see.
+          key: ${{ runner.os }}-site-v2-${{ hashFiles('site/package-lock.json') }}
           restore-keys: |
+            ${{ runner.os }}-site-v2-
             ${{ runner.os }}-site-
-      
+
       - name: Install optional dependencies
         run: |
           if [ -f "package.json" ]; then
@@ -91,7 +100,7 @@ jobs:
               npm install --prefer-offline --no-audit --no-fund $OPTIONAL_DEPS
             fi
           fi
-      
+
       - name: Build site
         run: |
           cd site
@@ -113,13 +122,17 @@ jobs:
           cd ..
           mkdir -p combined_build
           cp -r site/dist/* combined_build/
-      
+
+          echo "Site build size:"
+          du -sh combined_build
+
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: site-build
           path: combined_build/
           retention-days: 1
+          if-no-files-found: error
 
   build-demos:
     needs: discover-demos
@@ -133,23 +146,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'npm'
-      
+          cache-dependency-path: demos/${{ matrix.demo }}/package-lock.json
+
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.npm
             demos/${{ matrix.demo }}/node_modules
-          key: ${{ runner.os }}-demo-${{ matrix.demo }}-${{ hashFiles('demos/${{ matrix.demo }}/package-lock.json') }}
+          # v2 suffix: bump to force a clean cache.
+          # Use format() so the nested matrix value is actually interpolated
+          # into the hashFiles() glob. Nested ${{ }} inside a string does NOT
+          # interpolate and silently produces an empty hash.
+          key: ${{ runner.os }}-demo-v2-${{ matrix.demo }}-${{ hashFiles(format('demos/{0}/package-lock.json', matrix.demo)) }}
           restore-keys: |
+            ${{ runner.os }}-demo-v2-${{ matrix.demo }}-
             ${{ runner.os }}-demo-${{ matrix.demo }}-
-      
+
       - name: Install optional dependencies
         run: |
           if [ -f "package.json" ]; then
@@ -158,7 +177,7 @@ jobs:
               npm install --prefer-offline --no-audit --no-fund $OPTIONAL_DEPS
             fi
           fi
-      
+
       - name: Build demo
         id: build
         continue-on-error: true
@@ -180,9 +199,19 @@ jobs:
           npm install lilis-engine@latest --no-audit --no-fund
           npm run build
           cd ../..
+
+          echo "Demo '${{ matrix.demo }}' dist size:"
+          du -sh demos/${{ matrix.demo }}/dist || true
+
+          # Guard against accidentally shipping node_modules or .git inside dist
+          if find demos/${{ matrix.demo }}/dist -name node_modules -o -name .git 2>/dev/null | grep -q .; then
+            echo "::error::dist for ${{ matrix.demo }} contains node_modules or .git"
+            exit 1
+          fi
+
           mkdir -p combined_build/demos/${{ matrix.demo }}
           cp -r demos/${{ matrix.demo }}/dist/* combined_build/demos/${{ matrix.demo }}/
-      
+
       - name: Upload demo artifact
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -190,6 +219,7 @@ jobs:
           name: demo-${{ matrix.demo }}-build
           path: combined_build/
           retention-days: 1
+          if-no-files-found: error
 
   combine-and-deploy:
     needs: [build-site, build-demos]
@@ -199,39 +229,32 @@ jobs:
       (needs.build-demos.result == 'success' || needs.build-demos.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
+      # merge-multiple: true downloads every artifact into a single directory.
+      # Since site-build puts files at the root and demo-*-build puts files
+      # under demos/<name>/, the merged result is exactly the final layout.
+      # This replaces the old per-artifact download + per-demo cp loop.
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: ./artifacts
-      
-      - name: Combine builds
+          path: ./final_build
+          merge-multiple: true
+
+      - name: Verify build contents
         run: |
-          mkdir -p final_build
-          
-          # Copy site build if exists
-          if [ -d "artifacts/site-build" ]; then
-            cp -r artifacts/site-build/* final_build/
-          fi
-          
-          # Copy all demo builds
-          for demo_dir in artifacts/demo-*-build/; do
-            if [ -d "$demo_dir" ]; then
-              cp -r "$demo_dir"/* final_build/
-            fi
-          done
-          
           echo "Final build contents:"
           ls -la final_build/
           if [ -d "final_build/demos" ]; then
             echo "Demos:"
             ls -la final_build/demos/
           fi
-      
+          echo "Total size:"
+          du -sh final_build
+
       - name: Upload final artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './final_build'
-      
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
