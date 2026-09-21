@@ -8,6 +8,11 @@ import BackgroundAnimation from './BackgroundAnimation';
 import { ClientRouter } from "astro:transitions";
 
 let {title="Lili's Game Engine", image, description, noHeader=false, noFooter=false, class: className} = Astro.props
+if (title.endsWith('-')) {
+    title = title + ' Lili\'s Game Engine'
+} else if (title.startsWith('-')) {
+    title = 'Lili\'s Game Engine '
+}
 const {favicons=[]} = siteConfig
 const maxDescriptionLength = 55
 if (typeof description == 'string') {
@@ -31,7 +36,9 @@ if (typeof description == 'string') {
       const url = typeof favicon == 'string' ? favicon : favicon.url
       let extension = url.split('.')
       extension = extension[extension.length - 1]
-      const size = favicon?.size || null
+      let size = favicon?.size || null
+      if (Array.isArray(size) && size.length === 1) size = [size[0], size[0]]
+      if (typeof size == 'string') size = [size, size]
       const favMime = mime.getType(extension)
       return <link rel="shortcut icon" href={url} sizes={size ? size[0] + 'x' + size[1] : null} type={favMime}/>
      })}
