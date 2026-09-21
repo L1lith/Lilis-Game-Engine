@@ -37,7 +37,7 @@
   "bugs": {
     "url": "https://github.com/L1lith/Lilis-Game-Engine/issues"
   },
-  "homepage": "https://l1lith.github.io/Lilis-Game-Engine/",
+  "homepage": "https://engine.webslc.com/",
   "description": "",
   "dependencies": {
     "jabr": "^0.4.5",

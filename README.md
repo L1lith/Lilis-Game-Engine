@@ -1,7 +1,7 @@
 <img src="https://github.com/L1lith/Lilis-Game-Engine/blob/master/site/public/lilis-game-engine-logo.png?raw=true" alt="Graffiti style logo reading &quot;Lili's Game Engine&quot;" height="200"/>
 
 ## Play with the demos!
-If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://l1lith.github.io/Lilis-Game-Engine/demos)
+If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
 
 ## Technical Explanation
 
@@ -34,7 +34,7 @@ If you'd like to view the full list of demos in your web browser as well as view
 Please note that all of the example projects are made using [SolidJS](https://docs.solidjs.com/) for interactive HTML and [Astro](https://docs.astro.build/en/getting-started/) as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards.
 
 ## Documentation
-You can learn how to use this engine by [visiting the documentation!](https://l1lith.github.io/Lilis-Game-Engine/docs/)
+You can learn how to use this engine by [visiting the documentation!](https://engine.webslc.com/docs/)
 
 ## Integrations
 This game engine has a number of built in integrations for common game development libraries, for example:
@@ -46,5 +46,5 @@ This game engine has a number of built in integrations for common game developme
 One of the core features of this game engine is that adding support for new libraries is very easy. If there's a library you'd like to add support for consider making a pull request or opening an issue.
 
 ## More Links
-- [Website](https://l1lith.github.io/Lilis-Game-Engine/)
+- [Website](https://engine.webslc.com/)
 - [Source Code](https://github.com/L1lith/Lilis-Game-Engine)

@@ -84,7 +84,7 @@ const ENGINE_PACKAGE = "lilis-engine";
 const GITHUB_TREE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${GITHUB_BRANCH}?recursive=1`;
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}`;
 const GITHUB_TREE_BASE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/tree/${GITHUB_BRANCH}`;
-const DEMOS_BASE = `https://l1lith.github.io/Lilis-Game-Engine/demos`;
+const DEMOS_BASE = `https://engine.webslc.com/demos`;
 
 function slugify(name) {
   return name
@@ -452,7 +452,7 @@ yargs(hideBin(process.argv))
         console.log("");
         console.log(`  See full source: ${c.url(`${GITHUB_TREE_BASE}/demos`)}`);
         console.log(
-          `  Play in browser: ${c.url("https://l1lith.github.io/Lilis-Game-Engine/demos/")}`,
+          `  Play in browser: ${c.url("https://engine.webslc.com/demos/")}`,
         );
         console.log("");
         return;
