@@ -5,7 +5,8 @@
     flex-direction: row;
     width: 100vmin;
     justify-content: space-around;
-    user-select: none;    
+    user-select: none;   
+    height: max(10vmin, 50px); 
     button {
         &.held {
             filter: brightness(80%);
@@ -13,7 +14,6 @@
         background: none;
         border: none;
         cursor: pointer;
-        height: 10vmin;
         svg {
             pointer-events: none;
             height: 100%;
@@ -21,6 +21,8 @@
         }
         img {
             pointer-events: none;
+            height: 100%;
+            width: auto;
         }
     }
     .jump {
