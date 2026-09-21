@@ -10,26 +10,26 @@ const panels = [
   {
     title: "Pong",
     preview: base + "pong-preview.png",
-    href: base + "examples/pong",
-    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/pong",
+    href: base + "demos/pong",
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/pong",
   },
   {
     title: "Angry Birds Knockoff",
     preview: base + "angry-birds-preview.png",
-    href: base + "examples/spike-vs-space",
-    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/spike-vs-space",
+    href: base + "demos/spike-vs-space",
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/spike-vs-space",
   },
   { 
     title: "Sidescroller",
     preview: base + 'sidescroller-preview.png',
-    href: base + 'examples/sidescroller',
-    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/sidescroller"
+    href: base + 'demos/sidescroller',
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/sidescroller"
   },
   {
     title: "Topdown Zelda Style",
     preview: base + 'topdown-preview.png',
-    href: base + 'examples/topdown',
-    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/topdown"
+    href: base + 'demos/topdown',
+    source: "https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/topdown"
   }
   // ...as many as you want
 ];
@@ -41,10 +41,10 @@ const panels = [
 		<ul>
       {panels.map(panel => (
         <li>
-<a class="demo-link" href={import.meta.env.BASE_URL + "examples/pong"}>
+<a class="demo-link" href={import.meta.env.BASE_URL + "demos/pong"}>
                     <h3>Pong</h3>
                 </a>
-                <a class="source" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples/pong"><GithubLogo/>View Source Code</a>
+                <a class="source" href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/pong"><GithubLogo/>View Source Code</a>
             </li>
       ))}
 		</ul>
