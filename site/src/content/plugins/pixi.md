@@ -1,6 +1,6 @@
 ---
 name: Pixi.js
-Home Page: https://pixijs.com/
+homePage: https://pixijs.com/
 category: Renderer Plugins
 description: High performance 2D renderer plugin with GPU acceleration
 ---
