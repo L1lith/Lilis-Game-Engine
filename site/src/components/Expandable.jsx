@@ -249,7 +249,7 @@ export default function Expandable(props) {
             class={"expandable" + (typeof className === "string" ? " " + className : "")}
         >
             <h2 class="title">
-                {label || "Untitled"}
+                {label ? <a href={"#" +slug}>{label}</a> : 'Untitled'}
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
