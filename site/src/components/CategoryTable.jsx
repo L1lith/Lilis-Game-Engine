@@ -1,6 +1,6 @@
 // src/components/CategoryTable.jsx
 import { createSignal, createMemo, createUniqueId, For, Show } from 'solid-js';
-//import './CategoryTable.css';
+import '@/styles/CategoryTable.scss';
 
 /**
  * props:

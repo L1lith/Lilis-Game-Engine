@@ -8,18 +8,19 @@ import GridLayoutVisualization from '@/svgs/grid-layout-visualization.svg'
 import CategoryTable from '@/components/CategoryTable'
 //an example project in the <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory</a> 
 import { getCollection } from 'astro:content';
+import titleCase from '@/utility/titleCase';
 const plugins = await getCollection('plugins');
 const pluginsData = {}
 const allowedEntityProperites = ['name', 'description']
 plugins.forEach(plugin => {
 	const existingPlugins = pluginsData[plugin.data.category || 'Default'] || []
 	const entryData = {
-		name: plugin.data.name,
+		Name: titleCase(plugin.data.name),
 		'Docs': {
 			url: import.meta.env.BASE_URL + 'docs/plugins/' + plugin.id,
 			text: "view docs"
 		},
-		...Object.fromEntries(Object.entries(plugin.data).filter(([key]) => allowedEntityProperites.includes(key)))
+		...Object.fromEntries(Object.entries(plugin.data).filter(([key]) => allowedEntityProperites.includes(key)).map(([key, value]) => [titleCase(key), value]))
 	}
 	Object.entries(entryData).forEach(([urlProp, originalURL]) => {
 		if (typeof originalURL != 'string' || !(originalURL.startsWith('http://') || originalURL.startsWith('https://'))) return
