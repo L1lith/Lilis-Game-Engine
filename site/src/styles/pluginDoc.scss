@@ -5,12 +5,35 @@
     justify-content: space-around;
     align-items: center;
     flex-grow: 1;
+    h2 {
+        margin-top: 2em;
+        margin-bottom: 1em;
+    }
+    table {
+        border: 0.1em solid rgba(218, 255, 218, 0.636);
+        width: 100%;
+        text-align: center;
+        margin: 2em 0;
+        thead {
+            th {
+                padding: 1em 0;
+                font-size: 1.1em;
+                border-bottom: 0.1em solid rgba(218, 255, 218, 0.636);
+            }
+        }
+        th:nth-child(even), td:nth-child(even) {
+            background-color: rgba(0, 149, 255, 0.202);
+        }
+        th, td {
+            padding: 0.5em;
+        }
+    }
     pre {
         font-size: 0.8em;
         margin: 1em 0;
         code {
             margin: 0;
-            width: fit-content;
+            width: max(fit-content, 100%);
         }
     }
     .info-headings {
