@@ -1,0 +1,16 @@
+.plugin-doc {
+    padding: 0 10vmin;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    flex-grow: 1;
+    .info-headings {
+        //border: 0.2em solid lime;
+        font-size: 1.25em;
+        margin: 0 1em 2em 1em;
+        & > *:not(:last-child) {
+            margin-bottom: 1.2em;
+        }
+    }
+}

@@ -10,15 +10,16 @@ import CategoryTable from '@/components/CategoryTable'
 import { getCollection } from 'astro:content';
 const plugins = await getCollection('plugins');
 const pluginsData = {}
+const allowedEntityProperites = ['name', 'description']
 plugins.forEach(plugin => {
 	const existingPlugins = pluginsData[plugin.data.category || 'Default'] || []
 	const entryData = {
 		name: plugin.data.name,
 		'Docs': {
-			url: import.meta.env.BASE_URL + 'plugins/' + plugin.id,
+			url: import.meta.env.BASE_URL + 'docs/plugins/' + plugin.id,
 			text: "view docs"
 		},
-		...plugin.data
+		...Object.fromEntries(Object.entries(plugin.data).filter(([key]) => allowedEntityProperites.includes(key)))
 	}
 	Object.entries(entryData).forEach(([urlProp, originalURL]) => {
 		if (typeof originalURL != 'string' || !(originalURL.startsWith('http://') || originalURL.startsWith('https://'))) return
