@@ -5,6 +5,13 @@
     justify-content: space-around;
     align-items: center;
     flex-grow: 1;
+    pre {
+        margin: 1em 0;
+        code {
+            margin: 0;
+            width: fit-content;
+        }
+    }
     .info-headings {
         //border: 0.2em solid lime;
         display: flex;

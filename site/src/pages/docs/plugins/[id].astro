@@ -6,6 +6,7 @@ import '@/styles/pluginDoc.scss'
 // 1. Generate a new path for every collection entry
 export async function getStaticPaths() {
   const posts = await getCollection('plugins');
+  console.log(posts)
   return posts.map(post => ({
     params: { id: post.id },
     props: { post },
