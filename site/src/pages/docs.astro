@@ -28,7 +28,7 @@ import GridLayoutVisualization from '@/svgs/grid-layout-visualization.svg'
 			<p>The above flowchart shows how the game engine works. The green lines represent the order that the program executes (a.k.a. the "control flow), and the red lines represent the plugins reading and writing data from the Entity objects in the EntityList that represents the main scene. The plugins typically don't just do static reads from the Entity objects, usually they leverage the abilities of the underlying <a href="https://github.com/L1lith/Jabr">Jabr</a> objects to provide change listeners so that they can run code only exactly when needed (as opposed to doing static reads every frame which is very slow because they require constant read operations).</p>
 			<br/>
 			<p>We can see a basic example of this in practice by looking at the source code for the level loader demo:</p>
-			<a style="display: block; margin: 1vmin 0;" class="standard-link" href="https://github.com/L1lith/Lilis-Game-Engine/blob/master/examples/level-loader-demo/src/components/Game.jsx">examples/level-loader-demo/src/components/Game.jsx</a>
+			<a style="display: block; margin: 1vmin 0;" class="standard-link" href="https://github.com/L1lith/Lilis-Game-Engine/blob/master/demos/level-loader-demo/src/components/Game.jsx">examples/level-loader-demo/src/components/Game.jsx</a>
 			<Code class="basic-usage-code" lang="js" code={`import { onMount, onCleanup, createSignal} from "solid-js"
 	import { isServer } from 'solid-js/web'
 	import {createGameCore, Entity, EntityList, RenderSettings, createGameLoop} from 'lilis-engine'
