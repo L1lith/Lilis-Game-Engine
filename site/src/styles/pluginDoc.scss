@@ -23,12 +23,13 @@
             margin-bottom: 1.2em;
         }
         .demos-used {
-            white-space: pre-wrap;
+            white-space: pre;
             display: flex;
             flex-direction: row;
             ul {
                 display: flex;
                 flex-direction: row;
+                flex-wrap: wrap;
             }
         }
     }

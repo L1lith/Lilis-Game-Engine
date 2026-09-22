@@ -20,7 +20,7 @@ const { Content } = await render(post);
       {typeof post.data.description == 'string' || typeof post.data.homePage == 'string' || Array.isArray(post.data.demos) ? <div class="info-headings">
         {typeof post.data.description == 'string' ? <p class="description">Description:<br/>{post.data.description}</p> : null}
         {typeof post.data.homePage == 'string' ? <a target="_blank" class="third-party-home standard-link" href={post.data.homePage}>View {post.data.name}'s Website</a> : null}
-        {Array.isArray(post.data.demos) ? <span class="demos-used">Usage Demos: <ul>{post.data.demos.map((demo, i) => (<li><a href={import.meta.env.BASE_URL + 'demos/' + demo}>{demo}</a>{(i < post.data.demos.length - 1 ? ', ' : null)}</li>))}</ul></span> : null}
+        {Array.isArray(post.data.demos) ? <span class="demos-used">Usage Demos: <ul>{post.data.demos.map((demo, i) => (<li><a href={import.meta.env.BASE_URL + 'demos/' + demo}>{demo}</a> <a href={"https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/" + demo}>(source)</a>{(i < post.data.demos.length - 1 ? ', ' : null)}</li>))}</ul></span> : null}
       </div> : null}
       <Content />
     </Expandable>
