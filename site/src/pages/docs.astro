@@ -5,7 +5,33 @@ import OverviewFlowchart from '@/svgs/overview-flowchart.svg'
 import Expandable from '@/components/Expandable';
 import { Code } from 'astro:components';
 import GridLayoutVisualization from '@/svgs/grid-layout-visualization.svg'
+import CategoryTable from '@/components/CategoryTable'
 //an example project in the <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples">examples directory</a> 
+import { getCollection } from 'astro:content';
+const plugins = await getCollection('plugins');
+const pluginsData = {}
+plugins.forEach(plugin => {
+	const existingPlugins = pluginsData[plugin.data.category || 'Default'] || []
+	const entryData = {
+		name: plugin.data.name,
+		'Docs': {
+			url: import.meta.env.BASE_URL + 'plugins/' + plugin.id,
+			text: "view docs"
+		},
+		...plugin.data
+	}
+	Object.entries(entryData).forEach(([urlProp, originalURL]) => {
+		if (typeof originalURL != 'string' || !(originalURL.startsWith('http://') || originalURL.startsWith('https://'))) return
+		const urlObject = new URL(originalURL)
+		entryData[urlProp] = {
+			url: originalURL,
+			text: urlObject.hostname.startsWith('www.') ? urlObject.hostname.substring(4) : urlObject.hostname
+		}
+	})
+	delete entryData.category
+	pluginsData[plugin.data.category || 'Default'] = existingPlugins.concat(entryData)
+})
+
 ---
 
 <Base title="Documentation -" class="docs">
@@ -108,7 +134,9 @@ console.log(entityList.get())`}/>
 	</Expandable>
 	<Expandable title="Plugin System" class="plugin-system" client:load>
 		<p class="intro">Adding functionality to the game engine is done through the plugin system. While the game engine has a few core plugins (like the game loop) most plugins are integrations for third party game development libraries.</p>
-		<div class="plugin-list">
+		<h2>Plugins List (interactive):</h2>
+		<CategoryTable class="plugin-list" data={pluginsData} client:load/>
+		<!-- <div class="plugin-list">
 			<h2>Official Plugins & Integrations:</h2>
 			<table>	<thead>
 			<tr>
@@ -169,7 +197,7 @@ console.log(entityList.get())`}/>
 				<td>pixi.js, pixi-tiledmap, lilis-engine/pixi, lilis-engine/pixi-tiled, matter.js</td>
 			</tr>
 			</tbody></table>
-		</div>
+		</div> -->
 		<p>It's recommended that you learn how to use these plugins by cloning an example project rather than trying to implement them from scratch. The source code for all official plugins can be found <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/src/plugins">here</a>. The game engine is designed to support you making your own plugins.</p>
 		<br/>
 		<p>All instantiated plugins return an object that defines it's methods and properties. The primary methods are "tick" and "render", with tick always being called first. You can change the order that plugins execute by modifying their tickPriority and renderPriority properties which correspond to the similarly named methods. Plugins are sorted by their priorities when being executed, and plugins with the same priority will be executed simultaneously. The default priority value is 0.</p>
