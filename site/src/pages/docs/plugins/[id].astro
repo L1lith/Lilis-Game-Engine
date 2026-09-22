@@ -17,9 +17,10 @@ const { Content } = await render(post);
 ---
 <Base class="plugin-doc">
     <Expandable startExpanded title={post.data.name + " Plugin Documentation"} client:load>
-      {typeof post.data.description == 'string' || typeof post.data.homePage == 'string' ? <div class="info-headings">
-        {typeof post.data.description == 'string' ? <p class="description">Description: {post.data.description}</p> : null}
-        {typeof post.data.homePage == 'string' ? <a class="third-party-home standard-link" href={post.data.homePage}>View {post.data.name}'s Website</a> : null}
+      {typeof post.data.description == 'string' || typeof post.data.homePage == 'string' || Array.isArray(post.data.demos) ? <div class="info-headings">
+        {typeof post.data.description == 'string' ? <p class="description">Description:<br/>{post.data.description}</p> : null}
+        {typeof post.data.homePage == 'string' ? <a target="_blank" class="third-party-home standard-link" href={post.data.homePage}>View {post.data.name}'s Website</a> : null}
+        {Array.isArray(post.data.demos) ? <span class="demos-used">Usage Demos: <ul>{post.data.demos.map((demo, i) => (<li><a href={import.meta.env.BASE_URL + 'demos/' + demo}>{demo}</a>{(i < post.data.demos.length - 1 ? ', ' : null)}</li>))}</ul></span> : null}
       </div> : null}
       <Content />
     </Expandable>

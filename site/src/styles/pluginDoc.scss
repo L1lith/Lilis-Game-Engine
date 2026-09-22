@@ -7,10 +7,29 @@
     flex-grow: 1;
     .info-headings {
         //border: 0.2em solid lime;
+        display: flex;
+        flex-direction: column;
         font-size: 1.25em;
-        margin: 0 1em 2em 1em;
+        padding-bottom: 1em;
+        &:not(:last-child) {
+            border-bottom: 0.1em solid #00ff0057;
+        }
+        margin: 0 1em 1em 1em;
+        align-items: center;
+        & > * {
+            text-align: center;
+        }
         & > *:not(:last-child) {
             margin-bottom: 1.2em;
+        }
+        .demos-used {
+            white-space: pre-wrap;
+            display: flex;
+            flex-direction: row;
+            ul {
+                display: flex;
+                flex-direction: row;
+            }
         }
     }
 }
