@@ -21,7 +21,10 @@
                     color: lime;
                     background-color: rgba(0, 255, 0, 0.202);
                     border-color: lime;
-                    
+                }
+                &:hover:not(.active) {
+                    background-color: rgba(0, 255, 0, 0.097);
+                    color: rgb(172, 255, 172);
                 }
             }
         }
