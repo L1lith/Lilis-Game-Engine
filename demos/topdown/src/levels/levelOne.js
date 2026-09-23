@@ -5,7 +5,7 @@ import { Assets, RenderLayer } from "pixi.js";
 import { Entity } from "lilis-engine";
 
 export default {
-  mount: async ({}, { entityList }) => {
+  mount: async ({ entityList }) => {
     //await Assets.load("tileset.png");
     const mapEntities = await createPixiTiledmap("grassy-overworld.tmx");
     const map = mapEntities.get()[0];
