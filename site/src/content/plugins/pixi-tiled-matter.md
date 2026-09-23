@@ -31,3 +31,8 @@ export default {
   },
 };
 ```
+
+That's it for the coding aspect, but there's still a little more to do. In the Tiled editor we can assign properties to the layers to define whether they have collision or not. In order for a layer to have collision we must set the "collision" property of the layer to a boolean value of true (the box must be checked). When a tile layer has collision enabled it will make a square hitbox wherever there is a hitbox. The hitbox shape does not change even if there are transparent pixels. If you'd like to make non-square hitboxes then you will need to define a shape layer in Tiled.
+
+## Shape Layers
+We can define custom hitbox shapes inside the Tiled editor using the shape layer. These are vector style tools for making circles, squares, or other arbitrary polygons. In order to give them hitboxes we still need to set the "collision" property of the layer to true (checked). One issue is that by default these shapes will be rendered to the screen which is usually unwanted. This can be solved by setting the layer property "noRender" to true (aka the box is checked).
