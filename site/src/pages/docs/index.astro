@@ -10,8 +10,9 @@ import CategoryTable from '@/components/CategoryTable'
 import { getCollection } from 'astro:content';
 import titleCase from '@/utility/titleCase';
 const plugins = await getCollection('plugins');
-const pluginsData = {}
+let pluginsData = {}
 const allowedEntityProperites = ['name', 'description']
+const categoryOrder = ["Renderer Plugins", "Renderers", "Renderer", "Physics Plugins", "Physics", "Other Plugins", "Other", "Others"]
 plugins.forEach(plugin => {
 	const existingPlugins = pluginsData[plugin.data.category || 'Default'] || []
 	const entryData = {
@@ -33,6 +34,10 @@ plugins.forEach(plugin => {
 	delete entryData.category
 	pluginsData[plugin.data.category || 'Default'] = existingPlugins.concat(entryData)
 })
+
+pluginsData = Object.fromEntries(Object.entries(pluginsData).sort(([categoryA], [categoryB]) => {
+  return categoryOrder.indexOf(categoryA) - categoryOrder.indexOf(categoryB);
+}))
 
 ---
 

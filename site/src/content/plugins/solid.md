@@ -1,7 +1,7 @@
 ---
 name: SolidJS
 homePage: https://www.solidjs.com/
-category: Renderer Plugins
+category: Renderers
 description: Create dynamic GUIs using interactive HTML
 demos: ['solid-plugin-demo', 'level-loader-demo', 'topdown', 'sidescroller', 'spike-vs-space']
 ---

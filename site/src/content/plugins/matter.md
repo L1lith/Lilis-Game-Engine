@@ -2,7 +2,7 @@
 name: Matter.js
 homePage: https://www.brm.io/matter-js/
 description: 2D physics simulator (non-deterministic)
-category: Physics Plugins
+category: Physics
 demos: ['topdown', 'sidescroller', 'pong', 'spike-vs-space']
 ---
 The Matter.js reads and writes to our EntityList automatically. Entity objects are automatically detected as matter.js physics objects when they are supplied a .matter property with your matter config. In that config the primary thing we need to do is define the shape of the collider. Two common shapes are "rectangle" and "circle". For example in the [sidescroller demo](https://github.com/L1lith/Lilis-Game-Engine/blob/master/demos/sidescroller/src/components/Game.jsx) we define the player's hitbox as a circle with the following code:
