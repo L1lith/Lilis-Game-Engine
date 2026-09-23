@@ -92,6 +92,8 @@
             padding: 5vmin;
             backdrop-filter: blur(1vmin);
             background-color: #00000045;
+            max-width: 80vmin;
+            box-sizing: border-box;
         }
     }
     .plus {
