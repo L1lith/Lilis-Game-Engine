@@ -138,24 +138,36 @@ export default function Expandable(props) {
     const initial = typeof stored === "boolean" ? stored : startExpanded
     const [expanded, setExpanded] = createSignal(initial)
 
+    // Animation speed is proportional to the content's natural height.
+    // 0.75ms per pixel gives a roughly constant "reveal velocity" so tall
+    // panels don't snap open and short ones don't crawl. Floored at 200ms
+    // so tiny panels still feel animated, capped at 1500ms so huge ones
+    // don't feel sluggish.
+    const MS_PER_PX = 0.75
+    const MIN_MS = 200
+    const MAX_MS = 1500
+
+    const [duration, setDuration] = createSignal(300)
+
     let rootEl = null
-    let contentEl = null
+    let innerEl = null
+    let resizeObserver = null
 
-    // Persistence + content display sync. The icon lives directly in the
-    // parent's JSX below, so Solid tracks its reactive class binding there.
+    const measure = () => {
+        if (isServer || !innerEl) return
+        const h = innerEl.offsetHeight
+        if (!h) return
+        const ms = Math.round(Math.min(MAX_MS, Math.max(MIN_MS, h * MS_PER_PX)))
+        setDuration(ms)
+    }
+
     createEffect(() => {
+        if (isServer || !slug) return
         const isOpen = expanded()
-
-        if (slug) {
-            const state = getState()
-            if (state[slug] !== isOpen) {
-                state[slug] = isOpen
-                writeJSON(STATE_KEY, state)
-            }
-        }
-
-        if (!isServer && contentEl) {
-            contentEl.style.display = isOpen ? "initial" : "none"
+        const state = getState()
+        if (state[slug] !== isOpen) {
+            state[slug] = isOpen
+            writeJSON(STATE_KEY, state)
         }
     })
 
@@ -211,6 +223,16 @@ export default function Expandable(props) {
 
         attachGlobalListeners()
 
+        // Measure the content's natural height so the slide duration can
+        // scale with it.
+        if (innerEl) {
+            measure()
+            if (typeof ResizeObserver !== "undefined") {
+                resizeObserver = new ResizeObserver(measure)
+                resizeObserver.observe(innerEl)
+            }
+        }
+
         const id = getHashId()
         if (id && containsId(id)) {
             hashHandled = true
@@ -227,6 +249,10 @@ export default function Expandable(props) {
 
     onCleanup(() => {
         if (isServer) return
+        if (resizeObserver) {
+            resizeObserver.disconnect()
+            resizeObserver = null
+        }
         window.removeEventListener("hashchange", handleHashChange)
         window.removeEventListener("popstate", handleHashChange)
         document.removeEventListener("click", handleClick)
@@ -247,10 +273,6 @@ export default function Expandable(props) {
                     aria-controls={contentId}
                 >
                     <span class="text-icon">
-                        {/* The reactive class binding lives HERE, on a real
-                            DOM node. Solid re-evaluates this expression
-                            whenever `expanded()` changes, so the class
-                            flips and the CSS transition fires. */}
                         <div class="plus" classList={{ open: expanded(), closed: !expanded() }}>
                             <div class="horizontal-bar" />
                             <div class="vertical-bar" />
@@ -259,12 +281,15 @@ export default function Expandable(props) {
                 </button>
             </h2>
             <div
-                ref={contentEl}
-                id={contentId}
-                class="content"
-                style={expanded() ? { display: "initial" } : { display: "none" }}
+                class="content-wrapper"
+                classList={{ open: expanded() }}
+                style={{ "--slide-duration": `${duration()}ms` }}
             >
-                {props.children || null}
+                <div id={contentId} class="content">
+                    <div ref={innerEl} class="content-inner">
+                        {props.children || null}
+                    </div>
+                </div>
             </div>
         </div>
     )
