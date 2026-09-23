@@ -17,7 +17,7 @@
         button {
             user-select: none;
             cursor: pointer;
-            border: 0.5vmin solid rgb(180, 180, 180);
+            border: 0.25vmin solid rgb(180, 180, 180);
             background: none;
             color: white;
             width: 1em;
@@ -29,10 +29,32 @@
             margin-left: auto;
             position: relative;
             .text-icon {
-                transform: translate(-50%, -50%);
-                position: absolute;
-                top: 41%;
-                left: 50%;
+                // transform: translate(-50%, -50%);
+                // position: absolute;
+                // top: 41%;
+                // left: 50%;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 1em;
+                    height: 1em;
+
+                    svg {
+                        width: 100%;
+                        height: 100%;
+                        transition: transform 200ms ease;
+                    }
+
+                    // The vertical bar — collapse it when open so the plus becomes a minus.
+                    svg .plus-vertical {
+                        transition: transform 200ms ease, opacity 200ms ease;
+                        transform-origin: center;
+                    }
+
+                    &.is-open svg .plus-vertical {
+                        transform: scaleY(0);
+                        opacity: 0;
+                    }
             }
         }
     }
@@ -41,6 +63,38 @@
         padding: 5vmin;
         backdrop-filter: blur(1vmin);
         background-color: #00000045;
+        display: none;
     }
-
+    .plus {
+        width: 80%;
+        margin: auto;
+        aspect-ratio: 1;
+        position: relative;
+        &.open {
+            .vertical-bar {
+                opacity: 0;
+            }
+        }
+        &.closed {
+            .vertical-bar {
+                opacity: 1;
+            }
+        }
+        .vertical-bar {
+            height: 100%;
+            width: 20%;
+            transition: opacity 0.3s ease;
+        }
+        .horizontal-bar {
+            width: 100%;
+            height: 20%;
+        }
+        .vertical-bar, .horizontal-bar {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background-color: white;
+            transform: translate(-50%, -50%);
+        }
+    }
 }

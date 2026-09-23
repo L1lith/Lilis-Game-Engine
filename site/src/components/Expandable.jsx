@@ -134,21 +134,15 @@ export default function Expandable(props) {
     const elementId = slug || undefined
     const contentId = slug ? `${slug}-content` : undefined
 
-    // SSR-safe initial state: only use persisted / prop values here so the
-    // server and first client render agree. The hash override happens on
-    // mount (client only), and the effect below re-syncs the DOM.
     const stored = slug ? getState()[slug] : undefined
     const initial = typeof stored === "boolean" ? stored : startExpanded
     const [expanded, setExpanded] = createSignal(initial)
 
     let rootEl = null
-    let iconEl = null
     let contentEl = null
 
-    // Persistence + bulletproof DOM sync.
-    // This runs on the client after hydration and on every signal change,
-    // so even if hydration skipped the reactive binding, the icon and
-    // content are guaranteed to reflect `expanded()`.
+    // Persistence + content display sync. The icon lives directly in the
+    // parent's JSX below, so Solid tracks its reactive class binding there.
     createEffect(() => {
         const isOpen = expanded()
 
@@ -160,9 +154,8 @@ export default function Expandable(props) {
             }
         }
 
-        if (!isServer) {
-            if (iconEl) iconEl.textContent = isOpen ? "-" : "+"
-            if (contentEl) contentEl.style.display = isOpen ? "initial" : "none"
+        if (!isServer && contentEl) {
+            contentEl.style.display = isOpen ? "initial" : "none"
         }
     })
 
@@ -218,12 +211,9 @@ export default function Expandable(props) {
 
         attachGlobalListeners()
 
-        // Initial deep-link handling.
         const id = getHashId()
         if (id && containsId(id)) {
             hashHandled = true
-            // Setting the signal triggers the effect above, which writes
-            // `-` directly into the icon span. No race, no hydration miss.
             setExpanded(true)
             requestAnimationFrame(() => scrollToId(id, false))
         } else {
@@ -249,15 +239,22 @@ export default function Expandable(props) {
             class={"expandable" + (typeof className === "string" ? " " + className : "")}
         >
             <h2 class="title">
-                {label ? <a href={"#" +slug}>{label}</a> : 'Untitled'}
+                {label ? <a href={"#" + slug}>{label}</a> : "Untitled"}
                 <button
                     type="button"
                     onClick={() => setExpanded((v) => !v)}
                     aria-expanded={expanded()}
                     aria-controls={contentId}
                 >
-                    <span ref={iconEl} class="text-icon">
-                        {expanded() ? "-" : "+"}
+                    <span class="text-icon">
+                        {/* The reactive class binding lives HERE, on a real
+                            DOM node. Solid re-evaluates this expression
+                            whenever `expanded()` changes, so the class
+                            flips and the CSS transition fires. */}
+                        <div class="plus" classList={{ open: expanded(), closed: !expanded() }}>
+                            <div class="horizontal-bar" />
+                            <div class="vertical-bar" />
+                        </div>
                     </span>
                 </button>
             </h2>
