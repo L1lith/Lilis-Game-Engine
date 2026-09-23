@@ -1,4 +1,8 @@
 .ai-usage-disclosure {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     p {
         max-width: 80vmin;
         margin: auto;
