@@ -138,12 +138,11 @@ export default function Expandable(props) {
     const initial = typeof stored === "boolean" ? stored : startExpanded
     const [expanded, setExpanded] = createSignal(initial)
 
-    // When true, the CSS transition on the grid track is disabled so the
-    // expandable snaps to its final size instantly. Used only while we're
-    // opening programmatically (deep link, hash change, in-page link
-    // click) so scrollIntoView reads the target's true position instead
-    // of a mid-animation one.
-    const [skipAnimation, setSkipAnimation] = createSignal(false)
+    // Starts TRUE. Hydration may change the class from the server-rendered
+    // value (server can't read sessionStorage) to the client's persisted
+    // value, and without this the CSS transition would fire on page load.
+    // Cleared in onMount after the initial paint.
+    const [skipAnimation, setSkipAnimation] = createSignal(true)
 
     const MS_PER_PX = 0.75
     const MIN_MS = 200
@@ -185,18 +184,10 @@ export default function Expandable(props) {
         el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" })
     }
 
-    // Open + scroll without letting the slide animation play. The `open`
-    // class and `no-transition` class are both applied in the same
-    // synchronous batch, so the grid track jumps straight to 1fr. Then
-    // `scrollIntoView` forces a layout read against that final size.
     const openAndScroll = (id, smooth = true) => {
         setSkipAnimation(true)
         setExpanded(true)
         scrollToId(id, smooth)
-        // Re-enable transitions once the non-animated state has been
-        // committed and painted. Double rAF is the safe cross-browser
-        // way to guarantee the next style recalculation is past the
-        // non-animated frame.
         requestAnimationFrame(() => {
             requestAnimationFrame(() => setSkipAnimation(false))
         })
@@ -246,14 +237,22 @@ export default function Expandable(props) {
 
         const id = getHashId()
         if (id && containsId(id)) {
+            // Deep link wins. Snap open (no animation), instant scroll.
             hashHandled = true
-            // No smooth scrolling on the initial deep-link jump — the
-            // browser is already mid-page-load and smooth scrolling from
-            // the default top position just looks like a glitch.
-            openAndScroll(id, false)
+            setExpanded(true)
+            requestAnimationFrame(() => scrollToId(id, false))
         } else {
             scheduleBoot()
         }
+
+        // Let hydration + state reconciliation settle, then re-enable
+        // transitions for real user interactions. Two frames is enough:
+        // the first lets Solid flush the class changes from hydration,
+        // the second lets the browser paint that state before we allow
+        // a transition to fire.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => setSkipAnimation(false))
+        })
 
         window.addEventListener("hashchange", handleHashChange)
         window.addEventListener("popstate", handleHashChange)
