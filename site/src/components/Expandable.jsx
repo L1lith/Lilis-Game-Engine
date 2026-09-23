@@ -138,15 +138,16 @@ export default function Expandable(props) {
     const initial = typeof stored === "boolean" ? stored : startExpanded
     const [expanded, setExpanded] = createSignal(initial)
 
-    // Animation speed is proportional to the content's natural height.
-    // 0.75ms per pixel gives a roughly constant "reveal velocity" so tall
-    // panels don't snap open and short ones don't crawl. Floored at 200ms
-    // so tiny panels still feel animated, capped at 1500ms so huge ones
-    // don't feel sluggish.
+    // When true, the CSS transition on the grid track is disabled so the
+    // expandable snaps to its final size instantly. Used only while we're
+    // opening programmatically (deep link, hash change, in-page link
+    // click) so scrollIntoView reads the target's true position instead
+    // of a mid-animation one.
+    const [skipAnimation, setSkipAnimation] = createSignal(false)
+
     const MS_PER_PX = 0.75
     const MIN_MS = 200
     const MAX_MS = 1500
-
     const [duration, setDuration] = createSignal(300)
 
     let rootEl = null
@@ -184,9 +185,21 @@ export default function Expandable(props) {
         el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" })
     }
 
+    // Open + scroll without letting the slide animation play. The `open`
+    // class and `no-transition` class are both applied in the same
+    // synchronous batch, so the grid track jumps straight to 1fr. Then
+    // `scrollIntoView` forces a layout read against that final size.
     const openAndScroll = (id, smooth = true) => {
+        setSkipAnimation(true)
         setExpanded(true)
-        requestAnimationFrame(() => scrollToId(id, smooth))
+        scrollToId(id, smooth)
+        // Re-enable transitions once the non-animated state has been
+        // committed and painted. Double rAF is the safe cross-browser
+        // way to guarantee the next style recalculation is past the
+        // non-animated frame.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => setSkipAnimation(false))
+        })
     }
 
     const handleHashChange = () => {
@@ -223,8 +236,6 @@ export default function Expandable(props) {
 
         attachGlobalListeners()
 
-        // Measure the content's natural height so the slide duration can
-        // scale with it.
         if (innerEl) {
             measure()
             if (typeof ResizeObserver !== "undefined") {
@@ -236,8 +247,10 @@ export default function Expandable(props) {
         const id = getHashId()
         if (id && containsId(id)) {
             hashHandled = true
-            setExpanded(true)
-            requestAnimationFrame(() => scrollToId(id, false))
+            // No smooth scrolling on the initial deep-link jump — the
+            // browser is already mid-page-load and smooth scrolling from
+            // the default top position just looks like a glitch.
+            openAndScroll(id, false)
         } else {
             scheduleBoot()
         }
@@ -282,7 +295,10 @@ export default function Expandable(props) {
             </h2>
             <div
                 class="content-wrapper"
-                classList={{ open: expanded() }}
+                classList={{
+                    open: expanded(),
+                    "no-transition": skipAnimation(),
+                }}
                 style={{ "--slide-duration": `${duration()}ms` }}
             >
                 <div id={contentId} class="content">

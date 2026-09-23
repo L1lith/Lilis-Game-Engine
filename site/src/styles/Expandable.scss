@@ -75,6 +75,13 @@
             grid-template-rows: 1fr;
         }
 
+        // Applied only while we're programmatically opening for a deep link
+        // or in-page hash navigation. Kills the transition so the grid track
+        // jumps straight to its final size before scrollIntoView reads it.
+        &.no-transition {
+            transition: none;
+        }
+
         .content {
             min-height: 0;
             overflow: hidden;
