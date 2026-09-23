@@ -1,8 +1,5 @@
 <img src="https://github.com/L1lith/Lilis-Game-Engine/blob/master/site/public/lilis-game-engine-logo.png?raw=true" alt="Graffiti style logo reading &quot;Lili's Game Engine&quot;" height="200"/>
 
-## Play with the demos!
-If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
-
 ## Technical Explanation
 
 I made this game engine by combining the best in modern web technology. This game engine is highly moddable, meaning it is really easy to combine different libraries together and to add support for new libraries. State management is handled using my own [universal state management library Jabr](https://github.com/L1lith/Jabr) which is very simple to use and has no ecosystem lock-in unlike most state libraries.
@@ -10,6 +7,9 @@ I made this game engine by combining the best in modern web technology. This gam
 This game engine strongly leverages the benefits of being written in a Functional Programming (FP) style instead of Objected Oriented Programming (OOP) while still having some resemblance to OOP by using an [Entity Component System (ECS)](https://www.daydreamsoft.com/blog/ecs-vs-oop-in-large-scale-games-choosing-the-right-architecture-for-performance-and-scalability). In line with Functional Programming ethos every part of my game engine was built to maximize separations of concerns.
 
 If any of these technical details aren't making sense to you don't worry! I suggest you try out setting up an example project and reading the docs :\)
+
+## Play with the demos!
+If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
 
 ## Getting Started
 

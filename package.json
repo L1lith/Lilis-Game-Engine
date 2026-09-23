@@ -1,6 +1,6 @@
 {
   "name": "lilis-engine",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "author": "L1lith",
   "description": "Modern & moddable game engine for the web & beyond",
   "keywords": ["game engine", "gaming", "web app", "2D", "game", "javascript", "engine", "browser", "sidescroller", "platformer", "tiled", "tileset"],
