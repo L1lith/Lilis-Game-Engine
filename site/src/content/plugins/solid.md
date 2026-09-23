@@ -37,3 +37,6 @@ const playerControlPlugin = {
 }
 // Also we will add it to our gameCore plugin list below
 ```
+
+## More about SolidJS
+To learn how to use SolidJS please see [their website](https://www.solidjs.com/).
