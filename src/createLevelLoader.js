@@ -55,7 +55,7 @@ function createLevelLoader(entityList, levels, options = {}) {
     const level = activeLevel.get();
     if (level === null) return; // No level is currently loaded
     if (typeof activeLevel.unload == "function")
-      await activeLevel.unload(globalContext, level);
+      await activeLevel.unload(level, globalContext);
     activeLevel.set(null);
     entityList.removeChild(level.entityList);
   };
@@ -68,7 +68,7 @@ function createLevelLoader(entityList, levels, options = {}) {
         : new EntityList();
     level.exports = new Store();
     if (typeof level.mount == "function") {
-      const mountOutput = await level.mount(globalContext, level);
+      const mountOutput = await level.mount(level, globalContext);
       if (typeof mountOutput == "object" && mountOutput !== null) {
         Object.keys(mountOutput).forEach((key) => {
           console.log("assigning", typeof key, key, mountOutput[key]);
@@ -100,7 +100,7 @@ function createLevelLoader(entityList, levels, options = {}) {
   const tick = async (...args) => {
     const level = activeLevel.get();
     if (level && typeof level.tick == "function")
-      await level.tick(globalContext, level, ...args);
+      await level.tick(level, globalContext, ...args);
   };
   return {
     mount,
