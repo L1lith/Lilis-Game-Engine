@@ -5,3 +5,13 @@ category: Others
 description: A plugin for loading maps made with the Tiled map editor
 demos: ['topdown', 'sidescroller']
 ---
+This plugin is very simple but it does require you to have the Pixi plugin already setup in your game. It does NOT return a plugin to be added to your gameCore's plugin list. It simply exports a function to load the map (which returns an EntityList which we can put inside our main EntityList) to be rendered by the pixi plugin. We can see this in action in [the topdown demo](https://github.com/L1lith/Lilis-Game-Engine/blob/master/demos/topdown/src/levels/levelOne.js):
+
+```js
+// Start of file
+import createPixiTiledmap from "lilis-engine/pixi-tiled";
+// Game Code
+const mapEntities = await createPixiTiledmap("grassy-overworld.tmx");
+```
+
+I'd also recommend reading [the full code for the level](https://github.com/L1lith/Lilis-Game-Engine/blob/master/demos/topdown/src/levels/levelOne.js) as well as [the plugin that adds collision to these maps](https://engine.webslc.com/docs/plugins/pixi-tiled-matter) which will help make the full level code make sense.

@@ -205,8 +205,8 @@ console.log(entityList.get())`}/>
 			</tr>
 			</tbody></table>
 		</div> -->
-		<p>It's recommended that you learn how to use these plugins by cloning an example project rather than trying to implement them from scratch. The source code for all official plugins can be found <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/src/plugins">here</a>. The game engine is designed to support you making your own plugins.</p>
+		<p>You can click the buttons at the top of the above plugins list to change the category you're viewing. Please click the "view docs" button in the above plugin list to find more information about a plugin. It will likely be easier to learn how to use these plugins by cloning a demo project rather than trying to implement them from scratch. The source code for all official plugins can be found <a href="https://github.com/L1lith/Lilis-Game-Engine/tree/master/src/plugins">here</a>. The game engine is designed to support you making your own plugins as well.</p>
 		<br/>
-		<p>All instantiated plugins return an object that defines it's methods and properties. The primary methods are "tick" and "render", with tick always being called first. You can change the order that plugins execute by modifying their tickPriority and renderPriority properties which correspond to the similarly named methods. Plugins are sorted by their priorities when being executed, and plugins with the same priority will be executed simultaneously. The default priority value is 0.</p>
+		<p>All instantiated plugins return an object that defines it's methods and properties. The primary methods are ".tick" and ".render", with tick always being called first. You can change the order that plugins execute by modifying their tickPriority and renderPriority properties which correspond to the similarly named methods. Plugins are sorted by their priorities when being executed, and plugins with the same priority will be executed simultaneously. The default priority value is 0.</p>
 	</Expandable>
 </Base>
