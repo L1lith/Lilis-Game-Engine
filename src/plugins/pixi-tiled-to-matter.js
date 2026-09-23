@@ -156,7 +156,7 @@ export default function pixiTiledToMatter(pixiTiledMap, options = {}) {
             const worldX =
               x * tileSizeX -
               worldWidth / 2 +
-              tileSizeX / 1.5 +
+              tileSizeX / 2 +
               calculatedTileXOffset; //(x - gridWidth / 2) * tileSizeX + tileSizeX / 2;
             const worldY =
               y * tileSizeY -
