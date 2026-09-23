@@ -31,10 +31,16 @@
     pre {
         font-size: 0.8em;
         margin: 1em 0;
-        code {
+        & > code {
             margin: 0;
             width: max(fit-content, 100%);
         }
+    }
+    p code {
+        display: inline-block;
+        width: fit-content;
+        padding: 0.25em 0.4em;
+        margin: 0;
     }
     .info-headings {
         //border: 0.2em solid lime;
