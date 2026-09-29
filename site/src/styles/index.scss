@@ -5,8 +5,9 @@
     height: 100%;
     flex-grow: 1;
     padding: 0 10vmin;
-    .intro {
-        text-shadow: #3e1d47 0.25em 0.25em 0.1em;
-        max-width: max(80vmin, 50vmax);
+    #technical-explanation {
+        p:not(:last-child) {
+            margin-bottom: 2em;
+        }
     }
 }
