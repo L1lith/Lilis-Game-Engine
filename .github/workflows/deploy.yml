@@ -3,10 +3,6 @@ name: Deploy Astro Sites to GitHub Pages
 on:
   push:
     branches: [ "master" ]
-    # paths:
-    #   - 'site/**'
-    #   - 'demos/**'
-    #   - '.github/workflows/*'
   workflow_dispatch:
 
 permissions:
@@ -30,28 +26,24 @@ jobs:
       - name: Discover demo projects
         id: set-matrix
         run: |
-          # Find all directories in demos/ that contain package.json and astro.config.*
+          # Any directory under demos/ with a package.json is a demo.
+          # Whether it gets built is decided later by whether it has
+          # a "build" script.
           DEMOS=""
           for demo in demos/*/; do
-            if [ -d "$demo" ]; then
-              demo_name=$(basename "$demo")
-              # Check if it's a valid Astro project (has package.json and astro config)
-              if [ -f "demos/$demo_name/package.json" ] && \
-                 ( [ -f "demos/$demo_name/astro.config.js" ] || \
-                   [ -f "demos/$demo_name/astro.config.mjs" ] || \
-                   [ -f "demos/$demo_name/astro.config.ts" ] ); then
-                if [ -z "$DEMOS" ]; then
-                  DEMOS="\"$demo_name\""
-                else
-                  DEMOS="$DEMOS, \"$demo_name\""
-                fi
-              else
-                echo "⚠️ Skipping $demo_name - not an Astro project"
-              fi
+            if [ ! -d "$demo" ]; then continue; fi
+            demo_name=$(basename "$demo")
+            if [ ! -f "demos/$demo_name/package.json" ]; then
+              echo "⚠️ Skipping $demo_name - no package.json"
+              continue
+            fi
+            if [ -z "$DEMOS" ]; then
+              DEMOS="\"$demo_name\""
+            else
+              DEMOS="$DEMOS, \"$demo_name\""
             fi
           done
 
-          # Create JSON array
           if [ -n "$DEMOS" ]; then
             JSON_DEMOS="[$DEMOS]"
           else
@@ -61,7 +53,6 @@ jobs:
           echo "demo_matrix=$JSON_DEMOS" >> $GITHUB_OUTPUT
           echo "Found demos: $JSON_DEMOS"
 
-          # Sanity check: warn if a stale examples/ dir still exists
           if [ -d "examples" ]; then
             echo "::warning::An 'examples/' directory still exists in the repo. Consider removing it to avoid confusion and bloat."
           fi
@@ -85,8 +76,6 @@ jobs:
           path: |
             ~/.npm
             site/node_modules
-          # v2 suffix: bump this to force a clean cache if the site's
-          # dependency graph changes in a way hashFiles can't see.
           key: ${{ runner.os }}-site-v2-${{ hashFiles('site/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-site-v2-
@@ -105,18 +94,16 @@ jobs:
         run: |
           cd site
           # Remove lilis-engine from the site's package.json so npm install
-          # doesn't try to resolve the file:../.. path (which doesn't exist in CI
-          # outside the checkout root and can behave differently in production).
+          # doesn't try to resolve the file:../.. path (which doesn't exist in CI).
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            if (pkg.dependencies) delete pkg.dependencies['lilis-engine'];
-            if (pkg.devDependencies) delete pkg.devDependencies['lilis-engine'];
-            if (pkg.peerDependencies) delete pkg.peerDependencies['lilis-engine'];
+            for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
+              if (pkg[field]) delete pkg[field]['lilis-engine'];
+            }
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
           npm install --prefer-offline --no-audit --no-fund
-          # Install the latest published version of lilis-engine from npm
           npm install lilis-engine@latest --no-audit --no-fund
           npm run build
           cd ..
@@ -138,7 +125,6 @@ jobs:
     needs: discover-demos
     if: needs.discover-demos.outputs.demo_matrix != '[]'
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         demo: ${{ fromJson(needs.discover-demos.outputs.demo_matrix) }}
@@ -160,60 +146,85 @@ jobs:
           path: |
             ~/.npm
             demos/${{ matrix.demo }}/node_modules
-          # v2 suffix: bump to force a clean cache.
-          # Use format() so the nested matrix value is actually interpolated
-          # into the hashFiles() glob. Nested ${{ }} inside a string does NOT
-          # interpolate and silently produces an empty hash.
-          key: ${{ runner.os }}-demo-v2-${{ matrix.demo }}-${{ hashFiles(format('demos/{0}/package-lock.json', matrix.demo)) }}
+          # v3 suffix: bumped to invalidate caches from the older
+          # lilisDemo.type era.
+          key: ${{ runner.os }}-demo-v3-${{ matrix.demo }}-${{ hashFiles(format('demos/{0}/package-lock.json', matrix.demo)) }}
           restore-keys: |
-            ${{ runner.os }}-demo-v2-${{ matrix.demo }}-
+            ${{ runner.os }}-demo-v3-${{ matrix.demo }}-
             ${{ runner.os }}-demo-${{ matrix.demo }}-
 
-      - name: Install optional dependencies
-        run: |
-          if [ -f "package.json" ]; then
-            OPTIONAL_DEPS=$(node -p "Object.keys(require('./package.json').optionalDependencies || {}).join(' ')" 2>/dev/null || echo "")
-            if [ -n "$OPTIONAL_DEPS" ]; then
-              npm install --prefer-offline --no-audit --no-fund $OPTIONAL_DEPS
-            fi
-          fi
-
       - name: Build demo
-        id: build
-        continue-on-error: true
         run: |
           cd demos/${{ matrix.demo }}
+
+          # Where does the final output live?
+          # Default: "dist" (Vite, Astro, SvelteKit, etc.).
+          # "." means the demo directory itself is the site root.
+          DEMO_OUTPUT=$(node -p "require('./package.json').demoOutputDir ?? 'dist'")
+          echo "Output dir declared by demo: $DEMO_OUTPUT"
+
           # Remove lilis-engine from the demo's package.json so npm install
-          # doesn't try to resolve the file:../.. path (which doesn't exist in CI
-          # outside the checkout root and can behave differently in production).
+          # doesn't try to resolve a file:../.. path that doesn't exist in CI.
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            if (pkg.dependencies) delete pkg.dependencies['lilis-engine'];
-            if (pkg.devDependencies) delete pkg.devDependencies['lilis-engine'];
-            if (pkg.peerDependencies) delete pkg.peerDependencies['lilis-engine'];
+            for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
+              if (pkg[field]) delete pkg[field]['lilis-engine'];
+            }
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
+
           npm install --prefer-offline --no-audit --no-fund
-          # Install the latest published version of lilis-engine from npm
           npm install lilis-engine@latest --no-audit --no-fund
-          npm run build
+
+          # Trust the build script: if one exists, run it. If not, this is
+          # a static demo and the browser resolves imports via an import map
+          # declared in index.html.
+          HAS_BUILD=$(node -p "!!require('./package.json').scripts?.build")
+          if [ "$HAS_BUILD" = "true" ]; then
+            npm run build
+          else
+            echo "No build script present; treating demo as static."
+          fi
+
           cd ../..
 
-          echo "Demo '${{ matrix.demo }}' dist size:"
-          du -sh demos/${{ matrix.demo }}/dist || true
+          if [ "$DEMO_OUTPUT" = "." ]; then
+            SRC="demos/${{ matrix.demo }}"
+          else
+            SRC="demos/${{ matrix.demo }}/$DEMO_OUTPUT"
+          fi
 
-          # Guard against accidentally shipping node_modules or .git inside dist
-          if find demos/${{ matrix.demo }}/dist -name node_modules -o -name .git 2>/dev/null | grep -q .; then
-            echo "::error::dist for ${{ matrix.demo }} contains node_modules or .git"
+          if [ ! -d "$SRC" ]; then
+            echo "::error::Expected output dir '$SRC' does not exist"
             exit 1
           fi
 
-          mkdir -p combined_build/demos/${{ matrix.demo }}
-          cp -r demos/${{ matrix.demo }}/dist/* combined_build/demos/${{ matrix.demo }}/
+          # Guard: never ship .git
+          if find "$SRC" -name .git 2>/dev/null | grep -q .; then
+            echo "::error::Output for ${{ matrix.demo }} contains .git"
+            exit 1
+          fi
+
+          DEST="combined_build/demos/${{ matrix.demo }}"
+          mkdir -p "$DEST"
+
+          if [ "$DEMO_OUTPUT" = "." ]; then
+            # Copy the whole demo directory, then strip files that shouldn't
+            # be deployed: npm manifests, CI config, node_modules. When the
+            # demo directory is the site root, these files would otherwise
+            # become publicly downloadable.
+            cp -r "$SRC"/. "$DEST"/
+            rm -f  "$DEST/package.json" "$DEST/package-lock.json"
+            rm -rf "$DEST/.github" "$DEST/.git" "$DEST/node_modules"
+          else
+            cp -r "$SRC"/* "$DEST"/
+          fi
+
+          echo "Demo '${{ matrix.demo }}' output size:"
+          du -sh "$DEST"
 
       - name: Upload demo artifact
-        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: demo-${{ matrix.demo }}-build
@@ -224,15 +235,11 @@ jobs:
   combine-and-deploy:
     needs: [build-site, build-demos]
     if: |
-      always() && 
+      always() &&
       (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
       (needs.build-demos.result == 'success' || needs.build-demos.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
-      # merge-multiple: true downloads every artifact into a single directory.
-      # Since site-build puts files at the root and demo-*-build puts files
-      # under demos/<name>/, the merged result is exactly the final layout.
-      # This replaces the old per-artifact download + per-demo cp loop.
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
