@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --base=$DEMO_BASE_PATH",
     "preview": "vite preview"
   },
   "dependencies": {
