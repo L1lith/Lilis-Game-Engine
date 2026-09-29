@@ -103,7 +103,8 @@ export default function matterPlugin(entities, settings = {}) {
         !(entity.matter.shape in Bodies)
       )
         throw new Error("Expected a valid matter shape property");
-      const { shape } = entity.matter;
+      const { shape, sides } = entity.matter;
+      const radius = Math.max(entity.width, entity.height) / 2;
       if (shape === "rectangle") {
         //        console.log("init", entity.x, entity.y);
         matterBody = Bodies.rectangle(
@@ -114,12 +115,17 @@ export default function matterPlugin(entities, settings = {}) {
           matterOptions,
         );
       } else if (shape === "circle") {
-        matterBody = Bodies.circle(
+        matterBody = Bodies.circle(entity.x, entity.y, radius, matterOptions); //        console.log("postinit", matterBody.position);
+      } else if (shape === "polygon") {
+        if (!isFinite(sides) || sides === null)
+          throw new Error("Invalid Sides Value");
+        matterBody = Bodies.polygon(
           entity.x,
           entity.y,
-          entity.width / 2,
+          sides,
+          radius,
           matterOptions,
-        ); //        console.log("postinit", matterBody.position);
+        );
       } else {
         throw new Error("Unimplemented Shape: " + shape);
       }
@@ -353,5 +359,8 @@ export default function matterPlugin(entities, settings = {}) {
     matterEntities.forEach(unmountEntity);
     matterEntities = [];
   };
-  return { tick, mount, unmount, engineSignal };
+  const useMatterPlugin = (plugin) => {
+    Matter.use(plugin);
+  };
+  return { tick, mount, unmount, engineSignal, Matter, useMatterPlugin };
 }
