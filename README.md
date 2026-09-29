@@ -2,11 +2,13 @@
 
 ## Technical Explanation
 
-I made this game engine by combining the best in modern web technology. This game engine is highly moddable, meaning it is really easy to combine different libraries together and to add support for new libraries. State management is handled using my own [universal state management library Jabr](https://github.com/L1lith/Jabr) which is very simple to use and has no ecosystem lock-in unlike most state libraries.
+The core idea is simple: entities are observable objects, and systems are plugins. An entity holds its own data, behavior, and events — a position, a sprite, a collision handler, a Solid component — and plugins subscribe to the parts they care about. Physics doesn't know about rendering. Rendering doesn't know about physics. Swapping Pixi for p5, or adding Matter, means changing the plugin list with minimal modifications.
 
-This game engine strongly leverages the benefits of being written in a Functional Programming (FP) style instead of Objected Oriented Programming (OOP) while still having some resemblance to OOP by using an [Entity Component System (ECS)](https://www.daydreamsoft.com/blog/ecs-vs-oop-in-large-scale-games-choosing-the-right-architecture-for-performance-and-scalability). In line with Functional Programming ethos every part of my game engine was built to maximize separations of concerns.
+State management is handled using my own [universal state management library Jabr](https://github.com/L1lith/Jabr), which has no ecosystem lock-in — unlike most state libraries, which tend to be tied to a rendering framework like React or SolidJS. That makes it a natural fit for fusing the domains of web development and game development.
 
-If any of these technical details aren't making sense to you don't worry! I suggest you try out setting up an example project and reading the docs :\)
+The design leans functional rather than object-oriented. Composition is declarative, systems are external functions over shared state, and capabilities are added by declaration rather than inheritance. The entity model itself is closer to a scene graph than to ECS — entities are real objects with identity and lifecycle — but the way logic composes borrows from ECS: systems are external, and every part of the engine was built for separation of concerns and interchangeability.
+
+The same core runs both demos on this page — a platformer with Tiled maps, Matter physics, and a Solid UI, and a two-player Pong game rendered with p5. The renderer, the physics engine, and the game logic are all plugins. None of them import each other.
 
 ## Play with the demos!
 If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
@@ -31,7 +33,9 @@ Once you've decided on which demo you'd like to try out you can use the "create"
 
 If you'd like to view the full list of demos in your web browser as well as view their source code try visiting the [examples directory in the engine's source code](https://github.com/L1lith/Lilis-Game-Engine/tree/master/examples).
 
-Please note that all of the example projects are made using [SolidJS](https://docs.solidjs.com/) for interactive HTML and [Astro](https://docs.astro.build/en/getting-started/) as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards.
+Please note that all of the example projects are made using [SolidJS](https://docs.solidjs.com/) for interactive HTML and [Astro](https://docs.astro.build/en/getting-started/) as the website framework. While these tools are not mandatory for the game engine to run learning the basic of using them will help you greatly both in understanding the example projects' source code and in building web based games & apps going forwards. 
+
+If you'd like to see a minimalist version of using my game engine without using Astro or Solid consider checkout my [vite-minimalist demo](https://engine.webslc.com/demos/vite-minimalist/) ([source code here](https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/vite-minimalist)) which uses only two small files to define the project's source code.
 
 ## Documentation
 You can learn how to use this engine by [visiting the documentation!](https://engine.webslc.com/docs/)
