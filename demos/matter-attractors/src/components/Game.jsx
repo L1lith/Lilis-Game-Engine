@@ -8,19 +8,26 @@ import createMatterPlugin from 'lilis-engine/matter'
 import { detectKeys } from "lilis-engine/utility"
 import Matter from 'matter-js'
 import MatterAttractors from 'matter-attractors'
-const {Body} = Matter
+const {Body, Common, Mouse, Events} = Matter
+
+// Adapted from here: https://liabru.github.io/matter-attractors/#basic
 
 export default function Game() {
     const [solidGameContents, setSolidGameContents] = createSignal(null)
-    let canvas
+    let pixiCanvas
     let unmountGameEngine
+    let matterCanvas
     onMount(async ()=>{
         if (isServer) return
         console.log('Mounted!')
-        const renderSettings = RenderSettings({canvas})
+        const pixiRenderSettings = RenderSettings({canvas: pixiCanvas})
+        const matterRenderSettings = RenderSettings({canvas: matterCanvas, transparentBackground: true, setup: engine => {
+            engine.world.gravity.scale = 0
+        }})
+        const scaleCamera = Camera()
         const autoResize = () => {
         const size = Math.min(window.innerWidth, window.innerHeight);
-        renderSettings.width = renderSettings.height = size;
+            scaleCamera.width = scaleCamera.height = pixiRenderSettings.width = pixiRenderSettings.height = matterRenderSettings.width = matterRenderSettings.height = size;
         };
         window.addEventListener("resize", autoResize);
         autoResize();
@@ -33,10 +40,15 @@ export default function Game() {
             height: 100,
             renderPriority: -100
         }))
-        const cursor = entities.addChild(Entity({
+        const cursorShape = entities.addChild(Entity({
+            x: 0,
+            y: 0,
             width: 15,
             height: 15,
+            imageURL: import.meta.env.BASE_URL + 'magnet-circle.png',
+            noMatterRender: true,
             matter: {
+                shape: 'circle',
                 static: true,
                 plugin: {
                     attractors: [
@@ -50,14 +62,42 @@ export default function Game() {
                 }
             }
         }))
-        const pixiRenderer = createPixiRenderer(entities, renderSettings)
-        renderSettings.solidSetter = setSolidGameContents
-        const solidRenderer = createSolidRenderer(entities, renderSettings)
-        const matterPhysics = createMatterPlugin(entities, {setup: engine => {
-            engine.world.gravity.scale = 0
-        }})
+        for (var i = 0; i < 100; i += 1) {
+            const sides = Common.random(3, 5)
+            const size = Math.random() * 4 + 2
+            entities.addChild(Entity({
+                x: Common.random(-50, +50), 
+                y: Common.random(-50, +50),
+                width: size,
+                height: size,
+                matter: {
+                    shape: 'polygon',
+                    sides // old radius: Common.random() > 0.9 ? Common.random(15, 25) : Common.random(5, 10)
+                }
+            }))
+        }
+
+        // add mouse control
+        var mouse = Mouse.create(matterRenderSettings.canvas);
+        const mouseControlPlugin = {
+            tick: ()=>{
+                if (!cursorShape.matterBody || !isFinite(cursorShape.matterBody.position.x) || cursorShape.matterBody.position.x === null) return
+                const cursorWorldX = scaleCamera.transformX(mouse.position.x) - 50
+                const cursorWorldY = scaleCamera.transformY(mouse.position.y) - 50
+                // smoothly move the attractor body towards the mouse
+                //cursorShape.x = 
+                Body.translate(cursorShape.matterBody, {
+                    x: (cursorWorldX - cursorShape.matterBody.position.x) * 0.25,
+                    y: (cursorWorldY - cursorShape.matterBody.position.y) * 0.25
+                });
+            },
+            tickPriority: 100
+        }
+        const pixiRenderer = createPixiRenderer(entities, pixiRenderSettings)
+        const solidRenderer = createSolidRenderer(entities, {solidSetter: setSolidGameContents})
+        const matterPhysics = createMatterPlugin(entities, matterRenderSettings)
         matterPhysics.useMatterPlugin(MatterAttractors)
-        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, solidRenderer, matterPhysics]})
+        const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, solidRenderer, matterPhysics, mouseControlPlugin]})
         await gameCore.mount()
         unmountGameEngine = gameCore.unmount
     })
@@ -66,7 +106,8 @@ export default function Game() {
         await unmountGameEngine()
     })
     return (<div class="game-container">
-        <canvas ref={canvas}/>
+        <canvas class="pixi-canvas" ref={pixiCanvas}/>
+        <canvas class="matter-canvas" ref={matterCanvas}/>
         {solidGameContents()}
     </div>)
 }
