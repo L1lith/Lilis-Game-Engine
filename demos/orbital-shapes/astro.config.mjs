@@ -17,7 +17,7 @@ const config = {
 // Add GitHub Pages specific settings only when in GitHub Actions
 if (isGitHubActions) {
   config.site = "https://engine.webslc.com";
-  config.base = "/demos/matter-attractors";
+  config.base = "/demos/orbital-shapes";
   config.output = "static";
 }
 
