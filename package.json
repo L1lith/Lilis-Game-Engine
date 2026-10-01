@@ -1,6 +1,6 @@
 {
   "name": "lilis-engine",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "author": "L1lith",
   "description": "Modern & moddable game engine for the web & beyond",
   "keywords": ["game engine", "gaming", "web app", "2D", "game", "javascript", "engine", "browser", "sidescroller", "platformer", "tiled", "tileset"],
@@ -38,7 +38,6 @@
     "url": "https://github.com/L1lith/Lilis-Game-Engine/issues"
   },
   "homepage": "https://engine.webslc.com/",
-  "description": "",
   "dependencies": {
     "jabr": "^0.4.5",
     "yargs": "^18.1.0"
