@@ -1,6 +1,6 @@
 import Matter from "matter-js";
-const { Engine, Bodies, Composite, Body, Events } = Matter;
-import { Signal } from "jabr";
+const { Engine, Bodies, Composite, Body, Events, Render } = Matter;
+import { Signal, Store, isStore } from "jabr";
 import Entity from "../createEntity.js";
 import EntityList from "../createEntityList.js";
 //import { translateToNewOrigin } from "lilis-engine/utility";
@@ -68,11 +68,26 @@ export function createMatterBoundaries(options = {}) {
 const minimumUpdateThreshold = 0.0001;
 
 export default function matterPlugin(entities, settings = {}) {
+  if (!isStore(settings)) settings = Store(settings);
   entities = entities.deepFlat;
   const engineSignal = Signal(null);
   let matterEntities = [];
   let collisionEventQueue = [];
   let isDoingPhysicsUpdate = false;
+  let matterRenderer = null;
+  let isMounted = false;
+
+  // Per-entity matter render properties that we react to. Anything not in
+  // this list is applied only at mount time (via the initial body creation
+  // and the `predefined` path).
+  const matterRenderProperties = [
+    "matterFillStyle",
+    "matterStrokeStyle",
+    "matterLineWidth",
+    "matterVisible",
+    "matterOpacity",
+  ];
+
   const entityListener = (newEntityList, oldEntityList) => {
     const removedEntities = oldEntityList.filter(
       (entity) => !newEntityList.includes(entity),
@@ -83,6 +98,40 @@ export default function matterPlugin(entities, settings = {}) {
     newEntities.forEach((entity) => mountEntity(entity));
     removedEntities.forEach((entity) => unmountEntity(entity));
   };
+
+  // Derive whether the body should be visible in the Matter debug renderer.
+  // `noRender` and `noMatterRender` are hard overrides; `matterVisible`
+  // lets an entity explicitly toggle its own debug-visibility.
+  const isEntityMatterVisible = (entity) => {
+    if (entity.noRender === true) return false;
+    if (entity.noMatterRender === true) return false;
+    if (entity.matterVisible === false) return false;
+    return true;
+  };
+
+  const applyMatterRenderProperties = (entity) => {
+    if (!entity || !entity.matterBody) return;
+    const bodies = Array.isArray(entity.matterBody)
+      ? entity.matterBody
+      : [entity.matterBody];
+
+    const visible = isEntityMatterVisible(entity);
+
+    for (const body of bodies) {
+      if (!body || !body.render) continue;
+      body.render.visible = visible;
+
+      if (typeof entity.matterFillStyle === "string")
+        body.render.fillStyle = entity.matterFillStyle;
+      if (typeof entity.matterStrokeStyle === "string")
+        body.render.strokeStyle = entity.matterStrokeStyle;
+      if (Number.isFinite(entity.matterLineWidth))
+        body.render.lineWidth = entity.matterLineWidth;
+      if (Number.isFinite(entity.matterOpacity))
+        body.render.opacity = entity.matterOpacity;
+    }
+  };
+
   const mountEntity = (entity, engine = null) => {
     if (engine === null) engine = engineSignal.get();
     if (typeof entity?.matter !== "object" || entity.matter === null) return; // Don't mount things that aren't intended to have physics
@@ -103,7 +152,8 @@ export default function matterPlugin(entities, settings = {}) {
         !(entity.matter.shape in Bodies)
       )
         throw new Error("Expected a valid matter shape property");
-      const { shape } = entity.matter;
+      const { shape, sides } = entity.matter;
+      const radius = Math.max(entity.width, entity.height) / 2;
       if (shape === "rectangle") {
         //        console.log("init", entity.x, entity.y);
         matterBody = Bodies.rectangle(
@@ -114,12 +164,17 @@ export default function matterPlugin(entities, settings = {}) {
           matterOptions,
         );
       } else if (shape === "circle") {
-        matterBody = Bodies.circle(
+        matterBody = Bodies.circle(entity.x, entity.y, radius, matterOptions); //        console.log("postinit", matterBody.position);
+      } else if (shape === "polygon") {
+        if (!isFinite(sides) || sides === null)
+          throw new Error("Invalid Sides Value");
+        matterBody = Bodies.polygon(
           entity.x,
           entity.y,
-          entity.width / 2,
+          sides,
+          radius,
           matterOptions,
-        ); //        console.log("postinit", matterBody.position);
+        );
       } else {
         throw new Error("Unimplemented Shape: " + shape);
       }
@@ -162,19 +217,38 @@ export default function matterPlugin(entities, settings = {}) {
       static: () => {
         Matter.Body.setStatic(entity.matterBody, entity.static);
       },
+      visibility: () => {
+        applyMatterRenderProperties(entity);
+      },
+      renderStyle: () => {
+        applyMatterRenderProperties(entity);
+      },
     };
     entity.on("x", entity.matterListeners.position);
     entity.on("y", entity.matterListeners.position);
     entity.on("static", entity.matterListeners.static);
+    entity.on("noRender", entity.matterListeners.visibility);
+    entity.on("noMatterRender", entity.matterListeners.visibility);
+    for (const property of matterRenderProperties) {
+      entity.on(property, entity.matterListeners.renderStyle);
+    }
+    applyMatterRenderProperties(entity);
     //console.log("adding", engine.world, entity.matterBody);
     Composite.add(engine.world, entity.matterBody);
   };
+
   const unmountEntity = (entity) => {
     //console.log("unmounting", entity, entity.matterBody);
     if (!entity || !entity.matterBody) return; // is not a matter entity
     if (entity.matterListeners) {
       entity.off("x", entity.matterListeners.position);
       entity.off("y", entity.matterListeners.position);
+      entity.off("static", entity.matterListeners.static);
+      entity.off("noRender", entity.matterListeners.visibility);
+      entity.off("noMatterRender", entity.matterListeners.visibility);
+      for (const property of matterRenderProperties) {
+        entity.off(property, entity.matterListeners.renderStyle);
+      }
     }
     entity.matterListeners = [];
     //console.log("attempting remove composite");
@@ -187,12 +261,125 @@ export default function matterPlugin(entities, settings = {}) {
     entity.collisions = null;
     //console.log("entities length after removal", matterEntities.length);
   };
+
   const getEntityFromBody = (body) =>
     matterEntities.find(
       (entity) =>
         entity.matterBody === body ||
         entity?.matter?.predefined?.includes(body),
     ) || null;
+
+  // ---------------------------------------------------------------------------
+  // Matter debug renderer lifecycle
+  // ---------------------------------------------------------------------------
+
+  const getCanvasPixelWidth = () =>
+    Number.isFinite(settings.width)
+      ? settings.width
+      : settings.canvas?.width || 100;
+
+  const getCanvasPixelHeight = () =>
+    Number.isFinite(settings.height)
+      ? settings.height
+      : settings.canvas?.height || 100;
+
+  const destroyMatterRenderer = () => {
+    if (!matterRenderer) return;
+    Render.stop(matterRenderer);
+    matterRenderer.canvas = null;
+    matterRenderer.context = null;
+    matterRenderer.textures = {};
+    matterRenderer = null;
+  };
+
+  const createMatterRenderer = () => {
+    const engine = engineSignal.get();
+    const canvas = settings.canvas;
+
+    destroyMatterRenderer();
+    if (!engine || !canvas) return;
+
+    const renderOptions =
+      typeof settings.renderOptions === "object" &&
+      settings.renderOptions !== null
+        ? settings.renderOptions
+        : {};
+
+    const transparent = settings.transparentBackground === true;
+    const pixelWidth = getCanvasPixelWidth();
+    const pixelHeight = getCanvasPixelHeight();
+
+    matterRenderer = Render.create({
+      canvas,
+      engine,
+      options: {
+        width: pixelWidth,
+        height: pixelHeight,
+
+        // Without hasBounds, Render.world overwrites render.bounds from
+        // all bodies every frame and ignores our world viewport.
+        hasBounds: true,
+
+        // Retina / HiDPI displays otherwise multiply the canvas backing
+        // store by devicePixelRatio² (e.g. 1080² -> 2160² = 4x pixels).
+        // For a debug overlay, that's pure waste. Force 1:1 pixels.
+        pixelRatio: 1,
+
+        ...(transparent
+          ? {
+              background: "transparent",
+              wireframeBackground: "transparent",
+            }
+          : {}),
+
+        ...renderOptions,
+      },
+    });
+
+    // World viewport: -50..+50 in both axes, matching the engine's
+    // virtual coordinate system directly.
+    matterRenderer.bounds.min.x = -50;
+    matterRenderer.bounds.min.y = -50;
+    matterRenderer.bounds.max.x = 50;
+    matterRenderer.bounds.max.y = 50;
+
+    if (transparent) matterRenderer.canvas.style.background = "transparent";
+  };
+
+  const resizeMatterRenderer = () => {
+    if (!matterRenderer) return;
+    const pixelWidth = getCanvasPixelWidth();
+    const pixelHeight = getCanvasPixelHeight();
+    if (!Number.isFinite(pixelWidth) || !Number.isFinite(pixelHeight)) return;
+    if (
+      matterRenderer.options.width === pixelWidth &&
+      matterRenderer.options.height === pixelHeight
+    )
+      return;
+
+    matterRenderer.options.width = pixelWidth;
+    matterRenderer.options.height = pixelHeight;
+    // Keep the backing store at 1:1 pixel ratio (see pixelRatio above).
+    matterRenderer.canvas.width = pixelWidth;
+    matterRenderer.canvas.height = pixelHeight;
+  };
+
+  // React to canvas swaps and size changes on the settings store.
+  const handleCanvasChange = () => {
+    if (!isMounted) return;
+    createMatterRenderer();
+  };
+
+  const handleSizeChange = () => {
+    if (!isMounted) return;
+    if (!settings.canvas) return;
+    if (!matterRenderer) {
+      createMatterRenderer();
+      return;
+    }
+    resizeMatterRenderer();
+  };
+
   const mount = async () => {
     const engine = Engine.create();
     if (typeof settings.setup == "function") {
@@ -304,12 +491,22 @@ export default function matterPlugin(entities, settings = {}) {
       });
     });
     engineSignal.set(engine);
+
+    if (settings.canvas) createMatterRenderer();
+
+    isMounted = true;
+
+    settings.on("canvas", handleCanvasChange);
+    settings.on("width", handleSizeChange);
+    settings.on("height", handleSizeChange);
+
     entities.get().forEach((entity) => mountEntity(entity, engine));
     entities.addListener(entityListener);
     window.matterEntities = matterEntities;
   };
+
   const updateEntityFromMatter = (entity, matterBody) => {
-    if (matterBody.isStatic) return; // Don't update entities with static matter bodies as they will never change
+    //if (matterBody.isStatic) return; // Don't update entities with static matter bodies as they will never change
     const { x, y } = matterBody.position;
     const translatedX = x; //translateToNewOrigin(x, entity.width / 2, 0);
     const translatedY = y; //translateToNewOrigin(y, entity.height / 2, 0);
@@ -327,6 +524,7 @@ export default function matterPlugin(entities, settings = {}) {
       entity.rotation = matterBody.angle;
     }
   };
+
   const tick = ({ delta }) => {
     isDoingPhysicsUpdate = true;
     Engine.update(engineSignal.get(), Math.min(delta, 50)); // Safety Mechanism
@@ -349,9 +547,49 @@ export default function matterPlugin(entities, settings = {}) {
     collisionEventQueue.forEach((queuedEvent) => queuedEvent()); // Delay the collision notifications until the physics has finished running
     collisionEventQueue = [];
   };
+
+  const render = () => {
+    if (!matterRenderer) return;
+
+    // In transparent mode, explicitly clear the canvas before Matter draws
+    // so previous frames don't accumulate. Identity transform is restored
+    // afterward so Matter's own view transform still works.
+    if (settings.transparentBackground === true) {
+      const ctx = matterRenderer.context;
+      const canvas = matterRenderer.canvas;
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
+
+    Render.world(matterRenderer);
+  };
+
   const unmount = () => {
+    settings.off("canvas", handleCanvasChange);
+    settings.off("width", handleSizeChange);
+    settings.off("height", handleSizeChange);
+
+    destroyMatterRenderer();
+
     matterEntities.forEach(unmountEntity);
     matterEntities = [];
+    isMounted = false;
   };
-  return { tick, mount, unmount, engineSignal };
+
+  const useMatterPlugin = (plugin) => {
+    Matter.use(plugin);
+  };
+
+  return {
+    tick,
+    mount,
+    unmount,
+    render,
+    engineSignal,
+    Matter,
+    useMatterPlugin,
+    settings,
+  };
 }
