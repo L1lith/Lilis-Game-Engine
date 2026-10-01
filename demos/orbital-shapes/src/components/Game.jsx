@@ -47,7 +47,7 @@ export default function Game() {
             y: 0,
             width: 15,
             height: 15,
-            imageURL: import.meta.env.BASE_URL + 'magnet-circle.png',
+            imageURL: 'magnet-circle.png',
             noMatterRender: true,
             matter: {
                 shape: 'circle',
