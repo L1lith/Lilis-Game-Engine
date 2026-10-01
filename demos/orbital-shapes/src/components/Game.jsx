@@ -21,7 +21,9 @@ export default function Game() {
         if (isServer) return
         console.log('Mounted!')
         const pixiRenderSettings = RenderSettings({canvas: pixiCanvas})
-        const matterRenderSettings = RenderSettings({canvas: matterCanvas, transparentBackground: true, setup: engine => {
+        const matterRenderSettings = RenderSettings({canvas: matterCanvas, renderOptions: {
+            wireframes: false
+        }, transparentBackground: true, setup: engine => {
             engine.world.gravity.scale = 0
         }})
         const scaleCamera = Camera()
@@ -64,7 +66,7 @@ export default function Game() {
         }))
         for (var i = 0; i < 100; i += 1) {
             const sides = Common.random(3, 5)
-            const size = Math.random() * 4 + 2
+            const size = Math.pow(Math.random(), 2) * 5 + 2
             entities.addChild(Entity({
                 x: Common.random(-50, +50), 
                 y: Common.random(-50, +50),

@@ -77,6 +77,17 @@ export default function matterPlugin(entities, settings = {}) {
   let matterRenderer = null;
   let isMounted = false;
 
+  // Per-entity matter render properties that we react to. Anything not in
+  // this list is applied only at mount time (via the initial body creation
+  // and the `predefined` path).
+  const matterRenderProperties = [
+    "matterFillStyle",
+    "matterStrokeStyle",
+    "matterLineWidth",
+    "matterVisible",
+    "matterOpacity",
+  ];
+
   const entityListener = (newEntityList, oldEntityList) => {
     const removedEntities = oldEntityList.filter(
       (entity) => !newEntityList.includes(entity),
@@ -88,14 +99,36 @@ export default function matterPlugin(entities, settings = {}) {
     removedEntities.forEach((entity) => unmountEntity(entity));
   };
 
-  const syncMatterVisibility = (entity) => {
+  // Derive whether the body should be visible in the Matter debug renderer.
+  // `noRender` and `noMatterRender` are hard overrides; `matterVisible`
+  // lets an entity explicitly toggle its own debug-visibility.
+  const isEntityMatterVisible = (entity) => {
+    if (entity.noRender === true) return false;
+    if (entity.noMatterRender === true) return false;
+    if (entity.matterVisible === false) return false;
+    return true;
+  };
+
+  const applyMatterRenderProperties = (entity) => {
     if (!entity || !entity.matterBody) return;
-    const visible = !entity.noRender && !entity.noMatterRender;
     const bodies = Array.isArray(entity.matterBody)
       ? entity.matterBody
       : [entity.matterBody];
+
+    const visible = isEntityMatterVisible(entity);
+
     for (const body of bodies) {
-      if (body && body.render) body.render.visible = visible;
+      if (!body || !body.render) continue;
+      body.render.visible = visible;
+
+      if (typeof entity.matterFillStyle === "string")
+        body.render.fillStyle = entity.matterFillStyle;
+      if (typeof entity.matterStrokeStyle === "string")
+        body.render.strokeStyle = entity.matterStrokeStyle;
+      if (Number.isFinite(entity.matterLineWidth))
+        body.render.lineWidth = entity.matterLineWidth;
+      if (Number.isFinite(entity.matterOpacity))
+        body.render.opacity = entity.matterOpacity;
     }
   };
 
@@ -185,7 +218,10 @@ export default function matterPlugin(entities, settings = {}) {
         Matter.Body.setStatic(entity.matterBody, entity.static);
       },
       visibility: () => {
-        syncMatterVisibility(entity);
+        applyMatterRenderProperties(entity);
+      },
+      renderStyle: () => {
+        applyMatterRenderProperties(entity);
       },
     };
     entity.on("x", entity.matterListeners.position);
@@ -193,7 +229,10 @@ export default function matterPlugin(entities, settings = {}) {
     entity.on("static", entity.matterListeners.static);
     entity.on("noRender", entity.matterListeners.visibility);
     entity.on("noMatterRender", entity.matterListeners.visibility);
-    syncMatterVisibility(entity);
+    for (const property of matterRenderProperties) {
+      entity.on(property, entity.matterListeners.renderStyle);
+    }
+    applyMatterRenderProperties(entity);
     //console.log("adding", engine.world, entity.matterBody);
     Composite.add(engine.world, entity.matterBody);
   };
@@ -207,6 +246,9 @@ export default function matterPlugin(entities, settings = {}) {
       entity.off("static", entity.matterListeners.static);
       entity.off("noRender", entity.matterListeners.visibility);
       entity.off("noMatterRender", entity.matterListeners.visibility);
+      for (const property of matterRenderProperties) {
+        entity.off(property, entity.matterListeners.renderStyle);
+      }
     }
     entity.matterListeners = [];
     //console.log("attempting remove composite");
