@@ -8,7 +8,7 @@ State management is handled using my own [universal state management library Jab
 
 The design leans functional rather than object-oriented. Composition is declarative, systems are external functions over shared state, and capabilities are added by declaration rather than inheritance. The entity model itself is closer to a scene graph than to ECS — entities are real objects with identity and lifecycle — but the way logic composes borrows from ECS: systems are external, and every part of the engine was built for separation of concerns and interchangeability.
 
-The same core runs both demos on this page — a platformer with Tiled maps, Matter physics, and a Solid UI, and a two-player Pong game rendered with p5. The renderer, the physics engine, and the game logic are all plugins. None of them import each other.
+The same core runs many demos on this site — a platformer with Tiled maps, Matter physics, and a Solid UI, and a two-player Pong game rendered with p5, and many other demos. The renderer, the physics engine, and the game logic are all plugins and entities. None of them import each other.
 
 ## Play with the demos!
 If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
