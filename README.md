@@ -13,6 +13,13 @@ The same core runs many demos on this site — a platformer with Tiled maps, Mat
 ## Play with the demos!
 If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
 
+Some of the demos include:
+- [Pong using p5.js and MatterJS](https://engine.webslc.com/demos/pong/) [(Source)](https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/pong)
+- [An interactive space themed satellite motion simulator](https://engine.webslc.com/demos/orbital-shapes/) [(Source)](https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/orbital-shapes)
+- [A top-down zelda style game using the Tiled editor](https://engine.webslc.com/demos/topdown/) [(Source)](https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos/topdown)
+
+The main demos can be viewed on [the website's demo page](https://engine.webslc.com/demos) (a fun place to start), and the full list of demos can be viewed [in the project's source code](https://github.com/L1lith/Lilis-Game-Engine/tree/master/demos)
+
 ## Getting Started
 
 To begin using the game engine it is recommended you install the command line tool (though not mandatory):
