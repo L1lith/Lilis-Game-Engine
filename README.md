@@ -1,5 +1,7 @@
 <img src="https://github.com/L1lith/Lilis-Game-Engine/blob/master/site/public/lilis-game-engine-logo.png?raw=true" alt="Graffiti style logo reading &quot;Lili's Game Engine&quot;" height="200"/>
 
+![NPM Version](https://img.shields.io/npm/v/lilis-engine) ![GitHub Repo stars](https://img.shields.io/github/stars/L1lith/Lilis-Game-Engine) ![NPM Last Update](https://img.shields.io/npm/last-update/lilis-engine) ![NPM Downloads](https://img.shields.io/npm/dw/lilis-engine)
+
 ## Technical Explanation
 
 The core idea is simple: entities are observable objects, and systems are plugins. An entity holds its own data, behavior, and events — a position, a sprite, a collision handler, a Solid component — and plugins subscribe to the parts they care about. Physics doesn't know about rendering. Rendering doesn't know about physics. Swapping Pixi for p5, or adding Matter, means changing the plugin list with minimal modifications.
