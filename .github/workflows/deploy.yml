@@ -68,14 +68,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Capture the source hash BEFORE any build scripts mutate files.
+      # Once captured as a step output, later steps use this frozen value
+      # so the cache key stays consistent even after package.json is edited.
+      - name: Compute site source hash
+        id: hash
+        env:
+          HASH: ${{ hashFiles('site/**', 'package.json', 'package-lock.json') }}
+        run: echo "value=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Restore cached site build
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: site-build
+          key: site-build-${{ steps.hash.outputs.value }}
+
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-restore.outputs.cache-hit }}" = "true" ]; then
+            echo "Site unchanged; reusing cached build."
+          else
+            echo "Site changed or no cache; rebuilding."
+          fi
+
       - name: Setup Node.js
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'npm'
           cache-dependency-path: site/package-lock.json
 
-      - name: Cache dependencies
+      - name: Cache npm dependencies
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -86,16 +112,8 @@ jobs:
             ${{ runner.os }}-site-v2-
             ${{ runner.os }}-site-
 
-      - name: Install optional dependencies
-        run: |
-          if [ -f "package.json" ]; then
-            OPTIONAL_DEPS=$(node -p "Object.keys(require('./package.json').optionalDependencies || {}).join(' ')" 2>/dev/null || echo "")
-            if [ -n "$OPTIONAL_DEPS" ]; then
-              npm install --prefer-offline --no-audit --no-fund $OPTIONAL_DEPS
-            fi
-          fi
-
       - name: Build site
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: |
           cd site
           # Remove lilis-engine from the site's package.json so npm install
@@ -112,17 +130,25 @@ jobs:
           npm install lilis-engine@latest --no-audit --no-fund
           npm run build
           cd ..
-          mkdir -p combined_build
-          cp -r site/dist/* combined_build/
+
+          mkdir -p site-build
+          cp -r site/dist/* site-build/
 
           echo "Site build size:"
-          du -sh combined_build
+          du -sh site-build
+
+      - name: Save site build to cache
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: site-build
+          key: site-build-${{ steps.hash.outputs.value }}
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: site-build
-          path: combined_build/
+          path: site-build/
           retention-days: 1
           if-no-files-found: error
 
@@ -138,27 +164,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Frozen hash of demo source + root manifests. Because root
+      # package.json and package-lock.json are included in the hash,
+      # a change to either invalidates the cache for EVERY demo,
+      # forcing a full rebuild. A change to only one demo invalidates
+      # only that demo's cache.
+      - name: Compute demo source hash
+        id: hash
+        env:
+          HASH: ${{ hashFiles(format('demos/{0}/**', matrix.demo), 'package.json', 'package-lock.json') }}
+        run: echo "value=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Restore cached demo build
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: demo-build
+          key: demo-build-${{ matrix.demo }}-${{ steps.hash.outputs.value }}
+
+      - name: Report cache status
+        run: |
+          if [ "${{ steps.cache-restore.outputs.cache-hit }}" = "true" ]; then
+            echo "Demo '${{ matrix.demo }}' unchanged; reusing cached build."
+          else
+            echo "Demo '${{ matrix.demo }}' changed or no cache; rebuilding."
+          fi
+
       - name: Setup Node.js
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'npm'
           cache-dependency-path: demos/${{ matrix.demo }}/package-lock.json
 
-      - name: Cache dependencies
+      - name: Cache npm dependencies
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
             ~/.npm
             demos/${{ matrix.demo }}/node_modules
-          # v3 suffix: bumped to invalidate caches from the older
-          # lilisDemo.type era.
           key: ${{ runner.os }}-demo-v3-${{ matrix.demo }}-${{ hashFiles(format('demos/{0}/package-lock.json', matrix.demo)) }}
           restore-keys: |
             ${{ runner.os }}-demo-v3-${{ matrix.demo }}-
             ${{ runner.os }}-demo-${{ matrix.demo }}-
 
       - name: Build demo
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         env:
           # Suggested base path for demos that want to opt in.
           # Demos reference this via $DEMO_BASE_PATH in their build script,
@@ -188,8 +241,7 @@ jobs:
           npm install --prefer-offline --no-audit --no-fund
           npm install lilis-engine@latest --no-audit --no-fund
 
-          # Trust the build script: if one exists, run it. The script is
-          # responsible for reading DEMO_BASE_PATH if it wants a base path.
+          # Trust the build script: if one exists, run it.
           HAS_BUILD=$(node -p "!!require('./package.json').scripts?.build")
           if [ "$HAS_BUILD" = "true" ]; then
             npm run build
@@ -216,29 +268,36 @@ jobs:
             exit 1
           fi
 
-          DEST="combined_build/demos/${{ matrix.demo }}"
-          mkdir -p "$DEST"
+          # Stage the built output under demos/<name>/ so the artifact
+          # layout matches what combine-and-deploy expects.
+          mkdir -p "demo-build/demos/${{ matrix.demo }}"
 
           if [ "$DEMO_OUTPUT" = "." ]; then
-            # Copy the whole demo directory, then strip files that shouldn't
-            # be deployed: npm manifests, CI config, node_modules. When the
-            # demo directory is the site root, these files would otherwise
-            # become publicly downloadable.
-            cp -r "$SRC"/. "$DEST"/
-            rm -f  "$DEST/package.json" "$DEST/package-lock.json"
-            rm -rf "$DEST/.github" "$DEST/.git" "$DEST/node_modules"
+            cp -r "$SRC"/. "demo-build/demos/${{ matrix.demo }}"/
+            rm -f  "demo-build/demos/${{ matrix.demo }}/package.json" \
+                   "demo-build/demos/${{ matrix.demo }}/package-lock.json"
+            rm -rf "demo-build/demos/${{ matrix.demo }}/.github" \
+                   "demo-build/demos/${{ matrix.demo }}/.git" \
+                   "demo-build/demos/${{ matrix.demo }}/node_modules"
           else
-            cp -r "$SRC"/* "$DEST"/
+            cp -r "$SRC"/* "demo-build/demos/${{ matrix.demo }}"/
           fi
 
           echo "Demo '${{ matrix.demo }}' output size:"
-          du -sh "$DEST"
+          du -sh "demo-build/demos/${{ matrix.demo }}"
+
+      - name: Save demo build to cache
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: demo-build
+          key: demo-build-${{ matrix.demo }}-${{ steps.hash.outputs.value }}
 
       - name: Upload demo artifact
         uses: actions/upload-artifact@v4
         with:
           name: demo-${{ matrix.demo }}-build
-          path: combined_build/
+          path: demo-build/
           retention-days: 1
           if-no-files-found: error
 
