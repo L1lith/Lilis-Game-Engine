@@ -15,9 +15,11 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+# NOTE: Workflow-level concurrency has been intentionally removed.
+# Cancelling a workflow mid-build loses any cache saves from its
+# in-progress jobs, which forces subsequent runs to rebuild work that
+# was already done. Concurrency is now scoped to the deploy job only,
+# so builds always run to completion while deploys stay serialized.
 
 jobs:
   discover-demos:
@@ -308,6 +310,12 @@ jobs:
       (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
       (needs.build-demos.result == 'success' || needs.build-demos.result == 'skipped')
     runs-on: ubuntu-latest
+    # Serialize deploys. A new push will cancel an in-flight deploy, but
+    # never an in-flight build — that's the whole point of moving
+    # concurrency off the workflow and onto this job.
+    concurrency:
+      group: "pages-deploy"
+      cancel-in-progress: true
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
