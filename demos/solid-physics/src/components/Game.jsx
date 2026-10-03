@@ -108,18 +108,12 @@ function createDraggableBox(getPlayAreaRect) {
 
 export default function Game() {
   const [solidGameContents, setSolidGameContents] = createSignal(null)
-  let matterCanvas
   let playArea
   let unmountGameEngine
 
   onMount(async () => {
     if (isServer) return
 
-    const matterRenderSettings = RenderSettings({
-      canvas: matterCanvas,
-      transparentBackground: true,
-      renderOptions: { wireframes: false },
-    })
 
     const camera = Camera()
     camera.width = camera.height = WORLD
@@ -191,11 +185,11 @@ export default function Game() {
       camera,
     })
 
-    const matterPhysics = createMatterPlugin(entities, matterRenderSettings, {
+    const matterPhysics = createMatterPlugin(entities, {
       setup: (engine) => {
         engine.gravity.x = 0
         engine.gravity.y = 1
-        engine.velocityIterations = 8
+        //engine.velocityIterations = 1
       },
     })
 
@@ -239,7 +233,6 @@ export default function Game() {
           overflow: 'hidden',
         }}
       >
-        <canvas ref={matterCanvas} style={{ display: 'none' }} />
         {solidGameContents()}
       </div>
     </div>
