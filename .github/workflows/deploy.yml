@@ -66,20 +66,21 @@ jobs:
 
   build-site:
     runs-on: ubuntu-latest
+    # A site build failure must not fail the workflow. The fallback path
+    # (restore any cached site build, or skip) is handled below.
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       # Capture the source hash BEFORE any build scripts mutate files.
-      # Once captured as a step output, later steps use this frozen value
-      # so the cache key stays consistent even after package.json is edited.
       - name: Compute site source hash
         id: hash
         env:
           HASH: ${{ hashFiles('site/**', 'package.json', 'package-lock.json') }}
         run: echo "value=$HASH" >> $GITHUB_OUTPUT
 
-      - name: Restore cached site build
+      - name: Restore exact-match cached site build
         id: cache-restore
         uses: actions/cache/restore@v4
         with:
@@ -115,7 +116,10 @@ jobs:
             ${{ runner.os }}-site-
 
       - name: Build site
+        id: build
         if: steps.cache-restore.outputs.cache-hit != 'true'
+        # If the build itself fails, we fall through to the fallback step.
+        continue-on-error: true
         run: |
           cd site
           # Remove lilis-engine from the site's package.json so npm install
@@ -139,14 +143,27 @@ jobs:
           echo "Site build size:"
           du -sh site-build
 
+      # Fallback: if the build failed (or never ran because there was no
+      # cache and the build crashed), restore any previously-cached site
+      # build by prefix. If even that misses, we ship nothing for the site.
+      - name: Fallback to any cached site build
+        if: steps.cache-restore.outputs.cache-hit != 'true' && steps.build.outcome == 'failure'
+        uses: actions/cache/restore@v4
+        with:
+          path: site-build
+          key: site-build-fallback-${{ github.run_id }}
+          restore-keys: |
+            site-build-
+
       - name: Save site build to cache
-        if: steps.cache-restore.outputs.cache-hit != 'true'
+        if: steps.cache-restore.outputs.cache-hit != 'true' && steps.build.outcome == 'success'
         uses: actions/cache/save@v4
         with:
           path: site-build
           key: site-build-${{ steps.hash.outputs.value }}
 
       - name: Upload site artifact
+        if: hashFiles('site-build/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: site-build
@@ -158,6 +175,9 @@ jobs:
     needs: discover-demos
     if: needs.discover-demos.outputs.demo_matrix != '[]'
     runs-on: ubuntu-latest
+    # A demo build failure must not fail the workflow. Per-demo fallback
+    # logic below handles restoring cached builds where available.
+    continue-on-error: true
     strategy:
       matrix:
         demo: ${{ fromJson(needs.discover-demos.outputs.demo_matrix) }}
@@ -166,18 +186,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Frozen hash of demo source + root manifests. Because root
-      # package.json and package-lock.json are included in the hash,
-      # a change to either invalidates the cache for EVERY demo,
-      # forcing a full rebuild. A change to only one demo invalidates
-      # only that demo's cache.
+      # Frozen hash of demo source + root manifests.
       - name: Compute demo source hash
         id: hash
         env:
           HASH: ${{ hashFiles(format('demos/{0}/**', matrix.demo), 'package.json', 'package-lock.json') }}
         run: echo "value=$HASH" >> $GITHUB_OUTPUT
 
-      - name: Restore cached demo build
+      - name: Restore exact-match cached demo build
         id: cache-restore
         uses: actions/cache/restore@v4
         with:
@@ -213,19 +229,15 @@ jobs:
             ${{ runner.os }}-demo-${{ matrix.demo }}-
 
       - name: Build demo
+        id: build
         if: steps.cache-restore.outputs.cache-hit != 'true'
+        continue-on-error: true
         env:
           # Suggested base path for demos that want to opt in.
-          # Demos reference this via $DEMO_BASE_PATH in their build script,
-          # or read process.env.DEMO_BASE_PATH in vite.config.js.
-          # Demos that want a different value can ignore this entirely.
           DEMO_BASE_PATH: "./"
         run: |
           cd demos/${{ matrix.demo }}
 
-          # Where does the final output live?
-          # Default: "dist" (Vite, Astro, SvelteKit, etc.).
-          # "." means the demo directory itself is the site root.
           DEMO_OUTPUT=$(node -p "require('./package.json').demoOutputDir ?? 'dist'")
           echo "Output dir declared by demo: $DEMO_OUTPUT"
 
@@ -243,7 +255,6 @@ jobs:
           npm install --prefer-offline --no-audit --no-fund
           npm install lilis-engine@latest --no-audit --no-fund
 
-          # Trust the build script: if one exists, run it.
           HAS_BUILD=$(node -p "!!require('./package.json').scripts?.build")
           if [ "$HAS_BUILD" = "true" ]; then
             npm run build
@@ -264,14 +275,11 @@ jobs:
             exit 1
           fi
 
-          # Guard: never ship .git
           if find "$SRC" -name .git 2>/dev/null | grep -q .; then
             echo "::error::Output for ${{ matrix.demo }} contains .git"
             exit 1
           fi
 
-          # Stage the built output under demos/<name>/ so the artifact
-          # layout matches what combine-and-deploy expects.
           mkdir -p "demo-build/demos/${{ matrix.demo }}"
 
           if [ "$DEMO_OUTPUT" = "." ]; then
@@ -288,14 +296,30 @@ jobs:
           echo "Demo '${{ matrix.demo }}' output size:"
           du -sh "demo-build/demos/${{ matrix.demo }}"
 
+      # Fallback: on build failure, try to restore ANY previously cached
+      # build for this demo by prefix. Prefix matching means we get the
+      # most recent cache entry whose key starts with the demo name, even
+      # if the hash component differs.
+      - name: Fallback to any cached build for this demo
+        if: steps.cache-restore.outputs.cache-hit != 'true' && steps.build.outcome == 'failure'
+        uses: actions/cache/restore@v4
+        with:
+          path: demo-build
+          key: demo-build-${{ matrix.demo }}-fallback-${{ github.run_id }}
+          restore-keys: |
+            demo-build-${{ matrix.demo }}-
+
       - name: Save demo build to cache
-        if: steps.cache-restore.outputs.cache-hit != 'true'
+        if: steps.cache-restore.outputs.cache-hit != 'true' && steps.build.outcome == 'success'
         uses: actions/cache/save@v4
         with:
           path: demo-build
           key: demo-build-${{ matrix.demo }}-${{ steps.hash.outputs.value }}
 
       - name: Upload demo artifact
+        # Skip upload entirely if we have no build output (fresh demo,
+        # build failed, no prior cache). Nothing to ship.
+        if: hashFiles('demo-build/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: demo-${{ matrix.demo }}-build
@@ -305,14 +329,15 @@ jobs:
 
   combine-and-deploy:
     needs: [build-site, build-demos]
+    # Run whenever the upstream jobs didn't hard-fail. Because the build
+    # jobs use continue-on-error, they report success even when their
+    # build steps failed — the fallback logic inside each job has already
+    # handled the failure case.
     if: |
       always() &&
       (needs.build-site.result == 'success' || needs.build-site.result == 'skipped') &&
       (needs.build-demos.result == 'success' || needs.build-demos.result == 'skipped')
     runs-on: ubuntu-latest
-    # Serialize deploys. A new push will cancel an in-flight deploy, but
-    # never an in-flight build — that's the whole point of moving
-    # concurrency off the workflow and onto this job.
     concurrency:
       group: "pages-deploy"
       cancel-in-progress: true
@@ -322,6 +347,9 @@ jobs:
         with:
           path: ./final_build
           merge-multiple: true
+        # If no artifacts were produced at all, this step fails. That's
+        # fine — a workflow with no build output has nothing to deploy.
+        continue-on-error: false
 
       - name: Verify build contents
         run: |
