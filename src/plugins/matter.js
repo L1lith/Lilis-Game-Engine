@@ -532,11 +532,11 @@ export default function matterPlugin(entities, settings = {}) {
         delta,
         typeof settings.minimumTimeStep == "number"
           ? settings.minimumTimeStep
-          : 17,
+          : 0,
       ),
       typeof settings.maximumTimeStep == "number"
         ? settings.maximumTimeStep
-        : 50,
+        : 16 + 2 / 3,
     );
     Engine.update(engineSignal.get(), timestep); // Safety Mechanism
     matterEntities.forEach((entity) => {
