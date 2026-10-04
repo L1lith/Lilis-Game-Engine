@@ -219,7 +219,7 @@ export default function Game() {
     const matterPhysics = createMatterPlugin(entities, {
       setup: (engine) => {
         engine.gravity.x = 0
-        engine.gravity.y = 0.01
+        engine.gravity.y = 1
         engine.velocityIterations = 6
       },
     })
