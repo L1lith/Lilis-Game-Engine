@@ -4,13 +4,14 @@ import {
   createGameCore,
   Entity,
   EntityList,
-  RenderSettings,
   createGameLoop,
   Camera,
 } from 'lilis-engine'
 import createSolidRenderer from 'lilis-engine/solid'
 import createMatterPlugin, { createMatterBoundaries } from 'lilis-engine/matter'
 import Matter from 'matter-js'
+import '@/styles/Game.scss'
+
 const { Body } = Matter
 
 const WORLD = 100
@@ -22,6 +23,18 @@ const COLORS = [
   '#06d6a0', '#ef476f', '#118ab2', '#ffd166',
   '#f7b801', '#7678ed', '#3d5a80', '#ee6c4d',
 ]
+
+const COUNT = 14
+const WALL_THICKNESS = 4
+const DRAG_STRENGTH = 0.4
+
+const boxMatterOptions = {
+  shape: 'rectangle',
+  restitution: 0.15,
+  friction: 0.04,
+  frictionStatic: 0,
+  frictionAir: 0.01,
+}
 
 const rand = (min, max) => min + Math.random() * (max - min)
 
@@ -38,33 +51,45 @@ function createDraggableBox(getPlayAreaRect, dragState) {
       return entity.rotation || 0
     }
 
+    // Translate a client-space pointer position into world coordinates.
+    // Shared by pointerdown (to seed the target) and pointermove.
+    const pointerToWorld = (clientX, clientY) => {
+      const rect = getPlayAreaRect()
+      if (!rect || !rect.width || !rect.height) return null
+
+      const normalizedX = ((clientX - rect.left) / rect.width) * WORLD - HALF
+      const normalizedY = ((clientY - rect.top) / rect.height) * WORLD - HALF
+
+      const hasInverse =
+        camera &&
+        typeof camera.inverseTransformX === 'function' &&
+        typeof camera.inverseTransformY === 'function'
+
+      if (!hasInverse) return { x: normalizedX, y: normalizedY }
+      return {
+        x: camera.inverseTransformX(normalizedX),
+        y: camera.inverseTransformY(normalizedY),
+      }
+    }
+
     const handlePointerDown = (e) => {
       e.preventDefault()
       e.stopPropagation()
       try { e.currentTarget.setPointerCapture(e.pointerId) } catch (_) {}
-      setDragging(true)
 
+      setDragging(true)
       if (entity.matterBody) entity.matterBody.gravityScale = 0
 
       const updateTarget = (clientX, clientY) => {
-        const rect = getPlayAreaRect()
-        if (!rect || !rect.width || !rect.height) return
-        const normalizedX =
-          ((clientX - rect.left) / rect.width) * WORLD - HALF
-        const normalizedY =
-          ((clientY - rect.top) / rect.height) * WORLD - HALF
-        const worldX = camera && typeof camera.inverseTransformX === 'function'
-          ? camera.inverseTransformX(normalizedX)
-          : normalizedX
-        const worldY = camera && typeof camera.inverseTransformY === 'function'
-          ? camera.inverseTransformY(normalizedY)
-          : normalizedY
+        const world = pointerToWorld(clientX, clientY)
+        if (!world) return
         dragState.entity = entity
         dragState.pointerId = e.pointerId
-        dragState.targetX = worldX
-        dragState.targetY = worldY
+        dragState.targetX = world.x
+        dragState.targetY = world.y
       }
 
+      // Seed immediately so the first physics frame has a valid target.
       updateTarget(e.clientX, e.clientY)
 
       const move = (ev) => {
@@ -92,23 +117,84 @@ function createDraggableBox(getPlayAreaRect, dragState) {
 
     return (
       <div
+        class="game-box"
+        classList={{ 'game-box--dragging': dragging() }}
         style={{
-          width: '100%',
-          height: '100%',
           background: entity.color || '#888',
-          'border-radius': '6px',
           transform: `rotate(${rotation()}rad)`,
-          'box-shadow': dragging()
-            ? '0 0 20px rgba(255,255,255,0.9), inset 0 0 12px rgba(255,255,255,0.4)'
-            : '0 2px 10px rgba(0,0,0,0.5)',
-          cursor: dragging() ? 'grabbing' : 'grab',
-          'user-select': 'none',
-          'touch-action': 'none',
-          'box-sizing': 'border-box',
         }}
         onPointerDown={handlePointerDown}
       />
     )
+  }
+}
+
+// Steer the dragged body toward its target every frame, so a stationary
+// pointer keeps it pinned (velocity is refreshed each tick, and gravity is
+// off on the body).
+function createDragPlugin(dragState) {
+  return {
+    tickPriority: 100,
+    tick: () => {
+      const entity = dragState.entity
+      if (!entity) return
+      const body = entity.matterBody
+      if (!body) {
+        dragState.entity = null
+        dragState.pointerId = null
+        return
+      }
+      Body.setVelocity(body, {
+        x: (dragState.targetX - body.position.x) * DRAG_STRENGTH,
+        y: (dragState.targetY - body.position.y) * DRAG_STRENGTH,
+      })
+    },
+  }
+}
+
+// Force every dynamic body upright after the physics step. When the lock
+// is off, this becomes a no-op.
+function createRotationLockPlugin(entities, rotationLocked) {
+  return {
+    tickPriority: 200,
+    tick: () => {
+      if (!rotationLocked()) return
+      for (const entity of entities.get()) {
+        const body = entity.matterBody
+        if (!body || entity.matter?.static) continue
+        if (body.angle !== 0) Body.setAngle(body, 0)
+        if (body.angularVelocity !== 0) Body.setAngularVelocity(body, 0)
+      }
+    },
+  }
+}
+
+// Catch bodies that tunnel or get ejected, and drop them back in from the
+// top with clean velocity.
+function createOutOfBoundsPlugin(entities) {
+  return {
+    tickPriority: 50,
+    tick: () => {
+      for (const entity of entities.get()) {
+        if (!entity.matterBody) continue
+        if (entity.matter?.static) continue
+
+        const escaped =
+          entity.y >  HALF + 100 ||
+          entity.y < -HALF - 1000 ||
+          entity.x >  HALF + 100 ||
+          entity.x < -HALF - 100
+        if (!escaped) continue
+
+        const body = entity.matterBody
+        Body.setVelocity(body, { x: 0, y: 0 })
+        Body.setAngularVelocity(body, 0)
+        Body.setAngle(body, 0)
+        entity.x = rand(-HALF + entity.width, HALF - entity.width)
+        entity.y = -HALF - 20
+        entity.rotation = 0
+      }
+    },
   }
 }
 
@@ -130,13 +216,13 @@ export default function Game() {
       createMatterBoundaries({
         width: WORLD,
         height: WORLD,
-        thickness: 4,
+        thickness: WALL_THICKNESS,
         skipBoundaries: ['top'],
         matterOptions: {
-            friction: 0,
-            frictionStatic: 0,
-            frictionAir: 0
-        }
+          friction: 0,
+          frictionStatic: 0,
+          frictionAir: 0,
+        },
       }),
     )
 
@@ -152,14 +238,11 @@ export default function Game() {
 
     const DraggableBox = createDraggableBox(getPlayAreaRect, dragState)
 
-    const COUNT = 14
     for (let i = 0; i < COUNT; i++) {
       const size = rand(5, 30)
-      const x = rand(-HALF + size / 2 + 4, HALF - size / 2 - 4)
-      const y = -HALF - rand(15, 150) - size
-
       entities.addChild(Entity({
-        x, y,
+        x: rand(-HALF + size / 2 + WALL_THICKNESS, HALF - size / 2 - WALL_THICKNESS),
+        y: -HALF - rand(15, 150) - size,
         width: size,
         height: size,
         rotation: 0,
@@ -167,72 +250,8 @@ export default function Game() {
         positionTransform: true,
         noMatterRender: true,
         solid: DraggableBox,
-        matter: {
-          shape: 'rectangle',
-          restitution: 0.15,
-          friction: 0.04,
-          frictionStatic: 0,
-          frictionAir: 0.01,
-        },
+        matter: boxMatterOptions,
       }))
-    }
-
-    // Conditionally lock rotation. When `rotationLocked` is true, we force
-    // angle and angular velocity to zero after the physics step. When it's
-    // false, we do nothing and bodies spin freely.
-    const rotationLockPlugin = {
-      tick: () => {
-        if (!rotationLocked()) return
-        for (const entity of entities.get()) {
-          const body = entity.matterBody
-          if (!body) continue
-          if (entity.matter?.static) continue
-          if (body.angle !== 0) Body.setAngle(body, 0)
-          if (body.angularVelocity !== 0) Body.setAngularVelocity(body, 0)
-        }
-      },
-      tickPriority: 200,
-    }
-
-    const dragPlugin = {
-      tick: () => {
-        const entity = dragState.entity
-        if (!entity) return
-        const body = entity.matterBody
-        if (!body) {
-          dragState.entity = null
-          dragState.pointerId = null
-          return
-        }
-        Body.setVelocity(body, {
-          x: (dragState.targetX - body.position.x) * 0.4,
-          y: (dragState.targetY - body.position.y) * 0.4,
-        })
-      },
-      tickPriority: 100,
-    }
-
-    const outOfBoundsPlugin = {
-      tick: () => {
-        for (const entity of entities.get()) {
-          if (!entity.matterBody) continue
-          if (entity.matter?.static) continue
-          const escaped =
-            entity.y >  HALF + 100 ||
-            entity.y < -HALF - 1000 ||
-            entity.x >  HALF + 100 ||
-            entity.x < -HALF - 100
-          if (escaped) {
-            Body.setVelocity(entity.matterBody, { x: 0, y: 0 })
-            Body.setAngularVelocity(entity.matterBody, 0)
-            Body.setAngle(entity.matterBody, 0)
-            entity.x = rand(-HALF + entity.width, HALF - entity.width)
-            entity.y = -HALF - 20
-            entity.rotation = 0
-          }
-        }
-      },
-      tickPriority: 50,
     }
 
     const solidRenderer = createSolidRenderer(entities, {
@@ -253,9 +272,9 @@ export default function Game() {
         createGameLoop(),
         solidRenderer,
         matterPhysics,
-        dragPlugin,
-        outOfBoundsPlugin,
-        rotationLockPlugin,
+        createDragPlugin(dragState),
+        createOutOfBoundsPlugin(entities),
+        createRotationLockPlugin(entities, rotationLocked),
       ],
     })
 
@@ -269,49 +288,15 @@ export default function Game() {
   })
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        display: 'flex',
-        'align-items': 'center',
-        'justify-content': 'center',
-        background: '#000',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        ref={playArea}
-        style={{
-          position: 'relative',
-          width: '100dvmin',
-          height: '100dvmin',
-          background: '#1a1a2e',
-          overflow: 'hidden',
-        }}
-      >
+    <div class="game-root">
+      <div ref={playArea} class="game-play-area">
         {solidGameContents()}
       </div>
 
       <button
+        class="game-rotation-toggle"
+        classList={{ 'game-rotation-toggle--unlocked': !rotationLocked() }}
         onClick={() => setRotationLocked(v => !v)}
-        style={{
-          position: 'fixed',
-          top: '16px',
-          right: '16px',
-          padding: '10px 16px',
-          'font-family': 'system-ui, sans-serif',
-          'font-size': '14px',
-          'font-weight': '600',
-          color: '#0a0a15',
-          background: rotationLocked() ? '#ffb3ba' : '#85ffba',
-          border: 'none',
-          'border-radius': '6px',
-          cursor: 'pointer',
-          'box-shadow': '0 2px 10px rgba(0,0,0,0.5)',
-          'user-select': 'none',
-          'z-index': 1,
-        }}
       >
         Rotation: {rotationLocked() ? 'Locked' : 'Free'}
       </button>
