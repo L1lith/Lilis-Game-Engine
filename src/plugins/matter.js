@@ -11,6 +11,7 @@ export function createMatterBoundaries(options = {}) {
     height = 100,
     thickness = 20,
     skipBoundaries = [],
+    matterOptions = {},
   } = options;
   const output = EntityList();
   const halfThickness = thickness / 2;
@@ -22,7 +23,7 @@ export function createMatterBoundaries(options = {}) {
         height: height + thickness,
         width: thickness,
         noRender: false,
-        matter: { shape: "rectangle", static: true },
+        matter: { shape: "rectangle", static: true, ...matterOptions },
         boundaryType: "right",
       }),
     );
