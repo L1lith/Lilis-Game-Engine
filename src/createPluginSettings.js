@@ -5,11 +5,11 @@ import { Store } from "jabr";
 
 const defaultSettings = {};
 
-function createRenderSettings(initialSettings = {}) {
+function createPluginSettings(initialSettings = {}) {
   const settings = { ...defaultSettings, ...initialSettings };
   if (!valid(settings, InnerRenderSettingsFormat))
     throw new Error("Invalid Initial Render Settings");
   return new Store(settings, { format: InnerRenderSettingsFormat });
 }
 
-export default convertFunctionToConstructor(createRenderSettings);
+export default convertFunctionToConstructor(createPluginSettings);
