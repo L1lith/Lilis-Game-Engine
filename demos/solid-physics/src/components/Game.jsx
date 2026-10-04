@@ -30,9 +30,6 @@ function createDraggableBox(getPlayAreaRect, dragState) {
     const { entity, camera } = props
     const [dragging, setDragging] = createSignal(false)
 
-    // Hoist the reactive rotation accessor once per component instance.
-    // Calling props.getReactiveProp() inside the JSX handler would spin up
-    // a fresh Jabr subscription on every render.
     const rotationSignal = typeof props.getReactiveProp === 'function'
       ? props.getReactiveProp('rotation')
       : null
@@ -117,6 +114,7 @@ function createDraggableBox(getPlayAreaRect, dragState) {
 
 export default function Game() {
   const [solidGameContents, setSolidGameContents] = createSignal(null)
+  const [rotationLocked, setRotationLocked] = createSignal(true)
   let playArea
   let unmountGameEngine
 
@@ -132,7 +130,7 @@ export default function Game() {
       createMatterBoundaries({
         width: WORLD,
         height: WORLD,
-        thickness: 2,
+        thickness: 4,
         skipBoundaries: ['top'],
       }),
     )
@@ -152,7 +150,7 @@ export default function Game() {
     const COUNT = 14
     for (let i = 0; i < COUNT; i++) {
       const size = rand(5, 30)
-      const x = rand(-HALF + size / 2 + 2, HALF - size / 2 - 2)
+      const x = rand(-HALF + size / 2 + 4, HALF - size / 2 - 4)
       const y = -HALF - rand(15, 150) - size
 
       entities.addChild(Entity({
@@ -171,6 +169,23 @@ export default function Game() {
           frictionAir: 0.01,
         },
       }))
+    }
+
+    // Conditionally lock rotation. When `rotationLocked` is true, we force
+    // angle and angular velocity to zero after the physics step. When it's
+    // false, we do nothing and bodies spin freely.
+    const rotationLockPlugin = {
+      tick: () => {
+        if (!rotationLocked()) return
+        for (const entity of entities.get()) {
+          const body = entity.matterBody
+          if (!body) continue
+          if (entity.matter?.static) continue
+          if (body.angle !== 0) Body.setAngle(body, 0)
+          if (body.angularVelocity !== 0) Body.setAngularVelocity(body, 0)
+        }
+      },
+      tickPriority: 200,
     }
 
     const dragPlugin = {
@@ -203,8 +218,11 @@ export default function Game() {
             entity.x < -HALF - 100
           if (escaped) {
             Body.setVelocity(entity.matterBody, { x: 0, y: 0 })
+            Body.setAngularVelocity(entity.matterBody, 0)
+            Body.setAngle(entity.matterBody, 0)
             entity.x = rand(-HALF + entity.width, HALF - entity.width)
             entity.y = -HALF - 20
+            entity.rotation = 0
           }
         }
       },
@@ -219,7 +237,7 @@ export default function Game() {
     const matterPhysics = createMatterPlugin(entities, {
       setup: (engine) => {
         engine.gravity.x = 0
-        engine.gravity.y = 1
+        engine.gravity.y = 0.3
         engine.velocityIterations = 6
       },
     })
@@ -231,6 +249,7 @@ export default function Game() {
         matterPhysics,
         dragPlugin,
         outOfBoundsPlugin,
+        rotationLockPlugin,
       ],
     })
 
@@ -267,6 +286,29 @@ export default function Game() {
       >
         {solidGameContents()}
       </div>
+
+      <button
+        onClick={() => setRotationLocked(v => !v)}
+        style={{
+          position: 'fixed',
+          top: '16px',
+          right: '16px',
+          padding: '10px 16px',
+          'font-family': 'system-ui, sans-serif',
+          'font-size': '14px',
+          'font-weight': '600',
+          color: '#0a0a15',
+          background: rotationLocked() ? '#ffb3ba' : '#85ffba',
+          border: 'none',
+          'border-radius': '6px',
+          cursor: 'pointer',
+          'box-shadow': '0 2px 10px rgba(0,0,0,0.5)',
+          'user-select': 'none',
+          'z-index': 1,
+        }}
+      >
+        Rotation: {rotationLocked() ? 'Locked' : 'Free'}
+      </button>
     </div>
   )
 }
