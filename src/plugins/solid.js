@@ -37,7 +37,16 @@ function createPositionWrapper(
   wrapper.style.top = "0%";
   wrapper.style.width = "0%";
   wrapper.style.height = "0%";
-  wrapper.style.willChange = "left, top, width, height, transform";
+  // layout containment: changes to left/top/width/height can't invalidate
+  //   siblings' layout; the wrapper is its own formatting context.
+  // style containment: counters and other stateful styling don't leak out.
+  // (paint containment is intentionally omitted so child box-shadows can
+  //  extend past the wrapper's box without being clipped.)
+  wrapper.style.contain = "layout style";
+  // Only `transform` can be composited. The old hint listed left/top/width/
+  // height, which the browser can't promote — the layout pass still runs,
+  // and the hint just wastes bookkeeping.
+  wrapper.style.willChange = "transform";
   wrapper.appendChild(childElement);
 
   const dispose = createRoot((dispose) => {
@@ -75,36 +84,37 @@ function createPositionWrapper(
     }
 
     createEffect(() => {
-      const x = isFinite(getRenderX())
-        ? getRenderX()
-        : isFinite(getX())
-          ? getX()
-          : 0;
-      const y = isFinite(getRenderY())
-        ? getRenderY()
-        : isFinite(getY())
-          ? getY()
-          : 0;
+      // Read each signal exactly once. The previous version called each
+      // getter up to twice (once for the isFinite check, once for the
+      // value), doubling the reactive bookkeeping per frame.
+      let x = getRenderX();
+      if (!isFinite(x)) x = getX();
+      if (!isFinite(x)) x = 0;
 
-      const xScale = isFinite(getRenderXScale())
-        ? getRenderXScale()
-        : isFinite(getRenderScale())
-          ? getRenderScale()
-          : 1;
-      const yScale = isFinite(getRenderYScale())
-        ? getRenderYScale()
-        : isFinite(getRenderScale())
-          ? getRenderScale()
-          : 1;
+      let y = getRenderY();
+      if (!isFinite(y)) y = getY();
+      if (!isFinite(y)) y = 0;
 
-      const worldWidth = (isFinite(getWidth()) ? getWidth() : 100) * xScale;
-      const worldHeight = (isFinite(getHeight()) ? getHeight() : 100) * yScale;
+      let renderScale = getRenderScale();
+      if (!isFinite(renderScale)) renderScale = 1;
 
-      const rotation = isFinite(getRenderRotation())
-        ? getRenderRotation()
-        : isFinite(getRotation())
-          ? getRotation()
-          : 0;
+      let xScale = getRenderXScale();
+      if (!isFinite(xScale)) xScale = renderScale;
+
+      let yScale = getRenderYScale();
+      if (!isFinite(yScale)) yScale = renderScale;
+
+      let width = getWidth();
+      if (!isFinite(width)) width = 100;
+      let height = getHeight();
+      if (!isFinite(height)) height = 100;
+
+      const worldWidth = width * xScale;
+      const worldHeight = height * yScale;
+
+      let rotation = getRenderRotation();
+      if (!isFinite(rotation)) rotation = getRotation();
+      if (!isFinite(rotation)) rotation = 0;
 
       const ignoreCamera = getIgnoreSceneCamera() === true;
 
@@ -132,6 +142,11 @@ function createPositionWrapper(
       }
 
       // World is -50..+50, so `+50` recenters it to 0..100 CSS percent.
+      // Five individual property writes: the browser coalesces them into
+      // one style invalidation on the next paint, so no manual batching
+      // is needed. (A single cssText assignment would skip four CSSOM
+      // parses, but at the cost of restating the static properties every
+      // frame — not worth the tradeoff here.)
       wrapper.style.left = `${screenX + 50}%`;
       wrapper.style.top = `${screenY + 50}%`;
       wrapper.style.width = `${screenWidth}%`;

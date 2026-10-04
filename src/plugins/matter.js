@@ -527,7 +527,18 @@ export default function matterPlugin(entities, settings = {}) {
 
   const tick = ({ delta }) => {
     isDoingPhysicsUpdate = true;
-    Engine.update(engineSignal.get(), Math.min(delta, 50)); // Safety Mechanism
+    const timestep = Math.min(
+      Math.max(
+        delta,
+        typeof settings.minimumTimeStep == "number"
+          ? settings.minimumTimeStep
+          : 17,
+      ),
+      typeof settings.maximumTimeStep == "number"
+        ? settings.maximumTimeStep
+        : 50,
+    );
+    Engine.update(engineSignal.get(), timestep); // Safety Mechanism
     matterEntities.forEach((entity) => {
       if (Array.isArray(entity.matterBody)) {
         entity.matterBody.forEach((body) => {

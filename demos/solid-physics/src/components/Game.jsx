@@ -30,11 +30,14 @@ function createDraggableBox(getPlayAreaRect, dragState) {
     const { entity, camera } = props
     const [dragging, setDragging] = createSignal(false)
 
+    // Hoist the reactive rotation accessor once per component instance.
+    // Calling props.getReactiveProp() inside the JSX handler would spin up
+    // a fresh Jabr subscription on every render.
+    const rotationSignal = typeof props.getReactiveProp === 'function'
+      ? props.getReactiveProp('rotation')
+      : null
     const rotation = () => {
-      if (typeof props.getReactiveProp === 'function') {
-        const getter = props.getReactiveProp('rotation')
-        if (typeof getter === 'function') return getter() || 0
-      }
+      if (rotationSignal) return rotationSignal() || 0
       return entity.rotation || 0
     }
 
@@ -44,12 +47,8 @@ function createDraggableBox(getPlayAreaRect, dragState) {
       try { e.currentTarget.setPointerCapture(e.pointerId) } catch (_) {}
       setDragging(true)
 
-      // Disable gravity for this body during the drag.
       if (entity.matterBody) entity.matterBody.gravityScale = 0
 
-      // Record the drag target into shared state. The tick plugin in Game
-      // steers the body toward it every frame, so a stationary pointer
-      // still applies steering (and can't drift).
       const updateTarget = (clientX, clientY) => {
         const rect = getPlayAreaRect()
         if (!rect || !rect.width || !rect.height) return
@@ -69,7 +68,6 @@ function createDraggableBox(getPlayAreaRect, dragState) {
         dragState.targetY = worldY
       }
 
-      // Seed immediately so the first frame of steering has a target.
       updateTarget(e.clientX, e.clientY)
 
       const move = (ev) => {
@@ -81,8 +79,6 @@ function createDraggableBox(getPlayAreaRect, dragState) {
         if (ev.pointerId !== e.pointerId) return
         setDragging(false)
         if (entity.matterBody) entity.matterBody.gravityScale = 1
-        // Only clear if we're still the active drag — another component
-        // may have started dragging in the meantime.
         if (dragState.entity === entity) {
           dragState.entity = null
           dragState.pointerId = null
@@ -144,8 +140,6 @@ export default function Game() {
     const getPlayAreaRect = () =>
       playArea ? playArea.getBoundingClientRect() : null
 
-    // Shared drag state. The component writes the target; the tick plugin
-    // below reads it and steers the body each frame.
     const dragState = {
       entity: null,
       pointerId: null,
@@ -179,18 +173,12 @@ export default function Game() {
       }))
     }
 
-    // Steer the dragged body every frame toward the current target.
-    // Running this on tick rather than on pointermove means a stationary
-    // pointer keeps the box pinned: velocity is refreshed each frame, so
-    // friction and collisions can't bleed it away, and because gravity is
-    // still off on the body it won't fall.
     const dragPlugin = {
       tick: () => {
         const entity = dragState.entity
         if (!entity) return
         const body = entity.matterBody
         if (!body) {
-          // Entity was unmounted mid-drag.
           dragState.entity = null
           dragState.pointerId = null
           return
@@ -231,8 +219,8 @@ export default function Game() {
     const matterPhysics = createMatterPlugin(entities, {
       setup: (engine) => {
         engine.gravity.x = 0
-        engine.gravity.y = 1
-        engine.velocityIterations = 20
+        engine.gravity.y = 0.01
+        engine.velocityIterations = 6
       },
     })
 
