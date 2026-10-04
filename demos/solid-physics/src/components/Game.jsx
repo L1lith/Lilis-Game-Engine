@@ -132,6 +132,11 @@ export default function Game() {
         height: WORLD,
         thickness: 4,
         skipBoundaries: ['top'],
+        matterOptions: {
+            friction: 0,
+            frictionStatic: 0,
+            frictionAir: 0
+        }
       }),
     )
 
@@ -165,7 +170,8 @@ export default function Game() {
         matter: {
           shape: 'rectangle',
           restitution: 0.15,
-          friction: 0.4,
+          friction: 0.04,
+          frictionStatic: 0,
           frictionAir: 0.01,
         },
       }))
