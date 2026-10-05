@@ -18,6 +18,7 @@
         width: auto;
         min-height: 15em;
         aspect-ratio: 500 / 475;
+        filter: drop-shadow(0 0 1vmin black);
         @include v.mobile  {
             margin-bottom: 5vmin;
         }
