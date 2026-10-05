@@ -16,7 +16,7 @@ export default function Game() {
         setInterval(()=>{
             textEntity.count += 1
         }, 1000)
-        const entities = new EntityList([textEntity])
+        const entities = window.entities = new EntityList([textEntity])
         const solidRenderer = createSolidRenderer(entities, renderSettings)
         const gameCore = createGameCore({plugins:[solidRenderer]})
         await gameCore.mount()

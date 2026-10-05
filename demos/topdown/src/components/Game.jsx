@@ -10,7 +10,6 @@ import createMatterPlugin from 'lilis-engine/matter'
 import { detectKeys } from "lilis-engine/utility"
 import TouchControls from "./TouchControls"
 import Matter from 'matter-js'
-import { input } from "astro:schema"
 const {Body} = Matter
 
 export default function Game() {
@@ -22,8 +21,8 @@ export default function Game() {
         console.log('Mounted!')
         const renderSettings = RenderSettings({canvas})
         const autoResize = () => {
-        const size = Math.min(window.innerWidth, window.innerHeight);
-        renderSettings.width = renderSettings.height = size;
+          const size = Math.min(window.innerWidth, window.innerHeight);
+          renderSettings.width = renderSettings.height = size;
         };
         window.addEventListener("resize", autoResize);
         autoResize();
@@ -34,11 +33,11 @@ export default function Game() {
         const touchControls = entities.addChild({solid: TouchControls})
         // End GUI Stuff
         const player = window.player = entities.addChild({
-            renderPriority: 3, 
-            x: 10, y:-30, 
-            width: 5, 
-            height: 5, 
-            matter: {shape: 'circle'}, 
+            renderPriority: 3,
+            x: 10, y:-30,
+            width: 5,
+            height: 5,
+            matter: {shape: 'circle'},
             imageURL: 'chicken by Diarandor.png',
             renderRotation: 0
         })
@@ -46,6 +45,9 @@ export default function Game() {
         player.on('y', y => playerCam.y = y)
         playerCam.x = player.x
         playerCam.y = player.y
+
+        // Keyboard inputs. detectKeys returns a Signal whose .get() is
+        // truthy while the key is held down.
         const inputs = {
             up: detectKeys('ArrowUp'),
             down: detectKeys('ArrowDown'),
@@ -54,16 +56,41 @@ export default function Game() {
             space: detectKeys(' ')
         }
         const walkForce = 1
-        const jumpForce = 3
+        // 1 / sqrt(2). Used to normalize diagonal movement so that
+        // pressing two keys at once doesn't move the player ~41% faster
+        // than pressing one.
+        const DIAGONAL = Math.SQRT1_2
+
         const playerControlPlugin = {
             tick: () => {
                 if (!player.matterBody) return
-                //const xForce = inputs.right.get() || touchControls.xDirection === "right" ? (inputs.left.get() || touchControls.xDirection === "left" ? 0 : 1) : inputs.left.get() || touchControls.direction === "left" ? -1 : 0
-                //const yForce = inputs.down.get() || touchControls.yDirection === "down" ? (inputs.up.get() || touchControls.yDirection === "up" ? 0 : 1) : inputs.up.get() || touchControls.direction === "up" ? -1 : 0
-                //const isJumping = (inputs.up.get() || touchControls.jumping || inputs.space.get()) && isTouchingSurface //&& Body.getVelocity(player.matterBody).y < 0.001
-                Body.setVelocity(player.matterBody, {x: touchControls.xDirection * walkForce, y: touchControls.yDirection * walkForce})
+
+                // touchControls.xDirection / yDirection are numbers
+                // (-1, 0, or 1) driven by the TouchControls component.
+                // Keyboard overrides touch when a key is held.
+                let xDirection = touchControls.xDirection ?? 0
+                if (inputs.right.get()) xDirection = 1
+                else if (inputs.left.get()) xDirection = -1
+
+                let yDirection = touchControls.yDirection ?? 0
+                if (inputs.down.get()) yDirection = 1
+                else if (inputs.up.get()) yDirection = -1
+
+                // Normalize diagonals: if both axes are active, scale
+                // each by 1/sqrt(2) so the resulting vector has the same
+                // magnitude as a cardinal direction.
+                if (xDirection !== 0 && yDirection !== 0) {
+                    xDirection *= DIAGONAL
+                    yDirection *= DIAGONAL
+                }
+
+                Body.setVelocity(player.matterBody, {
+                    x: xDirection * walkForce,
+                    y: yDirection * walkForce
+                })
             }
         }
+
         window.entities = entities
         const levelLoader = LevelLoader(entities, levels, {
             defaultLevel: 'levelOne'
@@ -83,12 +110,12 @@ export default function Game() {
         }
         adjustCameraBounds()
         levelLoader.activeLevel.addListener(adjustCameraBounds)
-        adjustCameraBounds
+
         const playerOutOfBoundsPlugin = {
-            tick: ()=> {            
+            tick: ()=>{
                 const map = levelLoader.activeLevel.get()?.exports?.map;
                 if (!map) return
-                const isOutOfBounds = player.x > map.width / 2 + player.width / 2 || player.x < map.width / -2  - player.width / 2 || player.y < map.height / -2 - player.height / 2 || player.y > map.height / 2 + player.height / 2 
+                const isOutOfBounds = player.x > map.width / 2 + player.width / 2 || player.x < map.width / -2  - player.width / 2 || player.y < map.height / -2 - player.height / 2 || player.y > map.height / 2 + player.height / 2
                 if (isOutOfBounds) {
                     const respawnPoint = levelLoader.activeLevel.get()?.exports?.spawn || {x: 0, y: -30}
                     Body.setVelocity(player.matterBody, {x: 0, y: 0})
@@ -106,11 +133,14 @@ export default function Game() {
         }})
         const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer, levelLoader, solidRenderer, matterPhysics, playerControlPlugin, playerOutOfBoundsPlugin]})
         await gameCore.mount()
-        unmountGameEngine = gameCore.unmount
+        unmountGameEngine = async () => {
+            window.removeEventListener('resize', autoResize)
+            await gameCore.unmount()
+        }
     })
     onCleanup(async ()=>{
-        if (isServer) return // Browser Only, shut down the game engine. Not technically mandatory but good practice and shows how to gracefully shut down the game engine
-        await unmountGameEngine()
+        if (isServer) return
+        if (unmountGameEngine) await unmountGameEngine()
     })
     return (<div class="game-container">
         <canvas ref={canvas}/>

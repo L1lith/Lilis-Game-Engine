@@ -12,6 +12,7 @@ export default function Game() {
         const renderSettings = new RenderSettings({canvas})
         const player = new Entity({imageURL: 'chicken by Diarandor.png', x: 0, y: 0, width: 50, height: 50})
         const entities = new EntityList([player])
+        window.entities = entities
         const pixiRenderer = createPixiRenderer(entities, renderSettings)
         const gameCore = createGameCore({plugins:[createGameLoop(), pixiRenderer]})
         await gameCore.mount()

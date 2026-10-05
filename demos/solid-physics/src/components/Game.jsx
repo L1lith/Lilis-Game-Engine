@@ -211,6 +211,7 @@ export default function Game() {
     camera.width = camera.height = WORLD
 
     const entities = EntityList([])
+    window.entities = entities
 
     entities.addChild(
       createMatterBoundaries({
