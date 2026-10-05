@@ -53,7 +53,11 @@ const GITHUB_OWNER = "L1lith";
 const GITHUB_REPO = "Lilis-Game-Engine";
 const GITHUB_BRANCH = "master";
 
-const CACHE_ROOT = join(tmpdir(), "lilis-engine-demos-cache");
+// The env-var overrides below are used by the test suite to point the CLI
+// at a local mock server and an isolated cache directory. In normal use
+// they are unset, so the defaults (real GitHub, real tmpdir) apply.
+const CACHE_ROOT =
+  process.env.LILIS_CACHE_DIR ?? join(tmpdir(), "lilis-engine-demos-cache");
 const CACHE_DEMOS_DIR = join(CACHE_ROOT, "demos");
 const CACHE_LIST_PATH = join(CACHE_ROOT, "demo-list.json");
 const CACHE_CODE_META_PATH = join(CACHE_ROOT, "code-meta.json");
@@ -81,8 +85,12 @@ const CLONE_CONFIG_NAME = "clone-astro-config.config.mjs";
 const ASTRO_CONFIG_NAME = "astro.config.mjs";
 const ENGINE_PACKAGE = "lilis-engine";
 
-const GITHUB_TREE_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${GITHUB_BRANCH}?recursive=1`;
-const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}`;
+const GITHUB_TREE_URL =
+  process.env.LILIS_GITHUB_TREE_URL ??
+  `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${GITHUB_BRANCH}?recursive=1`;
+const GITHUB_RAW_BASE =
+  process.env.LILIS_GITHUB_RAW_BASE ??
+  `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}`;
 const GITHUB_TREE_BASE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/tree/${GITHUB_BRANCH}`;
 const DEMOS_BASE = `https://engine.webslc.com/demos`;
 
@@ -562,35 +570,47 @@ yargs(hideBin(process.argv))
       }
 
       // 7. Install the template's remaining dependencies
-      console.log("");
-      console.log(c.info("Installing dependencies..."));
-      console.log("");
-      try {
-        await run("npm", ["install"], destination);
-      } catch (err) {
-        console.error(
-          c.errorBold(`\nFailed to install dependencies: ${err.message}`),
-        );
-        console.error(
-          `You can retry manually with: ${c.info(`cd ${projectName} && npm install`)}`,
-        );
-        process.exit(1);
-      }
+      //    Skipped entirely when LILIS_SKIP_INSTALL=1 (used by tests).
+      if (process.env.LILIS_SKIP_INSTALL === "1") {
+        console.log("");
+        console.log(c.dim("Skipping npm install (LILIS_SKIP_INSTALL=1)"));
+      } else {
+        console.log("");
+        console.log(c.info("Installing dependencies..."));
+        console.log("");
+        try {
+          await run("npm", ["install"], destination);
+        } catch (err) {
+          console.error(
+            c.errorBold(`\nFailed to install dependencies: ${err.message}`),
+          );
+          console.error(
+            `You can retry manually with: ${c.info(`cd ${projectName} && npm install`)}`,
+          );
+          process.exit(1);
+        }
 
-      // 8. Pull lilis-engine fresh from the registry
-      console.log("");
-      console.log(c.info(`Installing ${ENGINE_PACKAGE}@latest...`));
-      console.log("");
-      try {
-        await run("npm", ["install", `${ENGINE_PACKAGE}@latest`], destination);
-      } catch (err) {
-        console.error(
-          c.errorBold(`\nFailed to install ${ENGINE_PACKAGE}: ${err.message}`),
-        );
-        console.error(
-          `You can retry manually with: ${c.info(`cd ${projectName} && npm install ${ENGINE_PACKAGE}@latest`)}`,
-        );
-        process.exit(1);
+        // 8. Pull lilis-engine fresh from the registry
+        console.log("");
+        console.log(c.info(`Installing ${ENGINE_PACKAGE}@latest...`));
+        console.log("");
+        try {
+          await run(
+            "npm",
+            ["install", `${ENGINE_PACKAGE}@latest`],
+            destination,
+          );
+        } catch (err) {
+          console.error(
+            c.errorBold(
+              `\nFailed to install ${ENGINE_PACKAGE}: ${err.message}`,
+            ),
+          );
+          console.error(
+            `You can retry manually with: ${c.info(`cd ${projectName} && npm install ${ENGINE_PACKAGE}@latest`)}`,
+          );
+          process.exit(1);
+        }
       }
 
       console.log("");
@@ -692,6 +712,7 @@ yargs(hideBin(process.argv))
       console.log("");
     },
   )
+  .strict()
   .demandCommand(1, "You need to specify a command.")
   .help()
   .version()
