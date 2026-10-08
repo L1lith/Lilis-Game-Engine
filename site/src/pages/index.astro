@@ -4,6 +4,26 @@ import '@/styles/index.scss'
 import Expandable from '@/components/Expandable';
 import { markdown } from 'astro-md-2'
 
+const base = import.meta.env.BASE_URL
+
+const gameScreenshots = [
+  {
+    src: base + 'grandparental-controls-preview-2.png',
+    alt: 'Grandparental Controls title screen showing the Casual, Normal, Hard, and Chaos difficulty cards',
+    caption: 'Title screen',
+  },
+  {
+    src: base + 'grandparental-controls-preview-1.png',
+    alt: 'Gameplay screenshot with Wurdle and Minesweeper minigames running side by side on their own boards',
+    caption: 'Minigames',
+  },
+  {
+    src: base + 'grandparental-controls-preview-3.png',
+    alt: 'Chaotic physics gameplay with falling tiles, hearts, and power-up cards',
+    caption: 'Physics chaos',
+  },
+]
+
 const technicalExplanation = `The core idea is simple: entities are observable objects, and systems are plugins. An entity holds its own data, behavior, and events — a position, a sprite, a collision handler, a Solid component — and plugins subscribe to the parts they care about. Physics doesn't know about rendering. Rendering doesn't know about physics. Swapping Pixi for p5, or adding Matter, means changing the plugin list with minimal modifications.
 
 State management is handled using my own [universal state management library Jabr](https://github.com/L1lith/Jabr), which has no ecosystem lock-in — unlike most state libraries, which tend to be tied to a rendering framework like React or SolidJS. That makes it a natural fit for fusing the domains of web development and game development.
@@ -16,6 +36,32 @@ const renderedTechnicalExplanation = await markdown.inline(technicalExplanation)
 ---
 
 <Base class="home-page">
+	<Expandable startExpanded title="Grandparental Controls" client:load>
+		<div class="game-showcase">
+			<p class="game-intro"><span class="bold"><a target="_blank" href="https://oslilith.itch.io/grandparental-controls">Grandparental Controls</a></span> is the first full game released with Lili's Game Engine — published on itch.io.</p>
+			<div class="game-screenshots">
+				{gameScreenshots.map(screenshot => (
+					<figure>
+						<img src={screenshot.src} alt={screenshot.alt} loading="lazy" />
+						<figcaption>{screenshot.caption}</figcaption>
+					</figure>
+				))}
+			</div>
+			<p class="game-tagline">How your grandparents describe trying to use a computer: A chaotic physics game that got completely out of hand — but don't hit your life alert just yet.</p>
+			<p>You're babysitting a screen full of troublemakers: captchas, wordles, minesweeper boards, tic-tac-toe, and mazes with their own tiny physics simulations running inside them. Solve them before the timer runs out and you'll earn rewards. Fail, and the game throws TNT, homing missiles, and gravity-flipping chaos at your precious little hearts. Lose all your hearts and it's game over — but the high score board remembers everything.</p>
+			<ul class="game-features">
+				<li>5+ minigames, each with its own timer, sound effects, and win/lose consequences</li>
+				<li>Physics everywhere: drag, stack, knock over, and watch everything tumble</li>
+				<li>Rewards like hearts, shields, coins, piggy banks, and more</li>
+				<li>Punishments like TNT, gravity modifiers, and heat-seeking missiles</li>
+				<li>Multiple difficulty levels, from a chill sandbox to full chaos</li>
+				<li>Creative mode with an admin console so you can spawn anything you want</li>
+				<li>High scores for every difficulty — how long can you survive?</li>
+			</ul>
+			<p class="game-closing">It's silly, it's stressful, it's satisfying. Welcome to why your grandpa can't read his email.</p>
+			<a class="game-cta" href="https://oslilith.itch.io/grandparental-controls" target="_blank">Play on itch.io →</a>
+		</div>
+	</Expandable>
 	<Expandable startExpanded title="Mission Statement" client:load>
 		Often the best solutions can be found by slowing down. In this high-speed world, pacing ourselves is a powerful act of resistance. My game engine is closer to a reliable beater car that will never die than to the high-maintenance sports car. Taking it apart is half of the journey.
 	</Expandable>

@@ -11,3 +11,93 @@
         }
     }
 }
+
+.game-showcase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5em;
+
+    p {
+        max-width: 70ch;
+    }
+
+    .game-intro,
+    .game-tagline,
+    .game-closing,
+    .game-disclosure {
+        text-align: center;
+    }
+
+    .game-intro {
+        font-size: 1.25em;
+    }
+
+    .game-screenshots {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2vmin;
+        width: 100%;
+
+        @media (max-width: 900px) {
+            grid-template-columns: 1fr;
+        }
+
+        figure {
+            min-width: 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+
+            img {
+                display: block;
+                width: 100%;
+                height: auto;
+                border: 0.25vmin solid rgb(180, 180, 180);
+                border-radius: 1vmin;
+                background: black;
+                box-sizing: border-box;
+            }
+
+            figcaption {
+                //margin-top: auto;
+                padding-top: 0.5em;
+                color: #bdabef;
+                font-size: 0.9em;
+            }
+        }
+    }
+
+    .game-features {
+        max-width: 60ch;
+
+        li {
+            list-style: square inside;
+            margin-bottom: 0.4em;
+        }
+    }
+
+    .game-closing {
+        font-style: italic;
+    }
+
+    .game-cta {
+        display: inline-block;
+        font-size: 1.3em;
+        background: #190050;
+        border: 0.15em solid #bdabef;
+        border-radius: 100vmax;
+        padding: 0.4em 0.8em 0.3em;
+        text-decoration: none;
+
+        &:hover {
+            background: #2a0075;
+        }
+    }
+
+    .game-disclosure {
+        font-size: 0.85em;
+        opacity: 0.85;
+        margin: 0;
+    }
+}
