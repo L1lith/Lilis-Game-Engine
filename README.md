@@ -13,6 +13,8 @@ The design leans functional rather than object-oriented. Composition is declarat
 The same core runs many demos on the site — a platformer with Tiled maps, Matter physics, and a Solid UI, and a two-player Pong game rendered with p5, and many other demos. The renderer, the physics engine, and the game logic are all plugins and entities. None of them import each other.
 
 ## Grandparental Controls: Made with Lili's Engine
+<img src="https://github.com/L1lith/Lilis-Game-Engine/blob/master/site/public/grandparental-controls-preview-1.png?raw=true" alt="Graffiti style logo reading &quot;Lili's Game Engine&quot;" height="200"/>
+
 [Grandparental Controls](https://oslilith.itch.io/grandparental-controls) is the first full game released with Lili's Game Engine — published on itch.io.
 
 How your grandparents describe trying to use a computer: A chaotic physics game that got completely out of hand — but don't hit your life alert just yet.
