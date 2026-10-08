@@ -12,6 +12,23 @@ The design leans functional rather than object-oriented. Composition is declarat
 
 The same core runs many demos on the site — a platformer with Tiled maps, Matter physics, and a Solid UI, and a two-player Pong game rendered with p5, and many other demos. The renderer, the physics engine, and the game logic are all plugins and entities. None of them import each other.
 
+## Grandparental Controls
+[Grandparental Controls](https://oslilith.itch.io/grandparental-controls) is the first full game released with Lili's Game Engine — published on itch.io.
+
+How your grandparents describe trying to use a computer: A chaotic physics game that got completely out of hand — but don't hit your life alert just yet.
+
+You're babysitting a screen full of troublemakers: captchas, wordles, minesweeper boards, tic-tac-toe, and mazes with their own tiny physics simulations running inside them. Solve them before the timer runs out and you'll earn rewards. Fail, and the game throws TNT, homing missiles, and gravity-flipping chaos at your precious little hearts. Lose all your hearts and it's game over — but the high score board remembers everything.
+
+-   5+ minigames, each with its own timer, sound effects, and win/lose consequences
+-   Physics everywhere: drag, stack, knock over, and watch everything tumble
+-   Rewards like hearts, shields, coins, piggy banks, and more
+-   Punishments like TNT, gravity modifiers, and heat-seeking missiles
+-   Multiple difficulty levels, from a chill sandbox to full chaos
+-   Creative mode with an admin console so you can spawn anything you want
+-   High scores for every difficulty — how long can you survive?
+
+It's silly, it's stressful, it's satisfying. Welcome to why your grandpa can't read his email.
+
 ## Play with the demos!
 If you'd like to have some fun and see what the game engine can do try [playing with the demos!](https://engine.webslc.com/demos)
 
